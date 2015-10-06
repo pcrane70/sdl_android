@@ -1,11 +1,5 @@
 package com.smartdevicelink.abstraction;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Vector;
-
 import android.app.Service;
 import android.util.SparseArray;
 
@@ -65,6 +59,12 @@ import com.smartdevicelink.proxy.rpc.enums.HMILevel;
 import com.smartdevicelink.proxy.rpc.enums.Language;
 import com.smartdevicelink.proxy.rpc.enums.SdlDisconnectedReason;
 import com.smartdevicelink.transport.BaseTransportConfig;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Vector;
 
 public abstract class AppLinkAbstraction {
 	
@@ -296,7 +296,7 @@ public abstract class AppLinkAbstraction {
 				&& status.getFirstRun() 
 				&& mFirstHMINotificationListener != null){
 			mFirstHMINotificationListener.onFirstHMIFull();
-			sendAboutAddCommand();
+			//sendAboutAddCommand();
 			sendDIDForDD();
 		}
 	}
