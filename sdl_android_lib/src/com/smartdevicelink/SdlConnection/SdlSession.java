@@ -20,6 +20,7 @@ public class SdlSession implements ISdlConnectionListener, IHeartbeatMonitorList
 	private byte sessionId;
 	@SuppressWarnings("unused")
     private byte wiproProcolVer;
+	private Integer mtuSize = null;
 	private ISdlConnectionListener sessionListener;
 	private BaseTransportConfig transportConfig;
     IHeartbeatMonitor _outgoingHeartbeatMonitor = null;
@@ -29,13 +30,13 @@ public class SdlSession implements ISdlConnectionListener, IHeartbeatMonitorList
 
     
 	
-	public static SdlSession createSession(byte wiproVersion, ISdlConnectionListener listener, BaseTransportConfig btConfig) {
+	public static SdlSession createSession(byte wiproVersion, ISdlConnectionListener listener, BaseTransportConfig btConfig, Integer mtuSize) {
 		
 		SdlSession session =  new SdlSession();
 		session.wiproProcolVer = wiproVersion;
 		session.sessionListener = listener;
 		session.transportConfig = btConfig;
-					
+		session.mtuSize = mtuSize;
 		return session;
 	}
 	
@@ -111,11 +112,11 @@ public class SdlSession implements ISdlConnectionListener, IHeartbeatMonitorList
 			 connection = findTheProperConnection(this.transportConfig);
 			
 			if (connection == null) {
-				connection = new SdlConnection(this.transportConfig);
+				connection = new SdlConnection(this.transportConfig, this.mtuSize);
 				shareConnections.add(connection);
 			}
 		} else {
-			connection = new SdlConnection(this.transportConfig);
+			connection = new SdlConnection(this.transportConfig, this.mtuSize);
 		}
 		
 		this._sdlConnection = connection;

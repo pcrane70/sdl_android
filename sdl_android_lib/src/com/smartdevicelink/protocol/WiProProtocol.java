@@ -14,8 +14,8 @@ public class WiProProtocol extends AbstractProtocol {
 	byte _version = 1;
 	private final static String FailurePropagating_Msg = "Failure propagating ";
 
-	private static final int V1_V2_MTU_SIZE = 1500;
-	private static final int V3_V4_MTU_SIZE = 131072;
+	private static int V1_V2_MTU_SIZE = 1500;
+	private static int V3_V4_MTU_SIZE = 131072;
 	private static int HEADER_SIZE = 8;
 	private static int MAX_DATA_SIZE = V1_V2_MTU_SIZE  - HEADER_SIZE;
 
@@ -28,7 +28,6 @@ public class WiProProtocol extends AbstractProtocol {
 	
 	int hashID = 0;
 	int messageID = 0;
-
     @SuppressWarnings("unused")
     private int _heartbeatSendInterval_ms = 0;
     @SuppressWarnings("unused")
@@ -45,6 +44,16 @@ public class WiProProtocol extends AbstractProtocol {
 
 	public WiProProtocol(IProtocolListener protocolListener) {
 		super(protocolListener);
+	} // end-ctor
+
+	public WiProProtocol(IProtocolListener protocolListener, Integer mtuSize) {
+		super(protocolListener);
+
+		if(mtuSize != null) {
+		   V1_V2_MTU_SIZE = mtuSize;
+		   V3_V4_MTU_SIZE = mtuSize;
+		   MAX_DATA_SIZE = V1_V2_MTU_SIZE - HEADER_SIZE;
+		}
 	} // end-ctor
 	
 	public byte getVersion() {

@@ -52,7 +52,7 @@ public class SdlConnection implements IProtocolListener, ITransportListener, ISt
 	 * @param listener Sdl connection listener.
 	 * @param transportConfig Transport configuration for this connection.
 	 */
-	public SdlConnection(BaseTransportConfig transportConfig) {
+	public SdlConnection(BaseTransportConfig transportConfig, Integer mtuSize) {
 		_connectionListener = new InternalMsgDispatcher();
 		
 		// Initialize the transport
@@ -84,8 +84,7 @@ public class SdlConnection implements IProtocolListener, ITransportListener, ISt
 			if (_protocol != null) {
 				_protocol = null;
 			}
-			
-			_protocol = new WiProProtocol(this);
+			_protocol = new WiProProtocol(this, mtuSize);
 		}
 	}
 	
