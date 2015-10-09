@@ -45,6 +45,7 @@ import com.smartdevicelink.exception.SdlException;
 import com.smartdevicelink.exception.SdlExceptionCause;
 import com.smartdevicelink.marshal.JsonRPCMarshaller;
 import com.smartdevicelink.protocol.ProtocolMessage;
+import com.smartdevicelink.protocol.WiProProtocol;
 import com.smartdevicelink.protocol.enums.FunctionID;
 import com.smartdevicelink.protocol.enums.MessageType;
 import com.smartdevicelink.protocol.enums.SessionType;
@@ -5313,6 +5314,19 @@ public abstract class SdlProxyBase<proxyListenerType extends IProxyListenerBase>
 	{
 		return deviceInfo;
 	}
+	//for testing only
+	public byte getProtocolVersion() {
+		byte protocolVersion = 1;
+
+		if (sdlSession == null) return protocolVersion;
+		
+		SdlConnection sdlConn = sdlSession.getSdlConnection();
+		if((sdlConn != null) && (sdlConn.getWiProProtocol() != null)) {
+			protocolVersion = ((WiProProtocol)sdlConn.getWiProProtocol()).getVersion();
+		}
+		return protocolVersion;
+	}
+	
 	public long getInstanceDT()
 	{
 		return instanceDateTime;
