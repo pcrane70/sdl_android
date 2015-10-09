@@ -2,7 +2,10 @@ package com.smartdevicelink.proxy;
 
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
+import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -29,6 +32,7 @@ import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
 import android.telephony.TelephonyManager;
@@ -208,7 +212,8 @@ public abstract class SdlProxyBase<proxyListenerType extends IProxyListenerBase>
 	protected List<Integer> _diagModes = null;
 	protected Boolean firstTimeFull = true;
 	protected String _proxyVersionInfo = null;
-	protected Boolean _bResumeSuccess = false;	
+	protected Boolean _bResumeSuccess = false;
+	protected Boolean _bSavePolicyData = true;
 	
 	private CopyOnWriteArrayList<IPutFileResponseListener> _putFileListenerList = new CopyOnWriteArrayList<IPutFileResponseListener>();
 
@@ -535,6 +540,7 @@ public abstract class SdlProxyBase<proxyListenerType extends IProxyListenerBase>
 		// Get information from sdlProxyConfigurationResources
 		if (sdlProxyConfigurationResources != null) {
 			telephonyManager = sdlProxyConfigurationResources.getTelephonyManager();
+			_bSavePolicyData = sdlProxyConfigurationResources.getSavePolicyData();
 		} 
 		
 		// Use the telephonyManager to get and log phone info
@@ -766,6 +772,47 @@ public abstract class SdlProxyBase<proxyListenerType extends IProxyListenerBase>
 			//If the service or context has become unavailable unexpectedly, catch the exception and move on -- no broadcast log will occur. 
 		}
 	}
+
+	private void writeToFile(Object writeME, String fileName) {
+		Intent sendIntent = createBroadcastIntent();
+		try {
+			updateBroadcastIntent(sendIntent,"FUNCTION_NAME", "writeToFile");
+			updateBroadcastIntent(sendIntent, "SHOW_ON_UI", false);
+
+			String sFileName = fileName + "_" + iFileCount + ".txt";
+			String outFile = Environment.getExternalStorageDirectory().getPath() + "/" + sFileName;	
+			File out = new File(outFile);
+			FileWriter writer = new FileWriter(out);
+			writer.flush();
+			writer.write(writeME.toString());
+			writer.close();
+			updateBroadcastIntent(sendIntent, "COMMENT1", outFile);
+		} catch (FileNotFoundException e) {
+			updateBroadcastIntent(sendIntent, "COMMENT2", "writeToFile FileNotFoundException " + e);
+			Log.i("sdlp", "FileNotFoundException: " + e);
+			e.printStackTrace();
+		} catch (IOException e) {
+			updateBroadcastIntent(sendIntent, "COMMENT2", "writeToFile IOException " + e);
+			Log.i("sdlp", "IOException: " + e);
+			e.printStackTrace();
+		}
+		finally
+		{
+			sendBroadcastIntent(sendIntent);
+		}
+	}
+
+	private void LogHeader(String sType, final String myObject, String sFuncName)
+	{
+		Intent sendIntent = createBroadcastIntent();
+
+		updateBroadcastIntent(sendIntent, "FUNCTION_NAME", sFuncName);
+		
+		updateBroadcastIntent(sendIntent, "COMMENT1", sType + "\r\n");
+		updateBroadcastIntent(sendIntent, "DATA", myObject);
+		sendBroadcastIntent(sendIntent);		
+	}
+
 	
 	private HttpURLConnection getURLConnection(Headers myHeader, String sURLString, int Timeout, int iContentLen)
 	{		
@@ -854,7 +901,8 @@ public abstract class SdlProxyBase<proxyListenerType extends IProxyListenerBase>
 		if (iTimeout == null)
 			iTimeout = 2000;
 		
-		Headers myHeader = msg.getHeader();			
+		Headers myHeader = msg.getHeader();
+		String sFunctionName = "SYSTEM_REQUEST";			
 		
 		updateBroadcastIntent(sendIntent, "FUNCTION_NAME", "sendOnSystemRequestToUrl");		
 		updateBroadcastIntent(sendIntent, "COMMENT5", "\r\nCloud URL: " + sURLString);	
@@ -876,6 +924,7 @@ public abstract class SdlProxyBase<proxyListenerType extends IProxyListenerBase>
 				jsonObjectToSendToServer = new JSONObject();
 				jsonObjectToSendToServer.put("data", jsonArrayOfSdlPPackets);
 				bLegacy = true;
+				sFunctionName = "SYSTEM_REQUEST_LEGACY";
 				updateBroadcastIntent(sendIntent, "COMMENT6", "\r\nLegacy SystemRequest: true");
 				valid_json = jsonObjectToSendToServer.toString().replace("\\", "");
 			}
@@ -887,6 +936,12 @@ public abstract class SdlProxyBase<proxyListenerType extends IProxyListenerBase>
 				sendBroadcastIntent(sendIntent3);
  				valid_json = sBodyString.replace("\\", "");
  			}
+
+			if (_bSavePolicyData) {
+				writeToFile(valid_json, "requestToCloud" + "_" + this._applicationName + "_" + this._appID);
+			}
+
+			LogHeader("Cloud Request", valid_json, sFunctionName);
 			
 			urlConnection = getURLConnection(myHeader, sURLString, iTimeout, valid_json.getBytes("UTF-8").length);
 			
@@ -931,6 +986,13 @@ public abstract class SdlProxyBase<proxyListenerType extends IProxyListenerBase>
 		        response.append('\r');
 			}
 		    rd.close();
+		    Log.i(TAG, "response: " + response.toString());			    		    
+		    
+		    if (_bSavePolicyData) {
+		        writeToFile(response.toString(), "responseFromCloud" + "_" + this._applicationName + "_" + this._appID);
+		    }
+
+		    LogHeader("Cloud Response", response.toString(), sFunctionName);
 
 			Vector<String> cloudDataReceived = new Vector<String>();			
 				
