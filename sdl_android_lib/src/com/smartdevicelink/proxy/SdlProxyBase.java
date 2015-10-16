@@ -843,11 +843,7 @@ public abstract class SdlProxyBase<proxyListenerType extends IProxyListenerBase>
 		HttpURLConnection urlConnection = null;
 		boolean bLegacy = false;
 		
-		String sURLString;
-		if (!getPoliciesURL().equals(""))
-			sURLString = sPoliciesURL;
-		else
-			sURLString = msg.getUrl();
+		String sURLString = msg.getUrl();
 
 		Integer iTimeout = msg.getTimeout();
 
@@ -5324,16 +5320,5 @@ public abstract class SdlProxyBase<proxyListenerType extends IProxyListenerBase>
 	public String getConnectionDetails()
 	{
 		return sConnectionDetails;
-	}
-	//for testing only
-	public void setPoliciesURL(String sText)
-	{
-		sPoliciesURL = sText;
-	}
-	//for testing only
-	public String getPoliciesURL()
-	{
-		return sPoliciesURL;
-	}
-	
+	}	
 } // end-class
