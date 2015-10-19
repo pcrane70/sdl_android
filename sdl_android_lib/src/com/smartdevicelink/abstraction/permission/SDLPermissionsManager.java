@@ -106,4 +106,7 @@ public class SDLPermissionsManager {
 		}
 	}
 
+	public void removePermissionListener(SDLPermissionListener listener) {
+		mListeners.remove(listener);
+	}
 }
