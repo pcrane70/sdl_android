@@ -55,6 +55,7 @@ import com.smartdevicelink.proxy.rpc.TTSChunk;
 import com.smartdevicelink.proxy.rpc.VehicleType;
 import com.smartdevicelink.proxy.rpc.enums.AppHMIType;
 import com.smartdevicelink.proxy.rpc.enums.ButtonName;
+import com.smartdevicelink.proxy.rpc.enums.DriverDistractionState;
 import com.smartdevicelink.proxy.rpc.enums.HMILevel;
 import com.smartdevicelink.proxy.rpc.enums.Language;
 import com.smartdevicelink.proxy.rpc.enums.SdlDisconnectedReason;
@@ -89,6 +90,8 @@ public abstract class AppLinkAbstraction {
 	private SdlProxyALM mAppLinkProxy;
 
 	protected boolean mIsConnected = false;
+
+	private DriverDistractionState mDriverDistractionState = DriverDistractionState.DD_ON;
 
 	private int coorId = 3000;
 	private int cmdID = 1000;
@@ -319,9 +322,14 @@ public abstract class AppLinkAbstraction {
 		}
 	}
 
-	public void addDriverDistractionListener(DriverDistractionListener listener) {
+	public DriverDistractionState addDriverDistractionListener(DriverDistractionListener listener) {
 		this.mDriverDistractionListeners.add(listener);
+        return mDriverDistractionState;
 	}
+
+    public void removeDriverDistractionListener(DriverDistractionListener listener){
+        this.mDriverDistractionListeners.remove(listener);
+    }
 
 	protected void onError(String arg0, Exception arg1){
 		Log.i(TAG, "OnError"); 
@@ -334,8 +342,9 @@ public abstract class AppLinkAbstraction {
 
 	public void onDriverDistraction(OnDriverDistraction arg0){
 		Log.i(TAG, "OnDriverDistraction received");
+        mDriverDistractionState = arg0.getState();
 		for(int i = 0; i < mDriverDistractionListeners.size(); i++){
-			mDriverDistractionListeners.get(i).onDriverDistraction(arg0.getState());
+			mDriverDistractionListeners.get(i).onDriverDistraction(mDriverDistractionState);
 		}
 	}
 

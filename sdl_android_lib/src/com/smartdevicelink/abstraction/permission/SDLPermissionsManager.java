@@ -5,7 +5,7 @@ import java.util.ArrayList;
 public class SDLPermissionsManager {
 
 	private static SDLPermissionsManager instance;
-	private Object permissionLock = new Object();
+	private final Object permissionLock = new Object();
 	private boolean mVDataAvail;
 	private boolean mDrivingCharAvail;
 	private boolean mReadDidAvail;
@@ -13,7 +13,7 @@ public class SDLPermissionsManager {
 	private ArrayList<SDLPermissionListener> mListeners;
 
 	private SDLPermissionsManager(){
-		mListeners = new ArrayList<SDLPermissionListener>();
+		mListeners = new ArrayList<>();
 		mDrivingCharAvail = false;
 		mSpeedGpsAvail = false;
 		mVDataAvail = false;
