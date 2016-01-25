@@ -51,12 +51,8 @@ public class WiProProtocol extends AbstractProtocol {
 
 		if(mtuSize != null) {
 		   V1_V2_MTU_SIZE = mtuSize;
-		   if(mtuSize > V3_V4_MTU_SIZE) {
-			  V3_V4_MTU_SIZE = mtuSize;
-			  MAX_DATA_SIZE =  V3_V4_MTU_SIZE - HEADER_SIZE;
-		   } else {
-			  MAX_DATA_SIZE =  V1_V2_MTU_SIZE - HEADER_SIZE;
-		   }
+		   V3_V4_MTU_SIZE = mtuSize;
+		   MAX_DATA_SIZE = V1_V2_MTU_SIZE - HEADER_SIZE;
 		}
 	} // end-ctor
 	
