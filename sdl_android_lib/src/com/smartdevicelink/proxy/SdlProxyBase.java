@@ -161,6 +161,7 @@ public abstract class SdlProxyBase<proxyListenerType extends IProxyListenerBase>
 	private Language _hmiDisplayLanguageDesired = null;
 	private Vector<AppHMIType> _appType = null;
 	private String _appID = null;
+	private Integer _sessionMTUSize = null;
 	private String _autoActivateIdDesired = null;
 	private String _lastHashID = null;	
 	private SdlMsgVersion _sdlMsgVersionRequest = null;
@@ -535,6 +536,7 @@ public abstract class SdlProxyBase<proxyListenerType extends IProxyListenerBase>
 		// Get information from sdlProxyConfigurationResources
 		if (sdlProxyConfigurationResources != null) {
 			telephonyManager = sdlProxyConfigurationResources.getTelephonyManager();
+			setSessionMTUSize(sdlProxyConfigurationResources.getMTUSize());
 		} 
 		
 		// Use the telephonyManager to get and log phone info
@@ -1098,7 +1100,7 @@ public abstract class SdlProxyBase<proxyListenerType extends IProxyListenerBase>
 				
 		// Setup SdlConnection
 		synchronized(CONNECTION_REFERENCE_LOCK) {
-			this.sdlSession = SdlSession.createSession(_wiproVersion,_interfaceBroker, _transportConfig);	
+			this.sdlSession = SdlSession.createSession(_wiproVersion,_interfaceBroker, _transportConfig, getSessionMTUSize());
 		}
 		
 		synchronized(CONNECTION_REFERENCE_LOCK) {
@@ -5313,6 +5315,10 @@ public abstract class SdlProxyBase<proxyListenerType extends IProxyListenerBase>
 	{
 		return deviceInfo;
 	}
+	public Integer getSessionMTUSize()
+	{
+		return _sessionMTUSize;
+	}
 	public long getInstanceDT()
 	{
 		return instanceDateTime;
@@ -5331,6 +5337,11 @@ public abstract class SdlProxyBase<proxyListenerType extends IProxyListenerBase>
 		sPoliciesURL = sText;
 	}
 	//for testing only
+	//for testing only
+	public void setSessionMTUSize(Integer mtuSize)
+	{
+		_sessionMTUSize = mtuSize;
+	}
 	public String getPoliciesURL()
 	{
 		return sPoliciesURL;
