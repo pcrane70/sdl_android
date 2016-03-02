@@ -8,6 +8,7 @@ public class SdlProxyConfigurationResources {
 	private Integer _mtuSize = null;	
 	private boolean _savePolicyData = true;
 	
+	private String _sessionUUID;	
 	public SdlProxyConfigurationResources() {
 		this(null, null);
 	}
@@ -46,5 +47,12 @@ public class SdlProxyConfigurationResources {
 	
 	public boolean getSavePolicyData() {
 		return _savePolicyData;
+	}
+	public void setSessionUUID(String sessionUID) {
+		_sessionUUID = sessionUID;
+	}
+	
+	public String getSessionUUID() {
+		return _sessionUUID;
 	}
 }
