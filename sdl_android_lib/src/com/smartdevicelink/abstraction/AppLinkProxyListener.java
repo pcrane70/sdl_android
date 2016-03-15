@@ -196,7 +196,7 @@ public class AppLinkProxyListener implements IProxyListenerABS{
 
 	@Override
 	public void onOnLanguageChange(OnLanguageChange arg0) {
-//		mAbstraction.onLanguageChange(arg0);
+		mAbstraction.onOnLanguageChange(arg0);
 	}
 
 	@Override

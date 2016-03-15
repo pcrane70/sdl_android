@@ -322,6 +322,24 @@ public abstract class AppLinkAbstraction {
 		}
 	}
 
+	protected Language getProxyLanguage(){
+		try {
+			return mAppLinkProxy.getSdlLanguage();
+		} catch (SdlException e) {
+			Log.e(TAG,e.getMessage(), e);
+			return null;
+		}
+	}
+
+	protected Language getProxyHmiLanguage(){
+		try{
+			return mAppLinkProxy.getHmiDisplayLanguage();
+		} catch (SdlException e) {
+			Log.e(TAG, e.getMessage(), e);
+			return null;
+		}
+	}
+
 	public DriverDistractionState addDriverDistractionListener(DriverDistractionListener listener) {
 		this.mDriverDistractionListeners.add(listener);
         return mDriverDistractionState;
