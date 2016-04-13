@@ -17,6 +17,9 @@ build/
 gradle*
 local.properties
 
+=======
+# OSX garbage
+.DS_Store
 ##############################
 # Eclipse project files
 ##############################
