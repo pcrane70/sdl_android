@@ -3,11 +3,8 @@ package com.smartdevicelink.api;
 import android.content.Context;
 import android.util.Log;
 
-<<<<<<< HEAD
 import com.smartdevicelink.api.lockscreen.LockScreenStatusListener;
-=======
 import com.smartdevicelink.api.permission.SdlPermissionManager;
->>>>>>> feature/permission_manager
 import com.smartdevicelink.exception.SdlException;
 import com.smartdevicelink.protocol.enums.FunctionID;
 import com.smartdevicelink.proxy.RPCRequest;
@@ -94,11 +91,8 @@ public class SdlApplication extends SdlContextAbsImpl implements IProxyListenerA
     private SdlApplicationConfig mApplicationConfig;
 
     private SdlActivityManager mSdlActivityManager;
-<<<<<<< HEAD
     private LockScreenStatusListener mLockScreenStatusListener;
-=======
     private SdlPermissionManager mSdlPermissionManager;
->>>>>>> feature/permission_manager
     private SdlProxyALM mSdlProxyALM;
 
     private final ArrayList<LifecycleListener> mLifecycleListeners = new ArrayList<>();
@@ -115,13 +109,12 @@ public class SdlApplication extends SdlContextAbsImpl implements IProxyListenerA
         mApplicationConfig = config;
         mApplicationStatusListener = listener;
         mSdlActivityManager = new SdlActivityManager();
-<<<<<<< HEAD
         mLockScreenStatusListener = lockScreenActivityManager;
-=======
+
         mSdlPermissionManager = new SdlPermissionManager();
         mSdlProxyALM.addOnRPCNotificationListener(FunctionID.ON_PERMISSIONS_CHANGE,
                 mSdlPermissionManager.getPermissionChangeListener());
->>>>>>> feature/permission_manager
+
         mLifecycleListeners.add(mSdlActivityManager);
         mSdlProxyALM = mApplicationConfig.buildProxy(service, null, this);
         if(mSdlProxyALM != null){
