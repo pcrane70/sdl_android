@@ -217,6 +217,10 @@ public class SdlApplication extends SdlContextAbsImpl implements IProxyListenerA
         return mSdlPermissionManager;
     }
 
+    public SdlFileManager getSdlFileManager() {
+        return mSdlFileManager;
+    }
+
     /***********************************
      IProxyListenerALM interface methods
      ***********************************/

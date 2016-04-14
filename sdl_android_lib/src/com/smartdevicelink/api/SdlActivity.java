@@ -3,6 +3,7 @@ package com.smartdevicelink.api;
 import android.support.annotation.CallSuper;
 import android.util.Log;
 
+import com.smartdevicelink.api.file.SdlFileManager;
 import com.smartdevicelink.api.interfaces.SdlContext;
 import com.smartdevicelink.api.permission.SdlPermissionManager;
 
@@ -166,6 +167,10 @@ public abstract class SdlActivity extends SdlContextAbsImpl {
     @Override
     public SdlPermissionManager getSdlPermissionManager() {
         return getSdlApplicationContext().getSdlPermissionManager();
+    }
+
+    public SdlFileManager getSdlFileManager() {
+        return getSdlApplicationContext().getSdlFileManager();
     }
 
     public class SuperNotCalledException extends RuntimeException{
