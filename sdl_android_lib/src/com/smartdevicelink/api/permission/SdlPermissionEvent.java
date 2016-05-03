@@ -7,36 +7,42 @@ import com.smartdevicelink.proxy.rpc.enums.HMILevel;
 import java.util.EnumSet;
 
 public class SdlPermissionEvent {
-    final SdlPermissionSet mPermissionSet;
 
-    public SdlPermissionEvent(SdlPermissionSet permission){
-        this.mPermissionSet = permission;
+    final EnumSet<SdlPermission> mPermissions;
+    final PermissionLevel mPermissionLevel;
+
+    public enum PermissionLevel{
+        ALL,
+        SOME,
+        NONE
+    }
+
+    SdlPermissionEvent(@NonNull EnumSet<SdlPermission> permission, @NonNull PermissionLevel permissionLevel){
+        mPermissionLevel = permissionLevel;
+        mPermissions = permission;
     }
 
     /**
-     * This method returns the set of permissions allowed in the given HMILevel.
-     * @param hmiLevel The {@link HMILevel} of the desired permission set.
-     * @return {@link EnumSet} of {@link SdlPermission} items representing available permissions.
+     * Method that returns the collection of {@link SdlPermission} from {@link SdlPermissionFilter}
+     * that are available.
+     * @return EnumSet of {@link SdlPermission} that are available
      */
     @NonNull
-    public EnumSet<SdlPermission> getPermissions(@NonNull HMILevel hmiLevel){
-        return mPermissionSet.permissions.get(hmiLevel.ordinal());
+    public final EnumSet<SdlPermission> getPermissions(){
+        return mPermissions;
     }
 
     /**
-     * This method returns the set of permissions representing all permissions that are available
-     * regardless of the HMI levels that they are available in.
-     * @return {@link EnumSet} of {@link SdlPermission} items representing available permissions.
+     * Convenience method that returns whether All, Some or None of the permissions are available from
+     * the {@link SdlPermissionFilter}
+     * @return {@link com.smartdevicelink.api.permission.SdlPermissionEvent.PermissionLevel} that indicates
+     * if all, some or none of the {@link SdlPermission} from the {@link SdlPermissionFilter} are present
      */
     @NonNull
-    public EnumSet<SdlPermission> getPermissions(){
-        EnumSet<SdlPermission> permissions = EnumSet.noneOf(SdlPermission.class);
-
-        for(EnumSet<SdlPermission> set: mPermissionSet.permissions){
-            permissions.addAll(set);
-        }
-
-        return permissions;
+    public final PermissionLevel getPermissionLevel(){
+        return  mPermissionLevel;
     }
+
+
 
 }

@@ -1,17 +1,18 @@
 package com.smartdevicelink.api.permission;
 
 import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.util.Log;
 
+import com.smartdevicelink.protocol.enums.FunctionID;
 import com.smartdevicelink.proxy.RPCNotification;
+import com.smartdevicelink.proxy.SdlProxyALM;
+import com.smartdevicelink.proxy.rpc.OnHMIStatus;
 import com.smartdevicelink.proxy.rpc.OnPermissionsChange;
 import com.smartdevicelink.proxy.rpc.PermissionItem;
 import com.smartdevicelink.proxy.rpc.enums.HMILevel;
 import com.smartdevicelink.proxy.rpc.listeners.OnRPCNotificationListener;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.EnumSet;
 import java.util.List;
 
@@ -23,83 +24,59 @@ public class SdlPermissionManager {
 
     private ArrayList<ListenerWithFilter> mListeners;
 
+    private HMILevel mCurrentHMILevel = HMILevel.HMI_NONE;
+
     private final Object PERMISSION_LOCK = new Object();
 
-    public SdlPermissionManager(){
+    public SdlPermissionManager(SdlProxyALM sdlProxy){
         mSdlPermissionSet = SdlPermissionSet.obtain();
 
         mListeners = new ArrayList<>();
+        sdlProxy.addOnRPCNotificationListener(FunctionID.ON_PERMISSIONS_CHANGE,
+                mPermissionChangeListener);
+        sdlProxy.addOnRPCNotificationListener(FunctionID.ON_HMI_STATUS,
+                mHMIStatusListener);
     }
 
     /**
-     * This method returns true if the given single permission is available at ANY {@link HMILevel}.
-     * For specific HMILevels use {@link #isPermissionAvailable(SdlPermission, HMILevel)}.
+     * This method returns true if the given single permission is available now.
      * @param permission The {@link SdlPermission} to check.
      * @return boolean indicating if the given SdlPermission is available.
      */
     public boolean isPermissionAvailable(@NonNull SdlPermission permission){
         synchronized (PERMISSION_LOCK) {
-            HMILevel[] hmiLevels = HMILevel.values();
-
-            for (int i = 0; i < hmiLevels.length; i++) {
-                if (isPermissionAvailable(permission, hmiLevels[i])) {
-                    return true;
-                }
-            }
-
-            return false;
+            return mSdlPermissionSet.permissions.get(mCurrentHMILevel.ordinal()).contains(permission);
         }
 
-    }
-
-    public OnRPCNotificationListener getPermissionChangeListener(){
-        return permissionChangeListener;
     }
 
     /**
-     * This method returns true if the given single permission is available at the given {@link HMILevel}.
-     * @param permission {@link SdlPermission} to check.
-     * @param hmi {@link HMILevel} to check.
-     * @return boolean indication if the given SdlPermission is available at the given HMILevel
+     * Method to change the current HMI level if it has changed and to notify added {@link SdlPermissionListener}
+     * of any changes in {@link SdlPermission} with the {@link HMILevel} transition.
+     * @param hmiLevel The {@link HMILevel} to change to
      */
-    public boolean isPermissionAvailable(@NonNull SdlPermission permission, @NonNull HMILevel hmi){
+    public void setCurrentHMILevel(@NonNull HMILevel hmiLevel){
         synchronized (PERMISSION_LOCK) {
-            return mSdlPermissionSet.permissions.get(hmi.ordinal()).contains(permission);
+            if(hmiLevel!=mCurrentHMILevel) {
+                for (ListenerWithFilter lwf : mListeners) {
+                    //filter out the permissions that we are not interested in
+                    SdlPermissionSet intersection = SdlPermissionSet.intersect(mSdlPermissionSet, lwf.filter.permissionSet);
+                    //see if there is any change in the EnumSet between the old HMI Level and the new HMI Level
+                    if (intersection.checkForChangeBetweenHMILevels(mCurrentHMILevel, hmiLevel)) {
+                        lwf.listener.onPermissionChanged(generateSdlPermmisionEvent(mSdlPermissionSet, lwf.filter, hmiLevel));
+                    }
+                }
+                mCurrentHMILevel = hmiLevel;
+            }
         }
     }
+
 
     /**
      * Method to add a listener that will be called when the conditions specified by the provided
-     * {@link SdlPermissionFilter} and {@link com.smartdevicelink.api.permission.SdlPermissionManager.ListenerMode}
+     * {@link SdlPermissionFilter}
      * @param listener Implementation of {@link SdlPermissionFilter} that will receive callbacks
-     *                 when permissions requested by the filter change according to the supplied
-     *                 ListenerMode.
-     * @param filter SdlPermissionFilter that contains a set of permissions that should be reported
-     *               to the listener. The listener will ONLY receive information on permissions
-     *               included in the filter.
-     * @param mode The {@link com.smartdevicelink.api.permission.SdlPermissionManager.ListenerMode} that
-     *             defines when the listener should be called based on changes in the permissions
-     *             specified by the SdlPermissionFilter.
-     * @return Returns an {@link SdlPermissionEvent} containing the current state of the permissions
-     * when the listener is added.
-     */
-    @NonNull
-    public SdlPermissionEvent addListener(@NonNull SdlPermissionListener listener,
-                                                       @NonNull SdlPermissionFilter filter,
-                                                       @Nullable ListenerMode mode){
-        synchronized (PERMISSION_LOCK) {
-            mListeners.add(new ListenerWithFilter(listener, filter, mode));
-            return new SdlPermissionEvent(SdlPermissionSet.copy(mSdlPermissionSet));
-        }
-    }
-
-    /**
-     * Convenience method that is equivalent to calling
-     * {@link SdlPermissionManager#addListener(SdlPermissionListener, SdlPermissionFilter, ListenerMode)}
-     * with {@link com.smartdevicelink.api.permission.SdlPermissionManager.ListenerMode}.
-     * @param listener Implementation of {@link SdlPermissionFilter} that will receive callbacks
-     *                 when permissions requested by the filter change according to the supplied
-     *                 ListenerMode.
+     *                 when permissions requested by the filter change.
      * @param filter SdlPermissionFilter that contains a set of permissions that should be reported
      *               to the listener. The listener will ONLY receive information on permissions
      *               included in the filter.
@@ -110,11 +87,12 @@ public class SdlPermissionManager {
     public SdlPermissionEvent addListener(@NonNull SdlPermissionListener listener,
                                                        @NonNull SdlPermissionFilter filter){
         synchronized (PERMISSION_LOCK) {
-            return addListener(listener, filter, ListenerMode.MATCH_ANY);
+            mListeners.add(new ListenerWithFilter(listener, filter));
+            return generateSdlPermmisionEvent(mSdlPermissionSet, filter, mCurrentHMILevel);
         }
     }
 
-    private OnRPCNotificationListener permissionChangeListener = new OnRPCNotificationListener() {
+    private OnRPCNotificationListener mPermissionChangeListener = new OnRPCNotificationListener() {
         @Override
         public void onNotified(RPCNotification notification) {
             synchronized (PERMISSION_LOCK) {
@@ -164,32 +142,28 @@ public class SdlPermissionManager {
                 mSdlPermissionSet = newPermissions;
 
                 for (ListenerWithFilter lwf : mListeners) {
-                    switch (lwf.mode) {
-                        case MATCH_ALL:
-                            if (changed.containsAny(lwf.filter.permissionSet)
-                                    && mSdlPermissionSet.containsAll(lwf.filter.permissionSet)) {
-                                lwf.listener.onPermissionChanged(new SdlPermissionEvent(
-                                        SdlPermissionSet.intersect(mSdlPermissionSet, lwf.filter.permissionSet)));
-                            }
-                            break;
-                        case MATCH_EXACT:
-                            if (changed.containsAny(lwf.filter.permissionSet)
-                                    && mSdlPermissionSet.containsExactlyAll(lwf.filter.permissionSet)) {
-                                lwf.listener.onPermissionChanged(new SdlPermissionEvent(
-                                        SdlPermissionSet.intersect(mSdlPermissionSet, lwf.filter.permissionSet)));
-                            }
-                            break;
-                        case MATCH_ANY:
-                            if (changed.containsAny(lwf.filter.permissionSet)) {
-                                lwf.listener.onPermissionChanged(new SdlPermissionEvent(
-                                        SdlPermissionSet.intersect(mSdlPermissionSet, lwf.filter.permissionSet)));
-                            }
-                            break;
-                        default:
-                            break;
+                        //ensure there is a change in permissions first for the given HMI level and requested permissions
+                        if (changed.containsAnyForHMILevel(lwf.filter.permissionSet,mCurrentHMILevel)) {
+                            lwf.listener.onPermissionChanged(generateSdlPermmisionEvent(mSdlPermissionSet, lwf.filter, mCurrentHMILevel));
+                        }
+
                     }
                 }
             }
+
+    };
+
+    private OnRPCNotificationListener mHMIStatusListener = new OnRPCNotificationListener() {
+        @Override
+        public void onNotified(RPCNotification notification) {
+            OnHMIStatus hmiStatus = (OnHMIStatus) notification;
+            if(notification == null || hmiStatus.getHmiLevel() == null){
+                Log.w(TAG, "INVALID OnHMIStatus Notification Received!");
+                return;
+            }
+            HMILevel hmiLevel = hmiStatus.getHmiLevel();
+            setCurrentHMILevel(hmiLevel);
+
         }
     };
 
@@ -208,12 +182,10 @@ public class SdlPermissionManager {
     private class ListenerWithFilter{
         final SdlPermissionListener listener;
         final SdlPermissionFilter filter;
-        final ListenerMode mode;
 
-        ListenerWithFilter(SdlPermissionListener listener, SdlPermissionFilter filter, ListenerMode mode){
+        ListenerWithFilter(SdlPermissionListener listener, SdlPermissionFilter filter){
             this.listener = listener;
             this.filter = filter;
-            this.mode = mode;
         }
     }
 
@@ -224,30 +196,18 @@ public class SdlPermissionManager {
     public static final EnumSet<SdlPermission> PERMISSION_SET_VEHICLE_DATA =
             EnumSet.range(SdlPermission.GetDTCs, SdlPermission.UnsubscribeWiperStatus);
 
-    public enum ListenerMode{
-        /**
-         * This mode is for use with an {@link SdlPermissionFilter} that has been populated with
-         * {@link SdlPermissionFilter#addPermission(SdlPermission)} and/or
-         * {@link SdlPermissionFilter#addPermissions(Collection)} as it does not enforce
-         * {@link HMILevel} constraints. Will only be called when ALL permissions are available in
-         * ONE OR MORE HMI levels.
-         */
-        MATCH_ALL,
-
-        /**
-         * This mode is for use with an {@link SdlPermissionFilter} filter that has been populated with
-         * {@link SdlPermissionFilter#addPermission(SdlPermission, HMILevel)} and/or
-         * {@link SdlPermissionFilter#addPermissions(Collection, HMILevel)} as it does enforce
-         * {@link HMILevel} constraints. Will only be called when ALL permissions are available in
-         * ALL HMI levels specified.
-         */
-        MATCH_EXACT,
-
-        /**
-         * This mode will cause the {@link SdlPermissionListener} to be called whenever any of the permissions specified
-         * by the provided {@link SdlPermissionFilter} change.
-         */
-        MATCH_ANY
+    private SdlPermissionEvent generateSdlPermmisionEvent(SdlPermissionSet current, SdlPermissionFilter filter, HMILevel hmiLevel){
+        SdlPermissionSet checkPermissions= SdlPermissionSet.intersect(current, filter.permissionSet);
+        if(checkPermissions.containsAllForHMILevel(filter.permissionSet, hmiLevel)){
+            //Verified that all of the filtered permissions are present with the current permissions at the current HMI Level
+            return new SdlPermissionEvent(checkPermissions.permissions.get(hmiLevel.ordinal()), SdlPermissionEvent.PermissionLevel.ALL);
+        }else if(checkPermissions.containsAnyForHMILevel(filter.permissionSet, hmiLevel)){
+            //Verified that at least one of the filtered permissions is present at the current HMI Level
+            return new SdlPermissionEvent(checkPermissions.permissions.get(hmiLevel.ordinal()), SdlPermissionEvent.PermissionLevel.SOME);
+        }else {
+            //None of the filtered permissions are present at the current HMI Level
+            return new SdlPermissionEvent(checkPermissions.permissions.get(hmiLevel.ordinal()), SdlPermissionEvent.PermissionLevel.NONE);
+        }
     }
 
 }

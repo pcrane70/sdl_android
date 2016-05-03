@@ -116,18 +116,16 @@ public class SdlApplication extends SdlContextAbsImpl implements IProxyListenerA
         initialize(service.getApplicationContext());
         mApplicationConfig = config;
         mSdlProxyALM = mApplicationConfig.buildProxy(service, null, this);
+
         if(mSdlProxyALM == null){
             listener.onStatusChange(mApplicationConfig.getAppId(), Status.DISCONNECTED);
             return;
         }
+
         mApplicationStatusListener = listener;
         mSdlActivityManager = new SdlActivityManager();
         mLockScreenStatusListener = lockScreenActivityManager;
-
-        mSdlPermissionManager = new SdlPermissionManager();
-        mSdlProxyALM.addOnRPCNotificationListener(FunctionID.ON_PERMISSIONS_CHANGE,
-                mSdlPermissionManager.getPermissionChangeListener());
-
+        mSdlPermissionManager = new SdlPermissionManager(mSdlProxyALM);
         mLifecycleListeners.add(mSdlActivityManager);
         mSdlFileManager = new SdlFileManager(this, mApplicationConfig);
         mLifecycleListeners.add(mSdlFileManager);
@@ -261,6 +259,7 @@ public class SdlApplication extends SdlContextAbsImpl implements IProxyListenerA
         }
 
         HMILevel hmiLevel = notification.getHmiLevel();
+        mSdlPermissionManager.setCurrentHMILevel(hmiLevel);
 
         Log.i(TAG, toString() + " Received HMILevel: " + hmiLevel.name());
 
