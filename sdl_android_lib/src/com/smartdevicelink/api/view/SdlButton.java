@@ -31,11 +31,11 @@ public class SdlButton {
         return mListener;
     }
 
-    int getId() {
+    public int getId() {
         return mId;
     }
 
-    void setId(int id) {
+    public void setId(int id) {
         mId = id;
     }
 

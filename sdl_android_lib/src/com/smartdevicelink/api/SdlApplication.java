@@ -4,10 +4,16 @@ import android.content.Context;
 import android.util.Log;
 import android.util.SparseArray;
 
+<<<<<<< HEAD
 import com.smartdevicelink.api.lockscreen.LockScreenStatusListener;
 import com.smartdevicelink.api.permission.SdlPermissionManager;
 import com.smartdevicelink.api.file.SdlFileManager;
 import com.smartdevicelink.api.view.SdlButton;
+=======
+import com.smartdevicelink.api.permission.SdlPermissionManager;
+import com.smartdevicelink.api.file.SdlFileManager;
+import com.smartdevicelink.api.interfaces.SdlButtonListener;
+>>>>>>> feature/api_interaction
 import com.smartdevicelink.exception.SdlException;
 import com.smartdevicelink.protocol.enums.FunctionID;
 import com.smartdevicelink.proxy.RPCRequest;
@@ -96,7 +102,10 @@ public class SdlApplication extends SdlContextAbsImpl implements IProxyListenerA
     private SdlApplicationConfig mApplicationConfig;
 
     private SdlActivityManager mSdlActivityManager;
+<<<<<<< HEAD
     private LockScreenStatusListener mLockScreenStatusListener;
+=======
+>>>>>>> feature/api_interaction
     private SdlPermissionManager mSdlPermissionManager;
     private SdlFileManager mSdlFileManager;
     private SdlProxyALM mSdlProxyALM;

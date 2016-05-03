@@ -209,12 +209,19 @@ public abstract class SdlActivity extends SdlContextAbsImpl {
     }
 
     @Override
+    public SdlFileManager getSdlFileManager() {
+        return getSdlApplicationContext().getSdlFileManager();
+    }
+
+    @Override
     public SdlPermissionManager getSdlPermissionManager() {
         return getSdlApplicationContext().getSdlPermissionManager();
     }
 
-    public SdlFileManager getSdlFileManager() {
-        return getSdlApplicationContext().getSdlFileManager();
+    // TODO: Is this needed?
+    public final boolean isAbleToSendAlertDialog(){
+        return getActivityState()==SdlActivityState.FOREGROUND;
+
     }
 
     public class SuperNotCalledException extends RuntimeException{
