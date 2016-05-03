@@ -6,6 +6,10 @@ import android.util.Log;
 import com.smartdevicelink.api.file.SdlFileManager;
 import com.smartdevicelink.api.interfaces.SdlContext;
 import com.smartdevicelink.api.permission.SdlPermissionManager;
+import com.smartdevicelink.api.view.SdlButton;
+import com.smartdevicelink.api.view.SdlView;
+import com.smartdevicelink.api.view.SdlViewManager;
+import com.smartdevicelink.proxy.RPCRequest;
 
 public abstract class SdlActivity extends SdlContextAbsImpl {
 
@@ -31,10 +35,13 @@ public abstract class SdlActivity extends SdlContextAbsImpl {
     private boolean superCalled;
     private boolean isBackHandled;
 
+    private SdlViewManager mViewManager;
+
     final void initialize(SdlContext sdlContext){
         if(!isInitialized()) {
             setSdlApplicationContext(sdlContext);
             setAndroidContext(sdlContext.getAndroidApplicationContext());
+            mViewManager = new SdlViewManager(this);
             setInitialized(true);
         } else {
             Log.w(TAG, "Attempting to initialize SdlContext that is already initialized. Class " +
@@ -42,8 +49,18 @@ public abstract class SdlActivity extends SdlContextAbsImpl {
         }
     }
 
+    public void setContentView(SdlView view){
+        mViewManager.setRootView(view);
+        view.setDisplayCapabilities(((SdlApplication)getSdlApplicationContext()).getDisplayCapabilities());
+    }
+
     @CallSuper
     protected void onCreate(){
+        superCalled = true;
+    }
+
+    @CallSuper
+    protected void onCreateViews(){
         superCalled = true;
     }
 
@@ -103,6 +120,14 @@ public abstract class SdlActivity extends SdlContextAbsImpl {
         this.onCreate();
         if(!superCalled) throw new SuperNotCalledException(this.getClass().getCanonicalName()
                 + " did not call through to super() in method onCreate(). This should NEVER happen.");
+        performCreateViews();
+    }
+
+    final void performCreateViews(){
+        superCalled = false;
+        this.onCreateViews();
+        if(!superCalled) throw new SuperNotCalledException(this.getClass().getCanonicalName()
+                + " did not call through to super() in method onCreateViews(). This should NEVER happen.");
     }
 
     final  void performRestart(){
@@ -127,11 +152,15 @@ public abstract class SdlActivity extends SdlContextAbsImpl {
         this.onForeground();
         if(!superCalled) throw new SuperNotCalledException(this.getClass().getCanonicalName()
                 + " did not call through to super() in method onForeground(). This should NEVER happen.");
+        mViewManager.getRootView().setIsVisible(true);
+        mViewManager.updateView();
+        mViewManager.prepareImages();
     }
 
     final void performBackground(){
         superCalled = false;
         mActivityState = SdlActivityState.BACKGROUND;
+        mViewManager.getRootView().setIsVisible(false);
         this.onBackground();
         if(!superCalled) throw new SuperNotCalledException(this.getClass().getCanonicalName()
                 + " did not call through to super() in method onBackground(). This should NEVER happen.");
@@ -157,6 +186,21 @@ public abstract class SdlActivity extends SdlContextAbsImpl {
         isBackHandled = true;
         this.onBackNavigation();
         return isBackHandled;
+    }
+
+    @Override
+    public int registerButtonCallback(SdlButton.OnPressListener listener) {
+        return getSdlApplicationContext().registerButtonCallback(listener);
+    }
+
+    @Override
+    public void unregisterButtonCallback(int id) {
+        getSdlApplicationContext().unregisterButtonCallback(id);
+    }
+
+    @Override
+    public boolean sendRpc(RPCRequest request) {
+        return getSdlApplicationContext().sendRpc(request);
     }
 
     @Override

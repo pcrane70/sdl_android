@@ -2,10 +2,12 @@ package com.smartdevicelink.api;
 
 import android.content.Context;
 import android.util.Log;
+import android.util.SparseArray;
 
 import com.smartdevicelink.api.lockscreen.LockScreenStatusListener;
 import com.smartdevicelink.api.permission.SdlPermissionManager;
 import com.smartdevicelink.api.file.SdlFileManager;
+import com.smartdevicelink.api.view.SdlButton;
 import com.smartdevicelink.exception.SdlException;
 import com.smartdevicelink.protocol.enums.FunctionID;
 import com.smartdevicelink.proxy.RPCRequest;
@@ -25,6 +27,7 @@ import com.smartdevicelink.proxy.rpc.DeleteInteractionChoiceSetResponse;
 import com.smartdevicelink.proxy.rpc.DeleteSubMenuResponse;
 import com.smartdevicelink.proxy.rpc.DiagnosticMessageResponse;
 import com.smartdevicelink.proxy.rpc.DialNumberResponse;
+import com.smartdevicelink.proxy.rpc.DisplayCapabilities;
 import com.smartdevicelink.proxy.rpc.EndAudioPassThruResponse;
 import com.smartdevicelink.proxy.rpc.GenericResponse;
 import com.smartdevicelink.proxy.rpc.GetDTCsResponse;
@@ -79,7 +82,7 @@ public class SdlApplication extends SdlContextAbsImpl implements IProxyListenerA
 
     private static final String TAG = SdlApplication.class.getSimpleName();
 
-    public static final int BACK_BUTTON_ID = 1010;
+    public static final int BACK_BUTTON_ID = 0;
 
     public enum Status {
         CONNECTING,
@@ -87,7 +90,8 @@ public class SdlApplication extends SdlContextAbsImpl implements IProxyListenerA
         DISCONNECTED
     }
 
-    private int coorId = 1001;
+    private int mAutoCoorId = 100;
+    private int mAutoButtonId = BACK_BUTTON_ID + 1;
 
     private SdlApplicationConfig mApplicationConfig;
 
@@ -104,6 +108,8 @@ public class SdlApplication extends SdlContextAbsImpl implements IProxyListenerA
 
     private boolean isFirstHmiReceived = false;
     private boolean isFirstHmiNotNoneReceived = false;
+
+    private SparseArray<SdlButton.OnPressListener> mButtonListenerRegistry = new SparseArray<>();
     
     SdlApplication(SdlConnectionService service, SdlApplicationConfig config,
                    ConnectionStatusListener listener, LockScreenStatusListener lockScreenActivityManager){
@@ -140,22 +146,6 @@ public class SdlApplication extends SdlContextAbsImpl implements IProxyListenerA
         } else {
             Log.w(TAG, "Attempting to initialize SdlContext that is already initialized. Class " +
                     this.getClass().getCanonicalName());
-        }
-    }
-
-    final public boolean sendRpc(RPCRequest request){
-        if(mSdlProxyALM != null){
-            try {
-                request.setCorrelationID(coorId++);
-                Log.d(TAG, "Sending RPCRequest type " + request.getFunctionName());
-                mSdlProxyALM.sendRPCRequest(request);
-            } catch (SdlException e) {
-                e.printStackTrace();
-                return false;
-            }
-            return true;
-        } else {
-            return false;
         }
     }
 
@@ -197,6 +187,15 @@ public class SdlApplication extends SdlContextAbsImpl implements IProxyListenerA
         }
     }
 
+    public DisplayCapabilities getDisplayCapabilities(){
+        try {
+            return mSdlProxyALM.getDisplayCapabilities();
+        } catch (SdlException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
     @Override
     public String toString(){
         return String.format("SdlApplication: %s-%s",
@@ -219,6 +218,34 @@ public class SdlApplication extends SdlContextAbsImpl implements IProxyListenerA
 
     public SdlFileManager getSdlFileManager() {
         return mSdlFileManager;
+    }
+
+    public int registerButtonCallback(SdlButton.OnPressListener listener) {
+        int buttonId = mAutoButtonId++;
+        mButtonListenerRegistry.append(buttonId, listener);
+        return buttonId;
+    }
+
+    @Override
+    public void unregisterButtonCallback(int id) {
+        mButtonListenerRegistry.remove(id);
+    }
+
+    @Override
+    final public boolean sendRpc(RPCRequest request){
+        if(mSdlProxyALM != null){
+            try {
+                request.setCorrelationID(mAutoCoorId++);
+                Log.d(TAG, "Sending RPCRequest type " + request.getFunctionName());
+                mSdlProxyALM.sendRPCRequest(request);
+            } catch (SdlException e) {
+                e.printStackTrace();
+                return false;
+            }
+            return true;
+        } else {
+            return false;
+        }
     }
 
     /***********************************
@@ -391,8 +418,16 @@ public class SdlApplication extends SdlContextAbsImpl implements IProxyListenerA
 
     @Override
     public final void onOnButtonPress(OnButtonPress notification) {
-        if(notification.getCustomButtonName() != null && notification.getCustomButtonName() == BACK_BUTTON_ID){
-            mSdlActivityManager.back();
+        if(notification != null && notification.getCustomButtonName() != null){
+            int buttonId = notification.getCustomButtonName();
+            if(buttonId == BACK_BUTTON_ID){
+                mSdlActivityManager.back();
+            } else {
+                SdlButton.OnPressListener listener = mButtonListenerRegistry.get(buttonId);
+                if(listener != null){
+                    listener.onButtonPress();
+                }
+            }
         }
     }
 
