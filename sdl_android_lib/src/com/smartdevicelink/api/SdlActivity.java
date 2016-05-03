@@ -218,12 +218,6 @@ public abstract class SdlActivity extends SdlContextAbsImpl {
         return getSdlApplicationContext().getSdlPermissionManager();
     }
 
-    // TODO: Is this needed?
-    public final boolean isAbleToSendAlertDialog(){
-        return getActivityState()==SdlActivityState.FOREGROUND;
-
-    }
-
     public class SuperNotCalledException extends RuntimeException{
 
         SuperNotCalledException(String detailMessage){

@@ -1,4 +1,4 @@
-package com.smartdevicelink.api.interaction;
+package com.smartdevicelink.api.view;
 
 import android.support.annotation.NonNull;
 import android.util.Log;
@@ -6,7 +6,6 @@ import android.util.Log;
 import com.smartdevicelink.api.interfaces.SdlContext;
 import com.smartdevicelink.api.permission.SdlPermission;
 import com.smartdevicelink.api.permission.SdlPermissionManager;
-import com.smartdevicelink.api.view.SdlButton;
 import com.smartdevicelink.proxy.RPCResponse;
 import com.smartdevicelink.proxy.rpc.Alert;
 import com.smartdevicelink.proxy.rpc.Image;
@@ -31,6 +30,9 @@ import java.util.List;
  */
 public class SdlAlertDialog {
     private static final String TAG = SdlAlertDialog.class.getSimpleName();
+    private static final int MIN_DURATION = 3000;
+    private static final int DEFAULT_DURATION = 5000;
+    private static final int MAX_DURATION = 10000;
 
     private String[] mTextFields= new String[3];
     private int mDuration;
@@ -67,7 +69,7 @@ public class SdlAlertDialog {
 
 
     /**
-     * Method to send the built {@link SdlAlertDialog} to the module, while the app is in the foreground. If there is a {@link com.smartdevicelink.api.interaction.SdlAlertDialog.InteractionListener}
+     * Method to send the built {@link SdlAlertDialog} to the module, while the app is in the foreground. If there is a {@link SdlAlertDialog.InteractionListener}
      * set to {@link SdlAlertDialog}, then the listener will be informed if the dialog fails, is cancelled or if
      * the interaction is able to be completed normally.
      * @param context The SdlActivity that the SdlAlertDialog will be sent from
@@ -217,7 +219,7 @@ public class SdlAlertDialog {
     public static class Builder {
 
         private String[] mTextFields= new String[3];
-        private int mDuration;
+        private int mDuration = DEFAULT_DURATION;
         private boolean mIsToneUsed;
         private boolean mIsIndicatorShown;
         private Collection<SdlButton> mButtons;
@@ -288,7 +290,13 @@ public class SdlAlertDialog {
          * @return The builder for the {@link SdlAlertDialog}
          */
         public Builder setDuration(int duration){
-            mDuration = duration;
+            if(duration < MIN_DURATION) {
+                mDuration = MIN_DURATION;
+            } else if(duration < MAX_DURATION){
+                mDuration = duration;
+            } else {
+                mDuration = MAX_DURATION;
+            }
             return this;
         }
 

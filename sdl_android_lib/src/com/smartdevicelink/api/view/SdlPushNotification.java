@@ -1,11 +1,10 @@
-package com.smartdevicelink.api.interaction;
+package com.smartdevicelink.api.view;
 
 import android.support.annotation.NonNull;
 
 import com.smartdevicelink.api.interfaces.SdlContext;
 import com.smartdevicelink.api.permission.SdlPermission;
 import com.smartdevicelink.api.permission.SdlPermissionManager;
-import com.smartdevicelink.api.view.SdlButton;
 import com.smartdevicelink.proxy.RPCResponse;
 import com.smartdevicelink.proxy.rpc.Alert;
 import com.smartdevicelink.proxy.rpc.Image;
@@ -65,7 +64,7 @@ public class SdlPushNotification {
     }
 
     /**
-     * Method to send the built {@link SdlPushNotification} to the module. If there is a {@link com.smartdevicelink.api.interaction.SdlAlertDialog.InteractionListener}
+     * Method to send the built {@link SdlPushNotification} to the module. If there is a {@link SdlAlertDialog.InteractionListener}
      * set to {@link SdlAlertDialog}, then the listener will be informed if the dialog fails, is cancelled or if
      * the interaction is able to be completed normally. Permissions must be granted to use
      * push notification while not in foreground. If you do not have these permissions, please use
