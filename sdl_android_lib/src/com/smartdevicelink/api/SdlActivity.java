@@ -219,6 +219,7 @@ public abstract class SdlActivity extends SdlContextAbsImpl {
     public SdlPermissionManager getSdlPermissionManager() {
         return getSdlApplicationContext().getSdlPermissionManager();
     }
+
     public final void registerMenuCallback(int id, SdlMenuItem.SelectListener listener) {
         getSdlApplicationContext().registerMenuCallback(id, listener);
     }
