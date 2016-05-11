@@ -5,7 +5,7 @@ import android.telephony.TelephonyManager;
 public class SdlProxyConfigurationResources {
 	private String _sdlConfigurationFilePath;
 	private TelephonyManager _telephonyManager;
-	
+	private Integer _mtuSize = null;	
 	public SdlProxyConfigurationResources() {
 		this(null, null);
 	}
@@ -30,5 +30,12 @@ public class SdlProxyConfigurationResources {
 	
 	public TelephonyManager getTelephonyManager() {
 		return _telephonyManager;
+	}
+	public void setMTUSize(Integer mtuSize) {
+		_mtuSize = mtuSize;
+	}
+
+	public Integer getMTUSize() {
+		return _mtuSize;
 	}
 }
