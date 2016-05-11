@@ -1,5 +1,6 @@
 package com.smartdevicelink.proxy;
 
+import java.util.List;
 import java.util.Vector;
 
 import com.smartdevicelink.exception.SdlException;
@@ -8,6 +9,7 @@ import com.smartdevicelink.proxy.rpc.SdlMsgVersion;
 import com.smartdevicelink.proxy.rpc.TTSChunk;
 import com.smartdevicelink.proxy.rpc.enums.AppHMIType;
 import com.smartdevicelink.proxy.rpc.enums.Language;
+import com.smartdevicelink.security.SdlSecurityBase;
 import com.smartdevicelink.transport.BTTransportConfig;
 import com.smartdevicelink.transport.BaseTransportConfig;
 import android.app.Service;
@@ -34,7 +36,8 @@ public class SdlProxyBuilder
 	private boolean preRegister;
 	private String sAppResumeHash;
 	private BaseTransportConfig mTransport;
-
+	private List<Class<? extends SdlSecurityBase>> sdlSecList;	
+	
 	public static class Builder
 	{
 		// Required parameters
@@ -58,13 +61,14 @@ public class SdlProxyBuilder
 	    private boolean preRegister = false;
 	    private String sAppResumeHash = null;
 	    private BaseTransportConfig mTransport = new BTTransportConfig();
+	    private List<Class<? extends SdlSecurityBase>> sdlSecList = null;
 
 	    public Builder(IProxyListenerALM listener, String appId, String appName, Boolean isMediaApp)
 	    {
 	    	this.listener 		= listener;
 	        this.appId    		= appId;
 	        this.appName		= appName;
-	        this.isMediaApp		= isMediaApp;
+	        this.isMediaApp		= isMediaApp;	        
 	    }
 
 	    public Builder setService(Service val)
@@ -95,11 +99,15 @@ public class SdlProxyBuilder
 	    	{ sAppResumeHash = val; return this; }
 	    public Builder setTransportType(BaseTransportConfig val)
 	    	{ mTransport = val; return this; }
+	    public Builder setSdlSecurity(List<Class<? extends SdlSecurityBase>> val)
+    		{ sdlSecList = val; return this; }
 	        
         public SdlProxyALM build() throws SdlException
         {
         	SdlProxyBuilder obj = new SdlProxyBuilder(this);
-        	return new SdlProxyALM(obj.service,obj.listener,obj.sdlProxyConfigurationResources,obj.appName,obj.ttsChunks,obj.sShortAppName,obj.vrSynonyms,obj.isMediaApp,obj.sdlMessageVersion,obj.lang,obj.hmiLang,obj.vrAppHMITypes,obj.appId,obj.autoActivateID,obj.callbackToUIThread,obj.preRegister,obj.sAppResumeHash,obj.mTransport);
+        	SdlProxyALM proxy = new SdlProxyALM(obj.service,obj.listener,obj.sdlProxyConfigurationResources,obj.appName,obj.ttsChunks,obj.sShortAppName,obj.vrSynonyms,obj.isMediaApp,obj.sdlMessageVersion,obj.lang,obj.hmiLang,obj.vrAppHMITypes,obj.appId,obj.autoActivateID,obj.callbackToUIThread,obj.preRegister,obj.sAppResumeHash,obj.mTransport);
+        	proxy.setSdlSecurityClassList(obj.sdlSecList);
+        	return proxy;
         }
 	}
 
@@ -124,6 +132,7 @@ public class SdlProxyBuilder
 		preRegister = builder.preRegister;
 		sAppResumeHash = builder.sAppResumeHash;
 		mTransport = builder.mTransport;
+		sdlSecList = builder.sdlSecList;
 	}
 }
 
