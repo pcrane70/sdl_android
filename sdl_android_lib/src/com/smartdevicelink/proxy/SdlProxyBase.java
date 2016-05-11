@@ -2,7 +2,10 @@ package com.smartdevicelink.proxy;
 
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
+import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -29,6 +32,7 @@ import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
 import android.telephony.TelephonyManager;
@@ -45,6 +49,7 @@ import com.smartdevicelink.exception.SdlException;
 import com.smartdevicelink.exception.SdlExceptionCause;
 import com.smartdevicelink.marshal.JsonRPCMarshaller;
 import com.smartdevicelink.protocol.ProtocolMessage;
+import com.smartdevicelink.protocol.WiProProtocol;
 import com.smartdevicelink.protocol.enums.FunctionID;
 import com.smartdevicelink.protocol.enums.MessageType;
 import com.smartdevicelink.protocol.enums.SessionType;
@@ -164,6 +169,8 @@ public abstract class SdlProxyBase<proxyListenerType extends IProxyListenerBase>
 	private Language _hmiDisplayLanguageDesired = null;
 	private Vector<AppHMIType> _appType = null;
 	private String _appID = null;
+	private Integer _sessionMTUSize = null;
+	private String _sessionUUID = null;
 	private String _autoActivateIdDesired = null;
 	private String _lastHashID = null;	
 	private SdlMsgVersion _sdlMsgVersionRequest = null;
@@ -215,6 +222,8 @@ public abstract class SdlProxyBase<proxyListenerType extends IProxyListenerBase>
 	protected String _proxyVersionInfo = null;
 	protected Boolean _bResumeSuccess = false;	
 	protected List<Class<? extends SdlSecurityBase>> _secList = null;
+
+	protected Boolean _bSavePolicyData = true;
 	
 	private CopyOnWriteArrayList<IPutFileResponseListener> _putFileListenerList = new CopyOnWriteArrayList<IPutFileResponseListener>();
 
@@ -543,6 +552,11 @@ public abstract class SdlProxyBase<proxyListenerType extends IProxyListenerBase>
 		// Get information from sdlProxyConfigurationResources
 		if (sdlProxyConfigurationResources != null) {
 			telephonyManager = sdlProxyConfigurationResources.getTelephonyManager();
+			setSessionMTUSize(sdlProxyConfigurationResources.getMTUSize());
+			_bSavePolicyData = sdlProxyConfigurationResources.getSavePolicyData();
+			if(sdlProxyConfigurationResources.getSessionUUID() != null) {
+			   setSessionUUID(sdlProxyConfigurationResources.getSessionUUID());
+			}
 		} 
 		
 		// Use the telephonyManager to get and log phone info
@@ -716,6 +730,7 @@ public abstract class SdlProxyBase<proxyListenerType extends IProxyListenerBase>
 		sendIntent.setAction("com.smartdevicelink.broadcast");
 		sendIntent.putExtra("APP_NAME", this._applicationName);
 		sendIntent.putExtra("APP_ID", this._appID);
+		sendIntent.putExtra("APP_SESSIONUUID", this._sessionUUID);
 		sendIntent.putExtra("RPC_NAME", "");
 		sendIntent.putExtra("TYPE", "");
 		sendIntent.putExtra("SUCCESS", true);
@@ -800,6 +815,47 @@ public abstract class SdlProxyBase<proxyListenerType extends IProxyListenerBase>
 			//If the service or context has become unavailable unexpectedly, catch the exception and move on -- no broadcast log will occur. 
 		}
 	}
+
+	private void writeToFile(Object writeME, String fileName) {
+		Intent sendIntent = createBroadcastIntent();
+		try {
+			updateBroadcastIntent(sendIntent,"FUNCTION_NAME", "writeToFile");
+			updateBroadcastIntent(sendIntent, "SHOW_ON_UI", false);
+
+			String sFileName = fileName + "_" + iFileCount + ".txt";
+			String outFile = Environment.getExternalStorageDirectory().getPath() + "/" + sFileName;	
+			File out = new File(outFile);
+			FileWriter writer = new FileWriter(out);
+			writer.flush();
+			writer.write(writeME.toString());
+			writer.close();
+			updateBroadcastIntent(sendIntent, "COMMENT1", outFile);
+		} catch (FileNotFoundException e) {
+			updateBroadcastIntent(sendIntent, "COMMENT2", "writeToFile FileNotFoundException " + e);
+			Log.i("sdlp", "FileNotFoundException: " + e);
+			e.printStackTrace();
+		} catch (IOException e) {
+			updateBroadcastIntent(sendIntent, "COMMENT2", "writeToFile IOException " + e);
+			Log.i("sdlp", "IOException: " + e);
+			e.printStackTrace();
+		}
+		finally
+		{
+			sendBroadcastIntent(sendIntent);
+		}
+	}
+
+	private void LogHeader(String sType, final String myObject, String sFuncName)
+	{
+		Intent sendIntent = createBroadcastIntent();
+
+		updateBroadcastIntent(sendIntent, "FUNCTION_NAME", sFuncName);
+		
+		updateBroadcastIntent(sendIntent, "COMMENT1", sType + "\r\n");
+		updateBroadcastIntent(sendIntent, "DATA", myObject);
+		sendBroadcastIntent(sendIntent);		
+	}
+
 	
 	private HttpURLConnection getURLConnection(Headers myHeader, String sURLString, int Timeout, int iContentLen)
 	{		
@@ -888,7 +944,8 @@ public abstract class SdlProxyBase<proxyListenerType extends IProxyListenerBase>
 		if (iTimeout == null)
 			iTimeout = 2000;
 		
-		Headers myHeader = msg.getHeader();			
+		Headers myHeader = msg.getHeader();
+		String sFunctionName = "SYSTEM_REQUEST";			
 		
 		updateBroadcastIntent(sendIntent, "FUNCTION_NAME", "sendOnSystemRequestToUrl");		
 		updateBroadcastIntent(sendIntent, "COMMENT5", "\r\nCloud URL: " + sURLString);	
@@ -918,6 +975,7 @@ public abstract class SdlProxyBase<proxyListenerType extends IProxyListenerBase>
 					jsonObjectToSendToServer = new JSONObject();
 					jsonObjectToSendToServer.put("data", jsonArrayOfSdlPPackets);
 					bLegacy = true;
+					sFunctionName = "SYSTEM_REQUEST_LEGACY";
 					updateBroadcastIntent(sendIntent, "COMMENT6", "\r\nLegacy SystemRequest: true");
 					valid_json = jsonObjectToSendToServer.toString().replace("\\", "");
 					length = valid_json.getBytes("UTF-8").length;
@@ -932,6 +990,12 @@ public abstract class SdlProxyBase<proxyListenerType extends IProxyListenerBase>
 				valid_json = sBodyString.replace("\\", "");
 				length = valid_json.getBytes("UTF-8").length;
  			}
+
+			if (_bSavePolicyData) {
+				writeToFile(valid_json, "requestToCloud" + "_" + this._applicationName + "_" + this._appID);
+			}
+
+			LogHeader("Cloud Request", valid_json, sFunctionName);
 			
 			urlConnection = getURLConnection(myHeader, sURLString, iTimeout, length);
 			
@@ -999,6 +1063,15 @@ public abstract class SdlProxyBase<proxyListenerType extends IProxyListenerBase>
 	    		updateBroadcastIntent(sendIntent2, "CORRID", putFile.getCorrelationID());
 		    	
 		    }else{
+
+			    Log.i(TAG, "response: " + response.toString());			    		    
+			    
+			    if (_bSavePolicyData) {
+			        writeToFile(response.toString(), "responseFromCloud" + "_" + this._applicationName + "_" + this._appID);
+			    }
+
+			    LogHeader("Cloud Response", response.toString(), sFunctionName);
+
 		    	Vector<String> cloudDataReceived = new Vector<String>();			
 		    	final String dataKey = "data";
 		    	// Convert the response to JSON
@@ -1169,7 +1242,7 @@ public abstract class SdlProxyBase<proxyListenerType extends IProxyListenerBase>
 				
 		// Setup SdlConnection
 		synchronized(CONNECTION_REFERENCE_LOCK) {
-			this.sdlSession = SdlSession.createSession(_wiproVersion,_interfaceBroker, _transportConfig);	
+			this.sdlSession = SdlSession.createSession(_wiproVersion,_interfaceBroker, _transportConfig, getSessionMTUSize());
 		}
 		
 		synchronized(CONNECTION_REFERENCE_LOCK) {
@@ -5436,10 +5509,33 @@ public abstract class SdlProxyBase<proxyListenerType extends IProxyListenerBase>
 	{
 		return _appID;
 	}
+	
+	public String getSessionUUID()
+	{
+		return _sessionUUID;
+	}
+
 	public DeviceInfo getDeviceInfo()
 	{
 		return deviceInfo;
 	}
+	public Integer getSessionMTUSize()
+	{
+		return _sessionMTUSize;
+	}
+	//for testing only
+	public byte getProtocolVersion() {
+		byte protocolVersion = 1;
+
+		if (sdlSession == null) return protocolVersion;
+		
+		SdlConnection sdlConn = sdlSession.getSdlConnection();
+		if((sdlConn != null) && (sdlConn.getWiProProtocol() != null)) {
+			protocolVersion = ((WiProProtocol)sdlConn.getWiProProtocol()).getVersion();
+		}
+		return protocolVersion;
+	}
+	
 	public long getInstanceDT()
 	{
 		return instanceDateTime;
@@ -5457,6 +5553,17 @@ public abstract class SdlProxyBase<proxyListenerType extends IProxyListenerBase>
 	{
 		sPoliciesURL = sText;
 	}
+	//for testing only
+	public void setSessionMTUSize(Integer mtuSize)
+	{
+		_sessionMTUSize = mtuSize;
+	}
+	//for testing only
+	public void setSessionUUID(String sText)
+	{
+		_sessionUUID = sText;
+	}
+
 	//for testing only
 	public String getPoliciesURL()
 	{
