@@ -167,6 +167,7 @@ public abstract class SdlProxyBase<proxyListenerType extends IProxyListenerBase>
 	private Vector<AppHMIType> _appType = null;
 	private String _appID = null;
 	private Integer _sessionMTUSize = null;
+	private String _sessionUUID = null;
 	private String _autoActivateIdDesired = null;
 	private String _lastHashID = null;	
 	private SdlMsgVersion _sdlMsgVersionRequest = null;
@@ -546,6 +547,9 @@ public abstract class SdlProxyBase<proxyListenerType extends IProxyListenerBase>
 			telephonyManager = sdlProxyConfigurationResources.getTelephonyManager();
 			setSessionMTUSize(sdlProxyConfigurationResources.getMTUSize());
 			_bSavePolicyData = sdlProxyConfigurationResources.getSavePolicyData();
+			if(sdlProxyConfigurationResources.getSessionUUID() != null) {
+			   setSessionUUID(sdlProxyConfigurationResources.getSessionUUID());
+			}
 		} 
 		
 		// Use the telephonyManager to get and log phone info
@@ -719,6 +723,7 @@ public abstract class SdlProxyBase<proxyListenerType extends IProxyListenerBase>
 		sendIntent.setAction("com.smartdevicelink.broadcast");
 		sendIntent.putExtra("APP_NAME", this._applicationName);
 		sendIntent.putExtra("APP_ID", this._appID);
+		sendIntent.putExtra("APP_SESSIONUUID", this._sessionUUID);
 		sendIntent.putExtra("RPC_NAME", "");
 		sendIntent.putExtra("TYPE", "");
 		sendIntent.putExtra("SUCCESS", true);
@@ -5419,6 +5424,12 @@ public abstract class SdlProxyBase<proxyListenerType extends IProxyListenerBase>
 	{
 		return _appID;
 	}
+	
+	public String getSessionUUID()
+	{
+		return _sessionUUID;
+	}
+
 	public DeviceInfo getDeviceInfo()
 	{
 		return deviceInfo;
@@ -5458,11 +5469,17 @@ public abstract class SdlProxyBase<proxyListenerType extends IProxyListenerBase>
 		sPoliciesURL = sText;
 	}
 	//for testing only
-	//for testing only
 	public void setSessionMTUSize(Integer mtuSize)
 	{
 		_sessionMTUSize = mtuSize;
 	}
+	//for testing only
+	public void setSessionUUID(String sText)
+	{
+		_sessionUUID = sText;
+	}
+
+	//for testing only
 	public String getPoliciesURL()
 	{
 		return sPoliciesURL;
