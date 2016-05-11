@@ -13,6 +13,8 @@
 .Trashes
 ehthumbs.db
 Thumbs.db
+*~
+*.swp
 
 ##############################
 # built application files
@@ -33,8 +35,8 @@ Thumbs.db
 ##############################
 # Generated files
 ##############################
-bin/
-gen/
+bin
+gen
 
 ##############################
 # Local configuration file
@@ -46,11 +48,12 @@ local.properties
 ##############################
 .classpath
 .project
+.metadata
 
 ##############################
 # Proguard folder (Eclipse)
 ##############################
-proguard/
+proguard
 
 ##############################
 # Intellij project files
@@ -58,4 +61,54 @@ proguard/
 *.iml
 *.ipr
 *.iws
-.idea/
+.idea
+.gradle
+build
+captures
+
+##############################
+# NDK
+##############################
+obj
+myanalyisis.db
+
+##############################
+# Xcode
+##############################
+
+DerivedData
+*.pbxuser
+!default.pbxuser
+*.mode1v3
+!default.mode1v3
+*.mode2v3
+!default.mode2v3
+*.perspectivev3
+!default.perspectivev3
+xcuserdata
+*.moved-aside
+*.xcuserstate
+*.hmap
+*.ipa
+*.dSYM.zip
+*.dSYM
+
+##############################
+# CocoaPods
+##############################
+
+#Pods
+
+##############################
+# Carthage
+##############################
+
+Carthage/Build
+
+##############################
+# Fastlane
+##############################
+
+fastlane/report.xml
+fastlane/screenshots
+
