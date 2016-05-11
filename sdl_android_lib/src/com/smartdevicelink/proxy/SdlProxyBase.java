@@ -303,7 +303,7 @@ public abstract class SdlProxyBase<proxyListenerType extends IProxyListenerBase>
 
 		@Override
 		public void onProtocolSessionStarted(SessionType sessionType,
-				byte sessionID, byte version, String correlationID, boolean isEncrypted) {
+				byte sessionID, byte version, String correlationID, boolean isEncrypted, int hashID) {
 			
 			Intent sendIntent = createBroadcastIntent();
 			updateBroadcastIntent(sendIntent, "FUNCTION_NAME", "onProtocolSessionStarted");

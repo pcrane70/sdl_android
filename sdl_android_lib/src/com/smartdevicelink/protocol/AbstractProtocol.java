@@ -47,7 +47,8 @@ public abstract class AbstractProtocol {
 	// This method ends a protocol session.  A corresponding call to the protocol
 	// listener onProtocolSessionEnded() method will be made when the protocol
 	// session has ended.
-	public abstract void EndProtocolSession(SessionType sessionType, byte sessionID);
+	public abstract void EndProtocolSession(SessionType sessionType, byte sessionID, int hashID);
+	
     // TODO REMOVE
     // This method sets the interval at which heartbeat protocol messages will be
     // sent to SDL.
@@ -125,8 +126,8 @@ public abstract class AbstractProtocol {
 	// This method handles the startup of a protocol session. A callback is sent
 	// to the protocol listener.
 	protected void handleProtocolSessionStarted(SessionType sessionType,
-			byte sessionID, byte version, String correlationID, boolean isEncrypted) {
-		_protocolListener.onProtocolSessionStarted(sessionType, sessionID, version, correlationID, isEncrypted);
+			byte sessionID, byte version, String correlationID, boolean isEncrypted, int hashID) {
+		_protocolListener.onProtocolSessionStarted(sessionType, sessionID, version, correlationID, isEncrypted, hashID);
 	}
 
 	protected void handleProtocolSessionNACKed(SessionType sessionType,

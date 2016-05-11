@@ -76,12 +76,12 @@ public class SdlConnection implements IProtocolListener, ITransportListener {
 
 	
 	
-	private void closeConnection(boolean willRecycle, byte rpcSessionID) {
+	private void closeConnection(boolean willRecycle, byte rpcSessionID, int sessionHashId) {
 		synchronized(PROTOCOL_REFERENCE_LOCK) {
 			if (_protocol != null) {
 				// If transport is still connected, sent EndProtocolSessionMessage
 				if (_transport != null && _transport.getIsConnected()) {
-					_protocol.EndProtocolSession(SessionType.RPC, rpcSessionID);
+					_protocol.EndProtocolSession(SessionType.RPC, rpcSessionID, sessionHashId);
 				}
 				if (willRecycle) {
 				_protocol = null;
@@ -190,8 +190,8 @@ public class SdlConnection implements IProtocolListener, ITransportListener {
 
 	@Override
 	public void onProtocolSessionStarted(SessionType sessionType,
-			byte sessionID, byte version, String correlationID, boolean isEncrypted) {
-		_connectionListener.onProtocolSessionStarted(sessionType, sessionID, version, correlationID, isEncrypted);
+			byte sessionID, byte version, String correlationID, boolean isEncrypted, int hashID) {
+		_connectionListener.onProtocolSessionStarted(sessionType, sessionID, version, correlationID, isEncrypted, hashID);
 	}
 
 	@Override
@@ -233,7 +233,7 @@ public class SdlConnection implements IProtocolListener, ITransportListener {
 	public void endService (SessionType sessionType, byte sessionID) {
 		synchronized(PROTOCOL_REFERENCE_LOCK){
 			if(_protocol != null){
-				_protocol.EndProtocolSession(sessionType, sessionID);
+				_protocol.EndProtocolService(sessionType, sessionID);
 			}
 		}
 	}
@@ -254,7 +254,7 @@ public class SdlConnection implements IProtocolListener, ITransportListener {
 	
 	public void unregisterSession(SdlSession registerListener) {
 		listenerList.remove(registerListener);			
-		closeConnection(listenerList.size() == 0, registerListener.getSessionId());
+		closeConnection(listenerList.size() == 0, registerListener.getSessionId(), registerListener.getSessionHashId());
 	}
 
 	
@@ -293,10 +293,10 @@ public class SdlConnection implements IProtocolListener, ITransportListener {
 
 		@Override
 		public void onProtocolSessionStarted(SessionType sessionType,
-				byte sessionID, byte version, String correlationID, boolean isEncrypted) {
+				byte sessionID, byte version, String correlationID, boolean isEncrypted, int hashID) {
 			for (SdlSession session : listenerList) {
 				if (session.getSessionId() == 0) {
-					session.onProtocolSessionStarted(sessionType, sessionID, version, correlationID, isEncrypted);
+					session.onProtocolSessionStarted(sessionType, sessionID, version, correlationID, isEncrypted, hashID);
 					break;
 				}
 			}
@@ -304,7 +304,7 @@ public class SdlConnection implements IProtocolListener, ITransportListener {
 			if (sessionType.equals(SessionType.NAV) || sessionType.equals(SessionType.PCM) || isEncrypted){
 				SdlSession session = findSessionById(sessionID);
 				if (session != null) {
-					session.onProtocolSessionStarted(sessionType, sessionID, version, correlationID, isEncrypted);
+					session.onProtocolSessionStarted(sessionType, sessionID, version, correlationID, isEncrypted, hashID);
 				}
 			}
 		}
