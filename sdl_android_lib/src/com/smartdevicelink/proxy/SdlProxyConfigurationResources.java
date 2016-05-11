@@ -6,6 +6,8 @@ public class SdlProxyConfigurationResources {
 	private String _sdlConfigurationFilePath;
 	private TelephonyManager _telephonyManager;
 	private Integer _mtuSize = null;	
+	private boolean _savePolicyData = true;
+	
 	public SdlProxyConfigurationResources() {
 		this(null, null);
 	}
@@ -31,11 +33,19 @@ public class SdlProxyConfigurationResources {
 	public TelephonyManager getTelephonyManager() {
 		return _telephonyManager;
 	}
+
 	public void setMTUSize(Integer mtuSize) {
 		_mtuSize = mtuSize;
 	}
 
 	public Integer getMTUSize() {
 		return _mtuSize;
+	}
+	public void setSavePolicyData(boolean savePolicyData) {
+		_savePolicyData = savePolicyData;
+	}
+	
+	public boolean getSavePolicyData() {
+		return _savePolicyData;
 	}
 }
