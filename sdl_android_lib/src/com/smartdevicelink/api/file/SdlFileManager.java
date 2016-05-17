@@ -8,6 +8,7 @@ import android.util.Log;
 
 import com.smartdevicelink.api.SdlApplication;
 import com.smartdevicelink.api.SdlApplicationConfig;
+import com.smartdevicelink.api.interfaces.SdlContext;
 import com.smartdevicelink.proxy.RPCResponse;
 import com.smartdevicelink.proxy.rpc.ListFiles;
 import com.smartdevicelink.proxy.rpc.ListFilesResponse;
@@ -26,12 +27,12 @@ public class SdlFileManager implements SdlApplication.LifecycleListener{
 
     private final HashSet<String> mFileSet;
 
-    private final SdlApplication mSdlApplication;
-    private final SdlApplicationConfig mSdlApplicationConfig;
+    private final SdlContext mSdlContext;
+    private final SdlImage mAppIcon;
 
-    public SdlFileManager(SdlApplication sdlApplication, SdlApplicationConfig config){
-        mSdlApplication = sdlApplication;
-        mSdlApplicationConfig = config;
+    public SdlFileManager(SdlContext sdlContext, SdlApplicationConfig config){
+        mSdlContext = sdlContext;
+        mAppIcon = config.getAppIcon();
         mFileSet = new HashSet<>();
     }
 
@@ -45,7 +46,7 @@ public class SdlFileManager implements SdlApplication.LifecycleListener{
             file.setFileType(FileType.GRAPHIC_PNG);
             file.setSdlFileName(sdlImage.getSdlName());
             file.setPersistentFile(sdlImage.isPersistent());
-            Bitmap image = BitmapFactory.decodeResource(mSdlApplication.getAndroidApplicationContext().getResources(), sdlImage.getResId());
+            Bitmap image = BitmapFactory.decodeResource(mSdlContext.getAndroidApplicationContext().getResources(), sdlImage.getResId());
             ByteArrayOutputStream bas = new ByteArrayOutputStream();
             image.compress(Bitmap.CompressFormat.PNG, 100, bas);
             byte[] data = bas.toByteArray();
@@ -65,7 +66,7 @@ public class SdlFileManager implements SdlApplication.LifecycleListener{
                 });
             }
 
-            mSdlApplication.sendRpc(file);
+            mSdlContext.sendRpc(file);
         }
         return false;
     }
@@ -77,7 +78,7 @@ public class SdlFileManager implements SdlApplication.LifecycleListener{
     @Override
     public void onSdlConnect() {
         Log.d(TAG, "onSdlConnect");
-        if(mSdlApplicationConfig.getAppIcon() != null){
+        if(mAppIcon != null){
             sendListFiles();
         }
     }
@@ -103,7 +104,7 @@ public class SdlFileManager implements SdlApplication.LifecycleListener{
     }
 
     private void uploadAppIcon(){
-        uploadSdlImage(mSdlApplicationConfig.getAppIcon(), new FileReadyListener() {
+        uploadSdlImage(mAppIcon, new FileReadyListener() {
             @Override
             public void onFileReady(SdlFile sdlFile) {
                 setAppIcon();
@@ -118,14 +119,14 @@ public class SdlFileManager implements SdlApplication.LifecycleListener{
 
     private void setAppIcon() {
         SetAppIcon sai = new SetAppIcon();
-        sai.setSdlFileName(mSdlApplicationConfig.getAppIcon().getSdlName());
-        mSdlApplication.sendRpc(sai);
+        sai.setSdlFileName(mAppIcon.getSdlName());
+        mSdlContext.sendRpc(sai);
     }
 
     private void sendListFiles(){
         ListFiles listFiles = new ListFiles();
         listFiles.setOnRPCResponseListener(mListFileResponseListener);
-        mSdlApplication.sendRpc(listFiles);
+        mSdlContext.sendRpc(listFiles);
     }
 
     private OnRPCResponseListener mListFileResponseListener = new OnRPCResponseListener() {
@@ -140,8 +141,8 @@ public class SdlFileManager implements SdlApplication.LifecycleListener{
                 }
             }
 
-            if(mSdlApplicationConfig.getAppIcon().isForceReplace() ||
-                    !mFileSet.contains(mSdlApplicationConfig.getAppIcon().getSdlName())){
+            if(mAppIcon.isForceReplace() ||
+                    !mFileSet.contains(mAppIcon.getSdlName())){
                 uploadAppIcon();
             } else {
                 setAppIcon();
