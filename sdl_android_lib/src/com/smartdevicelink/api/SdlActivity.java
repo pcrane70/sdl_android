@@ -220,6 +220,11 @@ public abstract class SdlActivity extends SdlContextAbsImpl {
         return getSdlApplicationContext().getSdlPermissionManager();
     }
 
+    @Override
+    public boolean isDriverDistraction() {
+        return getSdlApplicationContext().isDriverDistraction();
+    }
+
     public final void registerMenuCallback(int id, SdlMenuItem.SelectListener listener) {
         getSdlApplicationContext().registerMenuCallback(id, listener);
     }

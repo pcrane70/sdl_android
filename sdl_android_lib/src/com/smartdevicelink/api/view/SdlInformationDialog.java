@@ -46,6 +46,12 @@ public class SdlInformationDialog extends SdlCommonInteraction {
         };
     }
 
+    //TODO: provide a way to do driver distraction
+    @Override
+    protected boolean verifyRPCCanbeSent(SdlContext context) {
+        return super.verifyRPCCanbeSent(context) && !context.isDriverDistraction();
+    }
+
     public static class Builder extends SdlCommonInteraction.Builder<Builder>{
 
         @Override

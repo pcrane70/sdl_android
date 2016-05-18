@@ -34,4 +34,6 @@ public interface SdlContext {
 
     SdlMenu getTopMenu();
 
+    boolean isDriverDistraction();
+
 }

@@ -73,6 +73,7 @@ import com.smartdevicelink.proxy.rpc.SystemRequestResponse;
 import com.smartdevicelink.proxy.rpc.UnsubscribeButtonResponse;
 import com.smartdevicelink.proxy.rpc.UnsubscribeVehicleDataResponse;
 import com.smartdevicelink.proxy.rpc.UpdateTurnListResponse;
+import com.smartdevicelink.proxy.rpc.enums.DriverDistractionState;
 import com.smartdevicelink.proxy.rpc.enums.HMILevel;
 import com.smartdevicelink.proxy.rpc.enums.Result;
 import com.smartdevicelink.proxy.rpc.enums.SdlDisconnectedReason;
@@ -118,6 +119,8 @@ public class SdlApplication extends SdlContextAbsImpl implements IProxyListenerA
     private boolean isFirstHmiNotNoneReceived = false;
     private SparseArray<SdlButton.OnPressListener> mButtonListenerRegistry = new SparseArray<>();
     private SparseArray<SdlMenuItem.SelectListener> mMenuListenerRegistry = new SparseArray<>();
+
+    private boolean isDriverDistraction = false;
     
     SdlApplication(SdlConnectionService service, SdlApplicationConfig config, ConnectionStatusListener listener){
         initialize(service.getApplicationContext());
@@ -284,6 +287,11 @@ public class SdlApplication extends SdlContextAbsImpl implements IProxyListenerA
 
     public SdlMenu getTopMenu() {
         return mTopMenu;
+    }
+
+    @Override
+    public boolean isDriverDistraction() {
+        return isDriverDistraction;
     }
 
     /***********************************
@@ -580,7 +588,7 @@ public class SdlApplication extends SdlContextAbsImpl implements IProxyListenerA
 
     @Override
     public final void onOnDriverDistraction(OnDriverDistraction notification) {
-
+        isDriverDistraction= notification.getState()== DriverDistractionState.DD_ON;
     }
 
     @Override
