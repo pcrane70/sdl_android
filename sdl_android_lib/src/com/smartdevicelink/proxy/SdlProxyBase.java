@@ -28,6 +28,8 @@ import org.json.JSONObject;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager.NameNotFoundException;
 import android.graphics.Bitmap;
 import android.os.Handler;
 import android.os.Looper;
@@ -169,6 +171,7 @@ public abstract class SdlProxyBase<proxyListenerType extends IProxyListenerBase>
 	private OnSystemRequest lockScreenIconRequest = null;
 	private TelephonyManager telephonyManager = null;
 	private DeviceInfo deviceInfo = null;
+	private AppInfo _appInfo = null;
 	
 	/**
 	 * Contains current configuration for the transport that was selected during 
@@ -768,7 +771,7 @@ public abstract class SdlProxyBase<proxyListenerType extends IProxyListenerBase>
 			//If the service or context has become unavailable unexpectedly, catch the exception and move on -- no broadcast log will occur. 
 		}
 	}
-	
+
 	private HttpURLConnection getURLConnection(Headers myHeader, String sURLString, int Timeout, int iContentLen)
 	{		
 		String sContentType = "application/json";
@@ -4411,14 +4414,65 @@ public abstract class SdlProxyBase<proxyListenerType extends IProxyListenerBase>
 			Language languageDesired, Language hmiDisplayLanguageDesired, Vector<AppHMIType> appType,
 			String appID, String autoActivateID, Integer correlationID) 
 			throws SdlException {
+
 		String carrierName = null;
+		Service mService = null;
+
 		if(telephonyManager != null){
 			carrierName = telephonyManager.getNetworkOperatorName();
 		}
 		deviceInfo = RPCRequestFactory.BuildDeviceInfo(carrierName);
+
+		if (_proxyListener != null && _proxyListener instanceof Service)
+		{
+			mService = (Service) _proxyListener;				
+		}
+		else if (_appService != null)
+		{
+			mService = _appService;
+		}
+
+		if(mService != null) {
+			Context mContext = null;
+			PackageInfo pckgInfo = null;
+			String appVerNumber = null;
+			String appDisplayName = null;
+			String appBundleId = null;
+
+			try
+			{
+				mContext = mService.getApplicationContext();
+			}
+			catch(Exception ex)
+			{
+				ex.printStackTrace();
+			}
+
+			if(mContext != null) {
+				try {
+
+					pckgInfo = mContext.getPackageManager().getPackageInfo(mContext.getPackageName(), 0);
+
+					Integer verNum = pckgInfo.versionCode;
+					if(verNum != null) {
+						appVerNumber = verNum.toString();				
+					}
+
+					appDisplayName = (String) (pckgInfo.applicationInfo != null ? mContext.getPackageManager().getApplicationLabel(pckgInfo.applicationInfo) : null);
+
+					appBundleId = pckgInfo.packageName;
+
+				} catch (NameNotFoundException e) {
+					e.printStackTrace();
+				}
+			}
+
+			_appInfo = RPCRequestFactory.BuildAppInfo(appVerNumber, appDisplayName, appBundleId);
+		}
+
 		RegisterAppInterface msg = RPCRequestFactory.buildRegisterAppInterface(
 				sdlMsgVersion, appName, ttsName, ngnMediaScreenAppName, vrSynonyms, isMediaApp, 
-				languageDesired, hmiDisplayLanguageDesired, appType, appID, correlationID, deviceInfo);
+				languageDesired, hmiDisplayLanguageDesired, appType, appID, correlationID, deviceInfo, _appInfo);
 		
 		if (_bAppResumeEnabled)
 		{
@@ -5332,7 +5386,11 @@ public abstract class SdlProxyBase<proxyListenerType extends IProxyListenerBase>
 			
 		return sdlSession.getCurrentTransportType();
 	}
-	
+
+	public AppInfo getAppInfo() {
+		return _appInfo;
+	}
+
 	public IProxyListenerBase getProxyListener()
 	{
 		return _proxyListener;

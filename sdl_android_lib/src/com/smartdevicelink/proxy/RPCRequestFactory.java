@@ -7,6 +7,7 @@ import android.os.Build;
 import com.smartdevicelink.proxy.rpc.AddCommand;
 import com.smartdevicelink.proxy.rpc.AddSubMenu;
 import com.smartdevicelink.proxy.rpc.Alert;
+import com.smartdevicelink.proxy.rpc.AppInfo;
 import com.smartdevicelink.proxy.rpc.ChangeRegistration;
 import com.smartdevicelink.proxy.rpc.Choice;
 import com.smartdevicelink.proxy.rpc.CreateInteractionChoiceSet;
@@ -587,14 +588,14 @@ public class RPCRequestFactory {
 			String appName, Boolean isMediaApp, String appID) {
 		
 		return buildRegisterAppInterface(null, appName, null, null, null, isMediaApp, 
-				null, null, null, appID, null, null);
+				null, null, null, appID, null, null, null);
 	}	
 		
 	public static RegisterAppInterface buildRegisterAppInterface(
 			SdlMsgVersion sdlMsgVersion, String appName, Vector<TTSChunk> ttsName, 
 			String ngnMediaScreenAppName, Vector<String> vrSynonyms, Boolean isMediaApp, 
 			Language languageDesired, Language hmiDisplayLanguageDesired, Vector<AppHMIType> appType,
-			String appID, Integer correlationID, DeviceInfo deviceInfo) {
+			String appID, Integer correlationID, DeviceInfo deviceInfo, AppInfo appInfo) {
 		RegisterAppInterface msg = new RegisterAppInterface();
 		
 		if (correlationID == null) {
@@ -609,6 +610,7 @@ public class RPCRequestFactory {
 		} 
 		msg.setSdlMsgVersion(sdlMsgVersion);
 		msg.setDeviceInfo(deviceInfo);
+		msg.setAppInfo(appInfo);
 		msg.setAppName(appName);
 		
 		msg.setTtsName(ttsName);
@@ -996,6 +998,15 @@ public class RPCRequestFactory {
 		msg.setOs(DeviceInfo.DEVICE_OS);
 		msg.setOsVersion(Build.VERSION.RELEASE);
 		msg.setCarrier(carrierName);
+		return msg;
+	}
+
+	public static AppInfo BuildAppInfo(String appVerNumber, String appDisplayName, String appBundleId)
+	{
+		AppInfo msg = new AppInfo();
+		msg.setAppDisplayName(appDisplayName);
+		msg.setAppBundleId(appBundleId);			
+		msg.setAppVersion(appVerNumber);
 		return msg;
 	}
 }

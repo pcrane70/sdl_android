@@ -86,6 +86,7 @@ public class RegisterAppInterface extends RPCRequest {
 	public static final String KEY_APP_ID = "appID";
 	public static final String KEY_LANGUAGE_DESIRED = "languageDesired";
 	public static final String KEY_DEVICE_INFO = "deviceInfo";
+	public static final String KEY_APP_INFO = "appInfo";
 	public static final String KEY_APP_NAME = "appName";
 	public static final String KEY_NGN_MEDIA_SCREEN_APP_NAME = "ngnMediaScreenAppName";
 	public static final String KEY_IS_MEDIA_APPLICATION = "isMediaApplication";
@@ -162,14 +163,34 @@ public class RegisterAppInterface extends RPCRequest {
         }
         return null;
     }    
-    
+
     public void setDeviceInfo(DeviceInfo deviceInfo) {
         if (deviceInfo != null) {
             parameters.put(KEY_DEVICE_INFO, deviceInfo);
         } else {
         	parameters.remove(KEY_DEVICE_INFO);
         }
-    }    
+    }
+
+    @SuppressWarnings("unchecked")
+    public AppInfo getAppInfo() {
+    	Object obj = parameters.get(KEY_APP_INFO);
+    	if (obj instanceof AppInfo) {
+    		return (AppInfo) obj;
+    	} else if (obj instanceof Hashtable) {
+    		return new AppInfo((Hashtable<String, Object>) obj);
+    	}
+    	return null;
+    }
+
+    public void setAppInfo(AppInfo appInfo) {
+    	if (appInfo != null) {
+    		parameters.put(KEY_APP_INFO, appInfo);
+    	} else {
+    		parameters.remove(KEY_APP_INFO);
+    	}
+    }
+
 	/**
 	 * Gets Mobile Application's Name
 	 * 
