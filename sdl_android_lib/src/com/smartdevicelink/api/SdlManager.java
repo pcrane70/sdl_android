@@ -1,12 +1,18 @@
 package com.smartdevicelink.api;
 
+import android.app.Application;
 import android.app.Notification;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.IBinder;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.util.Log;
+
+import com.smartdevicelink.api.lockscreen.LockScreenActivityManager;
+import com.smartdevicelink.api.lockscreen.LockScreenConfig;
 
 import java.util.HashMap;
 
@@ -47,26 +53,13 @@ public class SdlManager {
         }
     }
 
-    public boolean unregisterSdlApplication(String appId){
-        synchronized (SYNC_LOCK) {
-            SdlApplicationConfig config = mApplicationConfigRegistry.remove(appId);
-            return config == null;
-        }
-    }
-
-    public void prepare(Context context, Notification persistentNotification){
+    public void prepare(@NonNull Application application, @NonNull LockScreenConfig lockScreenConfig,
+                        @Nullable Notification persistentNotification){
         synchronized (SYNC_LOCK) {
             if (!isPrepared) {
                 mPersistentNotification = persistentNotification;
-            }
-            prepare(context);
-        }
-    }
-
-    public void prepare(Context context){
-        synchronized (SYNC_LOCK) {
-            if (!isPrepared) {
-                mAndroidContext = context;
+                LockScreenActivityManager.initialize(application, lockScreenConfig);
+                mAndroidContext = application;
                 bindConnectionService();
                 isPrepared = true;
             } else {

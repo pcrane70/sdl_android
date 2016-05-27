@@ -9,6 +9,7 @@ import com.smartdevicelink.api.file.SdlFileManager;
 import com.smartdevicelink.api.view.SdlButton;
 import com.smartdevicelink.api.menu.SdlMenu;
 import com.smartdevicelink.api.menu.SdlMenuItem;
+import com.smartdevicelink.api.lockscreen.LockScreenStatusListener;
 import com.smartdevicelink.exception.SdlException;
 import com.smartdevicelink.protocol.enums.FunctionID;
 import com.smartdevicelink.proxy.RPCRequest;
@@ -75,6 +76,7 @@ import com.smartdevicelink.proxy.rpc.UnsubscribeVehicleDataResponse;
 import com.smartdevicelink.proxy.rpc.UpdateTurnListResponse;
 import com.smartdevicelink.proxy.rpc.enums.HMILevel;
 import com.smartdevicelink.proxy.rpc.enums.Result;
+import com.smartdevicelink.proxy.rpc.enums.LockScreenStatus;
 import com.smartdevicelink.proxy.rpc.enums.SdlDisconnectedReason;
 import com.smartdevicelink.proxy.rpc.enums.TriggerSource;
 import com.smartdevicelink.proxy.rpc.listeners.OnRPCNotificationListener;
@@ -107,6 +109,7 @@ public class SdlApplication extends SdlContextAbsImpl implements IProxyListenerA
     private SdlPermissionManager mSdlPermissionManager;
     private SdlFileManager mSdlFileManager;
     private SdlMenu mTopMenu;
+    private LockScreenStatusListener mLockScreenStatusListener;
     private SdlProxyALM mSdlProxyALM;
 
     private final ArrayList<LifecycleListener> mLifecycleListeners = new ArrayList<>();
@@ -119,7 +122,8 @@ public class SdlApplication extends SdlContextAbsImpl implements IProxyListenerA
     private SparseArray<SdlButton.OnPressListener> mButtonListenerRegistry = new SparseArray<>();
     private SparseArray<SdlMenuItem.SelectListener> mMenuListenerRegistry = new SparseArray<>();
     
-    SdlApplication(SdlConnectionService service, SdlApplicationConfig config, ConnectionStatusListener listener){
+    SdlApplication(SdlConnectionService service, SdlApplicationConfig config,
+                   ConnectionStatusListener listener, LockScreenStatusListener lockScreenActivityManager){
         initialize(service.getApplicationContext());
         mApplicationConfig = config;
         mSdlProxyALM = mApplicationConfig.buildProxy(service, null, this);
@@ -130,6 +134,7 @@ public class SdlApplication extends SdlContextAbsImpl implements IProxyListenerA
         mApplicationStatusListener = listener;
         mSdlActivityManager = new SdlActivityManager();
         mSdlPermissionManager = new SdlPermissionManager(mSdlProxyALM);
+        mLockScreenStatusListener = lockScreenActivityManager;
         mLifecycleListeners.add(mSdlActivityManager);
         mSdlFileManager = new SdlFileManager(this, mApplicationConfig);
         mLifecycleListeners.add(mSdlFileManager);
@@ -140,7 +145,7 @@ public class SdlApplication extends SdlContextAbsImpl implements IProxyListenerA
         mTopMenu = new SdlMenu(TOP_MENU_NAME);
     }
 
-    void initialize(Context androidContext){
+    void initialize(Context androidContext) {
         if(!isInitialized()) {
             setAndroidContext(androidContext);
             setSdlApplicationContext(this);
@@ -163,6 +168,10 @@ public class SdlApplication extends SdlContextAbsImpl implements IProxyListenerA
         return mApplicationConfig.getAppName();
     }
 
+    final public String getId(){
+        return mApplicationConfig.getAppId();
+    }
+
     SdlActivityManager getSdlActivityManager() {
         return mSdlActivityManager;
     }
@@ -174,6 +183,7 @@ public class SdlApplication extends SdlContextAbsImpl implements IProxyListenerA
             }
             mConnectionStatus = Status.DISCONNECTED;
             if(notifyStatusListener)
+                mLockScreenStatusListener.onLockScreenStatus(getId(), LockScreenStatus.OFF);
                 mApplicationStatusListener.onStatusChange(mApplicationConfig.getAppId(), Status.DISCONNECTED);
             try {
                 mSdlProxyALM.dispose();
@@ -625,7 +635,11 @@ public class SdlApplication extends SdlContextAbsImpl implements IProxyListenerA
 
     @Override
     public final void onOnLockScreenNotification(OnLockScreenStatus notification) {
-
+        Log.i(TAG, "OnLockScreenStatus received.");
+        if(notification != null && notification.getShowLockScreen() != null) {
+            Log.i(TAG, "LockScreenStatus: " + notification.getShowLockScreen().name());
+            mLockScreenStatusListener.onLockScreenStatus(getId(), notification.getShowLockScreen());
+        }
     }
 
     @Override
