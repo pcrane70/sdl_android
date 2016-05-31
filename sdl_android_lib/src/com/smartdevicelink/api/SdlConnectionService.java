@@ -103,7 +103,9 @@ public class SdlConnectionService extends Service {
                     case CONNECTED:
                         if(mConnectedApplications.size() == 0) {
                             cancelTimer();
-                            startForeground(SERVICE_ID, mPersistentNotification);
+                            if(mPersistentNotification != null) {
+                                startForeground(SERVICE_ID, mPersistentNotification);
+                            }
                         }
                         SdlApplication connectedApp = mRunningApplications.get(appId);
                         if(connectedApp != null) {

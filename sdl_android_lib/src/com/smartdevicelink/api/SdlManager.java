@@ -13,6 +13,7 @@ import android.util.Log;
 
 import com.smartdevicelink.api.lockscreen.LockScreenActivityManager;
 import com.smartdevicelink.api.lockscreen.LockScreenConfig;
+import com.smartdevicelink.transport.SdlRouterService;
 
 import java.util.HashMap;
 
@@ -24,6 +25,7 @@ public class SdlManager {
 
     private static SdlManager mInstance;
     private SdlConnectionService mSdlService;
+    private Class<? extends SdlRouterService> mRouterServiceClass;
     private Context mAndroidContext;
     private Notification mPersistentNotification;
     private boolean isBound = false;
@@ -69,6 +71,23 @@ public class SdlManager {
         }
     }
 
+    public void prepare(@NonNull Application application, @NonNull LockScreenConfig lockScreenConfig,
+                        @Nullable Notification persistentNotification, @NonNull Class<? extends SdlRouterService>  routerService){
+        synchronized (SYNC_LOCK) {
+            if (!isPrepared) {
+                mRouterServiceClass = routerService;
+                mPersistentNotification = persistentNotification;
+                LockScreenActivityManager.initialize(application, lockScreenConfig);
+                mAndroidContext = application;
+                bindConnectionService();
+                isPrepared = true;
+            } else {
+                Log.w(TAG, "SdlManager.prepare(Context context) called when SdlManager is already prepared.\n" +
+                        "No action taken.");
+            }
+        }
+    }
+
     void sdlDisconnected(){
         Log.i(TAG, "SDL disconnected.");
         synchronized (SYNC_LOCK){
@@ -90,6 +109,10 @@ public class SdlManager {
                 }
             }
         }
+    }
+
+    Class<? extends SdlRouterService> getRouterServiceClass(){
+        return mRouterServiceClass;
     }
 
     private void bindConnectionService(){

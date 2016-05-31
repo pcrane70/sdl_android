@@ -126,7 +126,10 @@ public class SdlApplication extends SdlContextAbsImpl implements IProxyListenerA
                    ConnectionStatusListener listener, LockScreenStatusListener lockScreenActivityManager){
         initialize(service.getApplicationContext());
         mApplicationConfig = config;
-        mSdlProxyALM = mApplicationConfig.buildProxy(service, null, this);
+        if(mSdlProxyALM == null) {
+            Log.i(TAG, mApplicationConfig.getAppName() + " here! " + "Making myself a new proxy!");
+            mSdlProxyALM = mApplicationConfig.buildProxy(service, null, this);
+        }
         if(mSdlProxyALM == null){
             listener.onStatusChange(mApplicationConfig.getAppId(), Status.DISCONNECTED);
             return;
@@ -186,7 +189,9 @@ public class SdlApplication extends SdlContextAbsImpl implements IProxyListenerA
                 mLockScreenStatusListener.onLockScreenStatus(getId(), LockScreenStatus.OFF);
                 mApplicationStatusListener.onStatusChange(mApplicationConfig.getAppId(), Status.DISCONNECTED);
             try {
+                Log.i(TAG, mApplicationConfig.getAppName() + " here! " + "Disposing of my proxy!");
                 mSdlProxyALM.dispose();
+                mSdlProxyALM = null;
             } catch (SdlException e) {
                 e.printStackTrace();
             }
