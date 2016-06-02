@@ -362,7 +362,7 @@ public class AppLinkProxyListener implements IProxyListenerABS{
 
 	@Override
 	public void onSendLocationResponse(SendLocationResponse response) {
-		// TODO Auto-generated method stub
+		mAbstraction.handleResponse(response);
 		
 	}
 
