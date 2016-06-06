@@ -71,7 +71,7 @@ public class SdlManager {
         }
     }
 
-    public void prepare(@NonNull Application application, @NonNull LockScreenConfig lockScreenConfig,
+    /*public void prepare(@NonNull Application application, @NonNull LockScreenConfig lockScreenConfig,
                         @Nullable Notification persistentNotification, @NonNull Class<? extends SdlRouterService>  routerService){
         synchronized (SYNC_LOCK) {
             if (!isPrepared) {
@@ -86,7 +86,7 @@ public class SdlManager {
                         "No action taken.");
             }
         }
-    }
+    }*/
 
     void sdlDisconnected(){
         Log.i(TAG, "SDL disconnected.");
