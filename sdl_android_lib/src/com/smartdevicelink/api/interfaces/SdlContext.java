@@ -9,6 +9,7 @@ import com.smartdevicelink.api.menu.SdlMenuItem;
 import com.smartdevicelink.api.permission.SdlPermissionManager;
 import com.smartdevicelink.api.view.SdlButton;
 import com.smartdevicelink.proxy.RPCRequest;
+import com.smartdevicelink.proxy.rpc.TTSChunk;
 
 public interface SdlContext {
 
@@ -33,5 +34,9 @@ public interface SdlContext {
     boolean sendRpc(RPCRequest request);
 
     SdlMenu getTopMenu();
+
+    boolean sendTextToSpeak(String text);
+
+    boolean sendTextToSpeak(TTSChunk chunk);
 
 }

@@ -11,6 +11,7 @@ import com.smartdevicelink.api.view.SdlView;
 import com.smartdevicelink.api.view.SdlViewManager;
 import com.smartdevicelink.api.menu.SdlMenuItem;
 import com.smartdevicelink.proxy.RPCRequest;
+import com.smartdevicelink.proxy.rpc.TTSChunk;
 
 public abstract class SdlActivity extends SdlContextAbsImpl {
 
@@ -203,6 +204,16 @@ public abstract class SdlActivity extends SdlContextAbsImpl {
     @Override
     public boolean sendRpc(RPCRequest request) {
         return getSdlApplicationContext().sendRpc(request);
+    }
+
+    @Override
+    public boolean sendTextToSpeak(String text) {
+        return getSdlApplicationContext().sendTextToSpeak(text);
+    }
+
+    @Override
+    public boolean sendTextToSpeak(TTSChunk chunk) {
+        return getSdlApplicationContext().sendTextToSpeak(chunk);
     }
 
     @Override
