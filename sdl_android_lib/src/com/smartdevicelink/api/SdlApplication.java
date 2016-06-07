@@ -1,15 +1,19 @@
 package com.smartdevicelink.api;
 
 import android.content.Context;
+import android.os.Handler;
+import android.os.HandlerThread;
+import android.os.Process;
+import android.support.annotation.VisibleForTesting;
 import android.util.Log;
 import android.util.SparseArray;
 
-import com.smartdevicelink.api.lockscreen.LockScreenStatusListener;
-import com.smartdevicelink.api.permission.SdlPermissionManager;
 import com.smartdevicelink.api.file.SdlFileManager;
-import com.smartdevicelink.api.view.SdlButton;
+import com.smartdevicelink.api.lockscreen.LockScreenStatusListener;
 import com.smartdevicelink.api.menu.SdlMenu;
 import com.smartdevicelink.api.menu.SdlMenuItem;
+import com.smartdevicelink.api.permission.SdlPermissionManager;
+import com.smartdevicelink.api.view.SdlButton;
 import com.smartdevicelink.exception.SdlException;
 import com.smartdevicelink.protocol.enums.FunctionID;
 import com.smartdevicelink.proxy.RPCRequest;
@@ -91,6 +95,7 @@ public class SdlApplication extends SdlContextAbsImpl implements IProxyListenerA
     private static final String TAG = SdlApplication.class.getSimpleName();
 
     private static final String TOP_MENU_NAME = "Top Menu";
+    private static final String THREAD_NAME_BASE = "SDL_THREAD_";
 
     public static final int BACK_BUTTON_ID = 0;
 
@@ -100,13 +105,16 @@ public class SdlApplication extends SdlContextAbsImpl implements IProxyListenerA
         DISCONNECTED
     }
 
+    private HandlerThread mExecutionThread;
+    private Handler mExecutionHandler;
+
     private int mAutoCoorId = 100;
     private int mAutoButtonId = BACK_BUTTON_ID + 1;
 
     private SdlApplicationConfig mApplicationConfig;
-
-    private SdlActivityManager mSdlActivityManager;
     private LockScreenStatusListener mLockScreenStatusListener;
+    @VisibleForTesting
+    SdlActivityManager mSdlActivityManager;
     private SdlPermissionManager mSdlPermissionManager;
     private SdlFileManager mSdlFileManager;
     private SdlMenu mTopMenu;
@@ -122,37 +130,48 @@ public class SdlApplication extends SdlContextAbsImpl implements IProxyListenerA
 
     private SparseArray<SdlButton.OnPressListener> mButtonListenerRegistry = new SparseArray<>();
     private SparseArray<SdlMenuItem.SelectListener> mMenuListenerRegistry = new SparseArray<>();
-    
-    SdlApplication(SdlConnectionService service, SdlApplicationConfig config,
-                   ConnectionStatusListener listener, LockScreenStatusListener lockScreenActivityManager){
+
+    SdlApplication(final SdlConnectionService service, final SdlApplicationConfig config,
+                   final ConnectionStatusListener listener, final LockScreenStatusListener lockScreenActivityManager){
         initialize(service.getApplicationContext());
-        mApplicationConfig = config;
-        mSdlProxyALM = mApplicationConfig.buildProxy(service, null, this);
-
-        if(mSdlProxyALM == null){
-            listener.onStatusChange(mApplicationConfig.getAppId(), Status.DISCONNECTED);
-            return;
-        }
-
-        mApplicationStatusListener = listener;
-        mSdlActivityManager = new SdlActivityManager();
-        mLockScreenStatusListener = lockScreenActivityManager;
-        mSdlPermissionManager = new SdlPermissionManager(mSdlProxyALM);
-        mLifecycleListeners.add(mSdlActivityManager);
-        mSdlFileManager = new SdlFileManager(this, mApplicationConfig);
-        mLifecycleListeners.add(mSdlFileManager);
-
-        if(mSdlProxyALM != null){
-            mConnectionStatus = Status.CONNECTING;
-            listener.onStatusChange(mApplicationConfig.getAppId(), Status.CONNECTING);
-        }
-        mTopMenu = new SdlMenu(this, TOP_MENU_NAME);
+        initialize(service.getApplicationContext());
+        mExecutionHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                mApplicationConfig = config;
+                mSdlProxyALM = mApplicationConfig.buildProxy(service, null, SdlApplication.this);
+                if(mSdlProxyALM == null){
+                    listener.onStatusChange(mApplicationConfig.getAppId(), Status.DISCONNECTED);
+                    return;
+                }
+                mApplicationStatusListener = listener;
+                mSdlActivityManager = new SdlActivityManager();
+                mLockScreenStatusListener = lockScreenActivityManager;
+                mSdlPermissionManager = new SdlPermissionManager();
+                mLifecycleListeners.add(mSdlActivityManager);
+                mSdlFileManager = new SdlFileManager(SdlApplication.this, mApplicationConfig);
+                mLifecycleListeners.add(mSdlFileManager);
+                if(mSdlProxyALM != null){
+                    mConnectionStatus = Status.CONNECTING;
+                    listener.onStatusChange(mApplicationConfig.getAppId(), Status.CONNECTING);
+                }
+                mTopMenu = new SdlMenu(TOP_MENU_NAME);
+            }
+        });
     }
 
-    void initialize(Context androidContext) {
+    // Executed on main to set up execution thread
+    void initialize(Context androidContext){
         if(!isInitialized()) {
             setAndroidContext(androidContext);
             setSdlApplicationContext(this);
+            /* Handler thread is spawned under the default priority to ensure that it is lower
+             * priority than the main thread. */
+            mExecutionThread = new HandlerThread(
+                    THREAD_NAME_BASE + mApplicationConfig.getAppName().replace(' ', '_'),
+                    Process.THREAD_PRIORITY_DEFAULT + Process.THREAD_PRIORITY_LESS_FAVORABLE);
+            mExecutionHandler = new Handler(mExecutionThread.getLooper());
+            mExecutionThread.start();
             setInitialized(true);
         } else {
             Log.w(TAG, "Attempting to initialize SdlContext that is already initialized. Class " +
@@ -218,8 +237,13 @@ public class SdlApplication extends SdlContextAbsImpl implements IProxyListenerA
      ****************************/
 
     @Override
-    public final void startSdlActivity(Class<? extends SdlActivity> activity, int flags) {
-        mSdlActivityManager.startSdlActivity(this, activity, flags);
+    public final void startSdlActivity(final Class<? extends SdlActivity> activity, final int flags) {
+        mExecutionHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                mSdlActivityManager.startSdlActivity(SdlApplication.this, activity, flags);
+            }
+        });
     }
 
     @Override
@@ -254,6 +278,11 @@ public class SdlApplication extends SdlContextAbsImpl implements IProxyListenerA
 
     @Override
     final public boolean sendRpc(final RPCRequest request){
+        if(Thread.currentThread() != mExecutionThread){
+            throw new RuntimeException("RPCs may only be sent from the SdlApplication's execution " +
+                    "thread. Use SdlContext#getExecutionHandler() to obtain a reference to the " +
+                    "execution handler");
+        }
         if(mSdlProxyALM != null){
             try {
                 request.setCorrelationID(mAutoCoorId++);
@@ -300,68 +329,86 @@ public class SdlApplication extends SdlContextAbsImpl implements IProxyListenerA
         return mTopMenu;
     }
 
+    @Override
+    public Handler getExecutionHandler() {
+        return mExecutionHandler;
+    }
+
     /***********************************
      IProxyListenerALM interface methods
+     All notification and response handling
+     should be offloaded onto the handler thread.
      ***********************************/
 
     @Override
-    public final void onOnHMIStatus(OnHMIStatus notification) {
+    public final void onOnHMIStatus(final OnHMIStatus notification) {
+        mExecutionHandler.post(new Runnable() {
+            @Override
+            public void run() {
 
-        if(notification == null || notification.getHmiLevel() == null){
-            Log.w(TAG, "INVALID OnHMIStatus Notification Received!");
-            return;
-        }
-
-        HMILevel hmiLevel = notification.getHmiLevel();
-        mSdlPermissionManager.setCurrentHMILevel(hmiLevel);
-
-        Log.i(TAG, toString() + " Received HMILevel: " + hmiLevel.name());
-
-        if(!isFirstHmiReceived){
-            isFirstHmiReceived = true;
-            mConnectionStatus = Status.CONNECTED;
-            mApplicationStatusListener.onStatusChange(mApplicationConfig.getAppId(), Status.CONNECTED);
-
-            for(LifecycleListener listener: mLifecycleListeners){
-                listener.onSdlConnect();
-            }
-        }
-
-        if(!isFirstHmiNotNoneReceived && hmiLevel != HMILevel.HMI_NONE){
-            Log.i(TAG, toString() + " is launching activity: " + mApplicationConfig.getMainSdlActivity().getCanonicalName());
-            // TODO: Add check for resume
-            mSdlActivityManager.onSdlAppLaunch(this, mApplicationConfig.getMainSdlActivity());
-            isFirstHmiNotNoneReceived = true;
-        }
-
-        switch (hmiLevel){
-
-            case HMI_FULL:
-                for(LifecycleListener listener: mLifecycleListeners){
-                    listener.onForeground();
+                if(notification == null || notification.getHmiLevel() == null){
+                    Log.w(TAG, "INVALID OnHMIStatus Notification Received!");
+                    return;
                 }
-                break;
-            case HMI_LIMITED:
-            case HMI_BACKGROUND:
-                for(LifecycleListener listener: mLifecycleListeners){
-                    listener.onBackground();
-                }
-                break;
-            case HMI_NONE:
-                if(isFirstHmiNotNoneReceived) {
-                    isFirstHmiNotNoneReceived = false;
+
+                HMILevel hmiLevel = notification.getHmiLevel();
+                mSdlPermissionManager.onHmi(hmiLevel);
+
+                Log.i(TAG, toString() + " Received HMILevel: " + hmiLevel.name());
+
+                if(!isFirstHmiReceived){
+                    isFirstHmiReceived = true;
+                    mConnectionStatus = Status.CONNECTED;
+                    mApplicationStatusListener.onStatusChange(mApplicationConfig.getAppId(), Status.CONNECTED);
+
                     for(LifecycleListener listener: mLifecycleListeners){
-                        listener.onExit();
+                        listener.onSdlConnect();
                     }
                 }
-                break;
-        }
+
+                if(!isFirstHmiNotNoneReceived && hmiLevel != HMILevel.HMI_NONE){
+                    Log.i(TAG, toString() + " is launching activity: " + mApplicationConfig.getMainSdlActivity().getCanonicalName());
+                    // TODO: Add check for resume
+                    mSdlActivityManager.onSdlAppLaunch(SdlApplication.this, mApplicationConfig.getMainSdlActivity());
+                    isFirstHmiNotNoneReceived = true;
+                }
+
+                switch (hmiLevel){
+
+                    case HMI_FULL:
+                        for(LifecycleListener listener: mLifecycleListeners){
+                            listener.onForeground();
+                        }
+                        break;
+                    case HMI_LIMITED:
+                    case HMI_BACKGROUND:
+                        for(LifecycleListener listener: mLifecycleListeners){
+                            listener.onBackground();
+                        }
+                        break;
+                    case HMI_NONE:
+                        if(isFirstHmiNotNoneReceived) {
+                            isFirstHmiNotNoneReceived = false;
+                            for(LifecycleListener listener: mLifecycleListeners){
+                                listener.onExit();
+                            }
+                        }
+                        break;
+                }
+
+            }
+        });
 
     }
 
     @Override
     public final void onProxyClosed(String info, Exception e, SdlDisconnectedReason reason) {
-        closeConnection(true);
+        mExecutionHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                closeConnection(true);
+            }
+        });
     }
 
     @Override
@@ -386,7 +433,12 @@ public class SdlApplication extends SdlContextAbsImpl implements IProxyListenerA
 
     @Override
     public final void onError(String info, Exception e) {
-        closeConnection(true);
+        mExecutionHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                closeConnection(true);
+            }
+        });
     }
 
     @Override
@@ -395,17 +447,22 @@ public class SdlApplication extends SdlContextAbsImpl implements IProxyListenerA
     }
 
     @Override
-    public final void onOnCommand(OnCommand notification) {
-        if(notification != null && notification.getCmdID() != null){
-            SdlMenuItem.SelectListener listener = mMenuListenerRegistry.get(notification.getCmdID());
-            if(listener != null){
-                if(notification.getTriggerSource() != null && notification.getTriggerSource() == TriggerSource.TS_VR){
-                    listener.onVoiceSelect();
-                } else {
-                    listener.onTouchSelect();
+    public final void onOnCommand(final OnCommand notification) {
+        mExecutionHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                if(notification != null && notification.getCmdID() != null){
+                    SdlMenuItem.SelectListener listener = mMenuListenerRegistry.get(notification.getCmdID());
+                    if(listener != null){
+                        if(notification.getTriggerSource() != null && notification.getTriggerSource() == TriggerSource.TS_VR){
+                            listener.onVoiceSelect();
+                        } else {
+                            listener.onTouchSelect();
+                        }
+                    }
                 }
             }
-        }
+        });
     }
 
     @Override
@@ -479,18 +536,23 @@ public class SdlApplication extends SdlContextAbsImpl implements IProxyListenerA
     }
 
     @Override
-    public final void onOnButtonPress(OnButtonPress notification) {
-        if(notification != null && notification.getCustomButtonName() != null){
-            int buttonId = notification.getCustomButtonName();
-            if(buttonId == BACK_BUTTON_ID){
-                mSdlActivityManager.back();
-            } else {
-                SdlButton.OnPressListener listener = mButtonListenerRegistry.get(buttonId);
-                if(listener != null){
-                    listener.onButtonPress();
+    public final void onOnButtonPress(final OnButtonPress notification) {
+        mExecutionHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                if(notification != null && notification.getCustomButtonName() != null){
+                    int buttonId = notification.getCustomButtonName();
+                    if(buttonId == BACK_BUTTON_ID){
+                        mSdlActivityManager.back();
+                    } else {
+                        SdlButton.OnPressListener listener = mButtonListenerRegistry.get(buttonId);
+                        if (listener != null) {
+                            listener.onButtonPress();
+                        }
+                    }
                 }
             }
-        }
+        });
     }
 
     @Override
@@ -504,7 +566,13 @@ public class SdlApplication extends SdlContextAbsImpl implements IProxyListenerA
     }
 
     @Override
-    public final void onOnPermissionsChange(OnPermissionsChange notification) {
+    public final void onOnPermissionsChange(final OnPermissionsChange notification) {
+        mExecutionHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                mSdlPermissionManager.onPermissionChange(notification);
+            }
+        });
     }
 
     @Override
