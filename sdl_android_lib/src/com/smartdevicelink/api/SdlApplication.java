@@ -13,6 +13,7 @@ import com.smartdevicelink.api.lockscreen.LockScreenStatusListener;
 import com.smartdevicelink.api.menu.SdlMenu;
 import com.smartdevicelink.api.menu.SdlMenuItem;
 import com.smartdevicelink.api.permission.SdlPermissionManager;
+import com.smartdevicelink.api.speak.SdlTextToSpeak;
 import com.smartdevicelink.api.view.SdlButton;
 import com.smartdevicelink.exception.SdlException;
 import com.smartdevicelink.protocol.enums.FunctionID;
@@ -75,6 +76,7 @@ import com.smartdevicelink.proxy.rpc.StreamRPCResponse;
 import com.smartdevicelink.proxy.rpc.SubscribeButtonResponse;
 import com.smartdevicelink.proxy.rpc.SubscribeVehicleDataResponse;
 import com.smartdevicelink.proxy.rpc.SystemRequestResponse;
+import com.smartdevicelink.proxy.rpc.TTSChunk;
 import com.smartdevicelink.proxy.rpc.UnsubscribeButtonResponse;
 import com.smartdevicelink.proxy.rpc.UnsubscribeVehicleDataResponse;
 import com.smartdevicelink.proxy.rpc.UpdateTurnListResponse;
@@ -332,6 +334,22 @@ public class SdlApplication extends SdlContextAbsImpl implements IProxyListenerA
     @Override
     public Handler getExecutionHandler() {
         return mExecutionHandler;
+    }
+
+    @Override
+    public boolean sendTextToSpeak(String text) {
+        SdlTextToSpeak tts= new SdlTextToSpeak.Builder()
+                .addSpokenChunk(text)
+                .build();
+        return tts.send(this);
+    }
+
+    @Override
+    public boolean sendTextToSpeak(TTSChunk chunk) {
+        SdlTextToSpeak tts= new SdlTextToSpeak.Builder()
+                .addSpokenChunk(chunk)
+                .build();
+        return tts.send(this);
     }
 
     /***********************************
