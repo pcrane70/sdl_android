@@ -132,8 +132,8 @@ public class SdlApplication extends SdlContextAbsImpl implements IProxyListenerA
     private SparseArray<SdlMenuItem.SelectListener> mMenuListenerRegistry = new SparseArray<>();
 
     SdlApplication(final SdlConnectionService service, final SdlApplicationConfig config,
-                   final ConnectionStatusListener listener, final LockScreenStatusListener lockScreenActivityManager){
-        initialize(service.getApplicationContext());
+                   final ConnectionStatusListener listener,
+                   final LockScreenStatusListener lockScreenActivityManager){
         initialize(service.getApplicationContext());
         mExecutionHandler.post(new Runnable() {
             @Override
