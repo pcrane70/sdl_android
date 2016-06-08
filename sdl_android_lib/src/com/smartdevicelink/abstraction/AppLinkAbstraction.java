@@ -31,6 +31,8 @@ import com.smartdevicelink.proxy.SdlProxyConfigurationResources;
 import com.smartdevicelink.proxy.interfaces.ISoftButton;
 import com.smartdevicelink.proxy.rpc.AddCommand;
 import com.smartdevicelink.proxy.rpc.Alert;
+import com.smartdevicelink.proxy.rpc.DisplayCapabilities;
+import com.smartdevicelink.proxy.rpc.HMICapabilities;
 import com.smartdevicelink.proxy.rpc.MenuParams;
 import com.smartdevicelink.proxy.rpc.OnAudioPassThru;
 import com.smartdevicelink.proxy.rpc.OnButtonEvent;
@@ -335,6 +337,24 @@ public abstract class AppLinkAbstraction {
 		try{
 			return mAppLinkProxy.getHmiDisplayLanguage();
 		} catch (SdlException e) {
+			Log.e(TAG, e.getMessage(), e);
+			return null;
+		}
+	}
+
+	protected DisplayCapabilities getDisplayCapabilities(){
+		try{
+			return mAppLinkProxy.getDisplayCapabilities();
+		} catch (SdlException e){
+			Log.e(TAG, e.getMessage(), e);
+			return null;
+		}
+	}
+
+	protected HMICapabilities getHmiCapabilities(){
+		try{
+			return mAppLinkProxy.getHmiCapabilities();
+		} catch (SdlException e){
 			Log.e(TAG, e.getMessage(), e);
 			return null;
 		}

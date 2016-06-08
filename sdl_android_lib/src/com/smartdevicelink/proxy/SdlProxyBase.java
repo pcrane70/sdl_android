@@ -192,6 +192,7 @@ public abstract class SdlProxyBase<proxyListenerType extends IProxyListenerBase>
 	protected Language _sdlLanguage = null;
 	protected Language _hmiDisplayLanguage = null;
 	protected DisplayCapabilities _displayCapabilities = null;
+	protected HMICapabilities _hmiCapabilities = null;
 	protected List<ButtonCapabilities> _buttonCapabilities = null;
 	protected List<SoftButtonCapabilities> _softButtonCapabilities = null;
 	protected PresetBankCapabilities _presetBankCapabilities = null;
@@ -1588,7 +1589,8 @@ public abstract class SdlProxyBase<proxyListenerType extends IProxyListenerBase>
 					_vrCapabilities = msg.getVrCapabilities();
 					_vehicleType = msg.getVehicleType();
 					_audioPassThruCapabilities = msg.getAudioPassThruCapabilities();
-					_proxyVersionInfo = msg.getProxyVersionInfo();																			
+					_proxyVersionInfo = msg.getProxyVersionInfo();
+					_hmiCapabilities = msg.getHmiCapabilities();
 
 					if (_bAppResumeEnabled)
 					{
