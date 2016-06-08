@@ -14,6 +14,7 @@ import com.smartdevicelink.api.menu.SdlMenu;
 import com.smartdevicelink.api.menu.SdlMenuItem;
 import com.smartdevicelink.api.permission.SdlPermissionManager;
 import com.smartdevicelink.api.speak.SdlTextToSpeak;
+import com.smartdevicelink.api.view.SdlAudioPassThruDialog;
 import com.smartdevicelink.api.view.SdlButton;
 import com.smartdevicelink.exception.SdlException;
 import com.smartdevicelink.protocol.enums.FunctionID;
@@ -132,6 +133,7 @@ public class SdlApplication extends SdlContextAbsImpl implements IProxyListenerA
 
     private SparseArray<SdlButton.OnPressListener> mButtonListenerRegistry = new SparseArray<>();
     private SparseArray<SdlMenuItem.SelectListener> mMenuListenerRegistry = new SparseArray<>();
+    private SdlAudioPassThruDialog.ReceiveDataListener mAudioPassThruListener;
 
     SdlApplication(final SdlConnectionService service,
                    final SdlApplicationConfig config,
@@ -284,6 +286,18 @@ public class SdlApplication extends SdlContextAbsImpl implements IProxyListenerA
     }
 
     @Override
+    public void registerAudioPassThruListener(SdlAudioPassThruDialog.ReceiveDataListener listener) {
+        mAudioPassThruListener= listener;
+    }
+
+    @Override
+    public void unregisterAudioPassThruListener(SdlAudioPassThruDialog.ReceiveDataListener listener) {
+        if(mAudioPassThruListener==listener){
+            mAudioPassThruListener=null;
+        }
+    }
+
+    @Override
     final public boolean sendRpc(final RPCRequest request){
         if(Thread.currentThread() != mExecutionThread){
             Log.e(TAG, "RPC Sent from thread: " + + Thread.currentThread().getId() + " - " +
@@ -305,7 +319,7 @@ public class SdlApplication extends SdlContextAbsImpl implements IProxyListenerA
                             @Override
                             public void run() {
                                 try {
-                                    Log.v(TAG, request.serializeJSON().toString(3));
+                                    Log.v(TAG, response.serializeJSON().toString(3));
                                 } catch (JSONException e) {
                                     e.printStackTrace();
                                 }
@@ -640,7 +654,15 @@ public class SdlApplication extends SdlContextAbsImpl implements IProxyListenerA
     }
 
     @Override
-    public final void onOnAudioPassThru(OnAudioPassThru notification) {
+    public final void onOnAudioPassThru(final OnAudioPassThru notification) {
+        mExecutionHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                Log.d(TAG,"Sending bytes back to the listener");
+                if(mAudioPassThruListener!=null)
+                    mAudioPassThruListener.receiveData(notification.getAPTData());
+            }
+        });
 
     }
 

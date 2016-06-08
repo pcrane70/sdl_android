@@ -8,6 +8,7 @@ import com.smartdevicelink.api.file.SdlFileManager;
 import com.smartdevicelink.api.interfaces.SdlContext;
 import com.smartdevicelink.api.menu.SdlMenuItem;
 import com.smartdevicelink.api.permission.SdlPermissionManager;
+import com.smartdevicelink.api.view.SdlAudioPassThruDialog;
 import com.smartdevicelink.api.view.SdlButton;
 import com.smartdevicelink.api.view.SdlView;
 import com.smartdevicelink.api.view.SdlViewManager;
@@ -215,6 +216,15 @@ public abstract class SdlActivity extends SdlContextAbsImpl {
     @Override
     public boolean sendTextToSpeak(TTSChunk chunk) {
         return getSdlApplicationContext().sendTextToSpeak(chunk);
+    }
+
+    public void registerAudioPassThruListener(SdlAudioPassThruDialog.ReceiveDataListener listener) {
+        getSdlApplicationContext().registerAudioPassThruListener(listener);
+    }
+
+    @Override
+    public void unregisterAudioPassThruListener(SdlAudioPassThruDialog.ReceiveDataListener listener) {
+        getSdlApplicationContext().unregisterAudioPassThruListener(listener);
     }
 
     @Override
