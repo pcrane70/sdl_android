@@ -10,9 +10,12 @@ import com.smartdevicelink.api.menu.SdlMenuItem;
 import com.smartdevicelink.api.permission.SdlPermissionManager;
 import com.smartdevicelink.api.view.SdlAudioPassThruDialog;
 import com.smartdevicelink.api.view.SdlButton;
+import com.smartdevicelink.api.view.SdlButtonBase;
+import com.smartdevicelink.api.view.SdlMediaButton;
 import com.smartdevicelink.api.view.SdlView;
 import com.smartdevicelink.api.view.SdlViewManager;
 import com.smartdevicelink.proxy.RPCRequest;
+import com.smartdevicelink.proxy.rpc.enums.ButtonName;
 
 public abstract class SdlActivity extends SdlContextAbsImpl {
 
@@ -200,6 +203,11 @@ public abstract class SdlActivity extends SdlContextAbsImpl {
     @Override
     public void unregisterButtonCallback(int id) {
         getSdlApplicationContext().unregisterButtonCallback(id);
+    }
+
+    @Override
+    public int registerMediaButtonCallback(ButtonName mediaButtonName, SdlMediaButton.OnPressListener listener) {
+        return getSdlApplicationContext().registerMediaButtonCallback(mediaButtonName,listener);
     }
 
     @Override

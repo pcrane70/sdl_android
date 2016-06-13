@@ -14,6 +14,9 @@ import com.smartdevicelink.api.view.SdlButton;
 import com.smartdevicelink.api.menu.SdlMenu;
 import com.smartdevicelink.api.menu.SdlMenuItem;
 import com.smartdevicelink.api.permission.SdlPermissionManager;
+import com.smartdevicelink.api.view.SdlButtonBase;
+import com.smartdevicelink.api.view.SdlMediaButton;
+import com.smartdevicelink.api.view.SdlMediaButtonRegistry;
 import com.smartdevicelink.exception.SdlException;
 import com.smartdevicelink.protocol.enums.FunctionID;
 import com.smartdevicelink.proxy.RPCRequest;
@@ -72,12 +75,14 @@ import com.smartdevicelink.proxy.rpc.ShowResponse;
 import com.smartdevicelink.proxy.rpc.SliderResponse;
 import com.smartdevicelink.proxy.rpc.SpeakResponse;
 import com.smartdevicelink.proxy.rpc.StreamRPCResponse;
+import com.smartdevicelink.proxy.rpc.SubscribeButton;
 import com.smartdevicelink.proxy.rpc.SubscribeButtonResponse;
 import com.smartdevicelink.proxy.rpc.SubscribeVehicleDataResponse;
 import com.smartdevicelink.proxy.rpc.SystemRequestResponse;
 import com.smartdevicelink.proxy.rpc.UnsubscribeButtonResponse;
 import com.smartdevicelink.proxy.rpc.UnsubscribeVehicleDataResponse;
 import com.smartdevicelink.proxy.rpc.UpdateTurnListResponse;
+import com.smartdevicelink.proxy.rpc.enums.ButtonName;
 import com.smartdevicelink.proxy.rpc.enums.HMILevel;
 import com.smartdevicelink.proxy.rpc.enums.Result;
 import com.smartdevicelink.proxy.rpc.enums.SdlDisconnectedReason;
@@ -88,6 +93,7 @@ import com.smartdevicelink.proxy.rpc.listeners.OnRPCResponseListener;
 import org.json.JSONException;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 
 public class SdlApplication extends SdlContextAbsImpl implements IProxyListenerALM{
 
@@ -125,7 +131,8 @@ public class SdlApplication extends SdlContextAbsImpl implements IProxyListenerA
 
     private boolean isFirstHmiReceived = false;
     private boolean isFirstHmiNotNoneReceived = false;
-    private SparseArray<SdlButton.OnPressListener> mButtonListenerRegistry = new SparseArray<>();
+    private SparseArray<SdlButtonBase.OnPressListener> mButtonListenerRegistry = new SparseArray<>();
+    private SdlMediaButtonRegistry mMediaButtonRegistry= new SdlMediaButtonRegistry();
     private SparseArray<SdlMenuItem.SelectListener> mMenuListenerRegistry = new SparseArray<>();
     private SdlAudioPassThruDialog.ReceiveDataListener mAudioPassThruListener;
 
@@ -247,6 +254,7 @@ public class SdlApplication extends SdlContextAbsImpl implements IProxyListenerA
         return mSdlFileManager;
     }
 
+    @Override
     public int registerButtonCallback(SdlButton.OnPressListener listener) {
         int buttonId = mAutoButtonId++;
         mButtonListenerRegistry.append(buttonId, listener);
@@ -256,6 +264,14 @@ public class SdlApplication extends SdlContextAbsImpl implements IProxyListenerA
     @Override
     public void unregisterButtonCallback(int id) {
         mButtonListenerRegistry.remove(id);
+    }
+
+    @Override
+    public int registerMediaButtonCallback(ButtonName mediaButtonName, SdlMediaButton.OnPressListener listener) {
+        mButtonListenerRegistry.put(mediaButtonName.ordinal(),listener);
+        //subscribes to the button if not done so already
+        mMediaButtonRegistry.subscribeToMediaButton(mediaButtonName,this);
+        return mediaButtonName.ordinal();
     }
 
     @Override

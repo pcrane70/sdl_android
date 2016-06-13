@@ -48,6 +48,10 @@ public class SdlViewManager {
         mSdlContext.unregisterButtonCallback(id);
     }
 
+    int registerMediaButtonCallback(SdlMediaButton mediaButton){
+        return mSdlContext.registerMediaButtonCallback(mediaButton.getMediaButtonName(),mediaButton.getListener());
+    }
+
     public void prepareImages(){
         mRootView.uploadRequiredImages();
     }

@@ -10,7 +10,10 @@ import com.smartdevicelink.api.view.SdlButton;
 import com.smartdevicelink.api.menu.SdlMenu;
 import com.smartdevicelink.api.menu.SdlMenuItem;
 import com.smartdevicelink.api.permission.SdlPermissionManager;
+import com.smartdevicelink.api.view.SdlButtonBase;
+import com.smartdevicelink.api.view.SdlMediaButton;
 import com.smartdevicelink.proxy.RPCRequest;
+import com.smartdevicelink.proxy.rpc.enums.ButtonName;
 
 public interface SdlContext {
 
@@ -23,6 +26,8 @@ public interface SdlContext {
     SdlFileManager getSdlFileManager();
 
     int registerButtonCallback(SdlButton.OnPressListener listener);
+
+    int registerMediaButtonCallback(ButtonName mediaButtonName, SdlMediaButton.OnPressListener listener);
 
     void unregisterButtonCallback(int id);
 
