@@ -615,12 +615,19 @@ public class SdlApplication extends SdlContextAbsImpl implements IProxyListenerA
         mExecutionHandler.post(new Runnable() {
             @Override
             public void run() {
-                if(notification != null && notification.getCustomButtonName() != null){
-                    int buttonId = notification.getCustomButtonName();
-                    if(buttonId == BACK_BUTTON_ID){
-                        mSdlActivityManager.back();
-                    } else {
-                        SdlButton.OnPressListener listener = mButtonListenerRegistry.get(buttonId);
+                if(notification != null ) {
+                    if(notification.getCustomButtonName() != null) {
+                        int buttonId = notification.getCustomButtonName();
+                        if (buttonId == BACK_BUTTON_ID) {
+                            mSdlActivityManager.back();
+                        } else {
+                            SdlButton.OnPressListener listener = mButtonListenerRegistry.get(buttonId);
+                            if (listener != null) {
+                                listener.onButtonPress();
+                            }
+                        }
+                    } else if(notification.getButtonName()!=null){
+                        SdlButton.OnPressListener listener= mButtonListenerRegistry.get(notification.getButtonName().ordinal());
                         if (listener != null) {
                             listener.onButtonPress();
                         }

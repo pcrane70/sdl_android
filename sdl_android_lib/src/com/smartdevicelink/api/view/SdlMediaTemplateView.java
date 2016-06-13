@@ -1,10 +1,8 @@
 package com.smartdevicelink.api.view;
 
-import android.util.Log;
-
+import com.smartdevicelink.api.interfaces.SdlContext;
 import com.smartdevicelink.proxy.rpc.DisplayCapabilities;
 import com.smartdevicelink.proxy.rpc.Show;
-import com.smartdevicelink.proxy.rpc.enums.UpdateMode;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -18,16 +16,45 @@ public class SdlMediaTemplateView extends SdlView {
     private SdlTextView mSdlTextView;
     private SdlGraphicView mSdlGraphicView;
     private SdlButtonView mSdlButtonView;
-    private ArrayList<SdlMediaButton> mSdlMediaButtons;
-    //Media Clock timer
+    private ArrayList<SdlMediaButton> mSdlMediaButtons= new ArrayList<>();
+    private SdlMediaClockView mSdlMediaClockView;
 
-    SdlMediaTemplateView(Builder builder){
-        mSdlTextView= builder.mSdlTextView;
-        mSdlGraphicView= builder.mSdlGraphicView;
-        mSdlButtonView= builder.mSdlButtonView;
-        mSdlMediaButtons= builder.mSdlMediaButtons;
-        for(SdlMediaButton button:mSdlMediaButtons)
+    public SdlMediaTemplateView(){
+    }
+
+    public void setSdlTextView(SdlTextView view){
+        mSdlTextView= view;
+        setViewContextInformation(mSdlTextView);
+    }
+
+    public void setSdlGraphicView(SdlGraphicView view){
+        mSdlGraphicView= view;
+        setViewContextInformation(mSdlGraphicView);
+    }
+
+    public void setSdlButtonView(SdlButtonView view){
+        mSdlButtonView= view;
+        setViewContextInformation(mSdlButtonView);
+    }
+
+    public void setSdlMediaButtons(Collection<SdlMediaButton> buttons){
+        //unregister beforehand?
+        mSdlMediaButtons.clear();
+        for(SdlMediaButton button:buttons){
+            addSdlMediaButton(button);
+        }
+    }
+
+    public void addSdlMediaButton(SdlMediaButton button){
+        mSdlMediaButtons.add(button);
+        if(mViewManager!=null){
             mViewManager.registerMediaButtonCallback(button);
+        }
+    }
+
+    public void setSdlMediaClock(SdlMediaClockView view){
+        mSdlMediaClockView= view;
+        setViewContextInformation(mSdlMediaClockView);
     }
 
     @Override
@@ -42,11 +69,65 @@ public class SdlMediaTemplateView extends SdlView {
         if(mSdlButtonView != null){
             mSdlButtonView.setDisplayCapabilities(mDisplayCapabilities);
         }
+        if(mSdlMediaClockView !=null){
+            mSdlMediaClockView.setDisplayCapabilities(mDisplayCapabilities);
+        }
     }
 
     @Override
     public String getTemplateName() {
         return SdlTemplateView.LayoutTemplate.MEDIA.toString();
+    }
+
+    @Override
+    public void accept(SdlViewDecoratorVisitor visitor) {
+        if(mSdlTextView != null) {
+            mSdlTextView.accept(visitor);
+        }
+        if(mSdlGraphicView != null) {
+            mSdlGraphicView.accept(visitor);
+        }
+        if(mSdlButtonView != null) {
+            mSdlButtonView.accept(visitor);
+        }
+        if(mSdlMediaClockView !=null){
+            mSdlMediaClockView.accept(visitor);
+        }
+        visitor.visit(this);
+    }
+
+    @Override
+    public void setSdlContext(SdlContext sdlContext) {
+        mSdlContext = sdlContext;
+        if(mSdlTextView != null){
+            mSdlTextView.setSdlViewManager(mViewManager);
+        }
+        if(mSdlGraphicView != null){
+            mSdlGraphicView.setSdlViewManager(mViewManager);
+        }
+        if(mSdlButtonView != null){
+            mSdlButtonView.setSdlViewManager(mViewManager);
+        }
+        if(mSdlMediaClockView !=null){
+            mSdlMediaClockView.setSdlViewManager(mViewManager);
+        }
+    }
+
+    @Override
+    public void setIsVisible(boolean isVisible) {
+        super.setIsVisible(isVisible);
+        if(mSdlTextView != null){
+            mSdlTextView.setIsVisible(isVisible);
+        }
+        if(mSdlGraphicView != null){
+            mSdlGraphicView.setIsVisible(isVisible);
+        }
+        if(mSdlButtonView != null){
+            mSdlButtonView.setIsVisible(isVisible);
+        }
+        if(mSdlMediaClockView !=null){
+            mSdlMediaClockView.setSdlViewManager(mViewManager);
+        }
     }
 
 
@@ -57,15 +138,7 @@ public class SdlMediaTemplateView extends SdlView {
 
     @Override
     public void decorate(Show show) {
-        if(mSdlTextView != null) {
-            mSdlTextView.decorate(show);
-        }
-        if(mSdlGraphicView != null) {
-            mSdlGraphicView.decorate(show);
-        }
-        if(mSdlButtonView != null) {
-            mSdlButtonView.decorate(show);
-        }
+
     }
 
     @Override
@@ -79,77 +152,14 @@ public class SdlMediaTemplateView extends SdlView {
         if(mSdlButtonView != null) {
             mSdlButtonView.uploadRequiredImages();
         }
-    }
-
-    public class SdlMediaClock extends SdlView{
-
-        private UpdateMode mUpdateMode;
-        private long mEndTime;
-        private long mStartTime;
-
-        SdlMediaClock(UpdateMode updateMode){
-            mUpdateMode= updateMode;
-        }
-
-        public void setDuration(long milliSeconds){
-            mEndTime= milliSeconds;
-        }
-
-        public void setStartTime(long milliSeconds){
-            mStartTime= milliSeconds;
-        }
-
-        @Override
-        public void clear() {
-            mUpdateMode= UpdateMode.CLEAR;
-            mEndTime=0;
-            mStartTime=0;
-        }
-
-        @Override
-        void decorate(Show show) {
-            //can decorate the show? (though method is deprecated...)
-        }
-
-        @Override
-        void uploadRequiredImages() {
-
+        if(mSdlMediaClockView !=null){
+            mSdlMediaClockView.uploadRequiredImages();
         }
     }
 
-    public static class Builder{
-        private SdlTextView mSdlTextView;
-        private SdlGraphicView mSdlGraphicView;
-        private SdlButtonView mSdlButtonView;
-        private ArrayList<SdlMediaButton> mSdlMediaButtons= new ArrayList<>();
-
-        public Builder(){
-
-        }
-
-        public Builder setSdlTextView(SdlTextView view){
-           mSdlTextView= view;
-            return this;
-        }
-
-        public Builder setSdlGraphicView(SdlGraphicView view){
-            mSdlGraphicView= view;
-            return this;
-        }
-
-        public Builder setSdlButtonView(SdlButtonView view){
-            mSdlButtonView= view;
-            return this;
-        }
-
-        public Builder setSdlMediaButtons(Collection<SdlMediaButton> buttons){
-            mSdlMediaButtons.clear();
-            mSdlMediaButtons.addAll(buttons);
-            return this;
-        }
-
-        public SdlMediaTemplateView build(){
-            return new SdlMediaTemplateView(this);
-        }
+    void setViewContextInformation(SdlView view){
+        view.setSdlContext(mSdlContext);
+        view.setSdlViewManager(mViewManager);
+        view.setDisplayCapabilities(mDisplayCapabilities);
     }
 }

@@ -56,4 +56,6 @@ public abstract class SdlView {
         this.isVisible = isVisible;
     }
 
+    abstract void accept(SdlViewDecoratorVisitor visitor);
+
 }

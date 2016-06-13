@@ -92,6 +92,11 @@ public class SdlGraphicView extends SdlView {
         }
     }
 
+    @Override
+    void accept(SdlViewDecoratorVisitor visitor) {
+        visitor.visit(this);
+    }
+
     private SdlFileManager.FileReadyListener mFileReadyListener = new SdlFileManager.FileReadyListener() {
         @Override
         public void onFileReady(SdlFile sdlFile) {

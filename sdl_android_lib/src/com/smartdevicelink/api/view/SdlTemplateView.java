@@ -245,6 +245,20 @@ public class SdlTemplateView extends SdlView {
     }
 
     @Override
+    void accept(SdlViewDecoratorVisitor visitor) {
+        if(mLeftView != null) {
+            mLeftView.accept(visitor);
+        }
+        if(mRightView != null) {
+            mRightView.accept(visitor);
+        }
+        if(mSdlButtonView != null) {
+            mSdlButtonView.accept(visitor);
+        }
+        visitor.visit(this);
+    }
+
+    @Override
     public void setSdlContext(SdlContext sdlContext) {
         mSdlContext = sdlContext;
         if(mLeftView != null){
@@ -260,15 +274,7 @@ public class SdlTemplateView extends SdlView {
 
     @Override
     public void decorate(Show show) {
-        if(mLeftView != null) {
-            mLeftView.decorate(show);
-        }
-        if(mRightView != null) {
-            mRightView.decorate(show);
-        }
-        if(mSdlButtonView != null) {
-            mSdlButtonView.decorate(show);
-        }
+
     }
 
     @Override

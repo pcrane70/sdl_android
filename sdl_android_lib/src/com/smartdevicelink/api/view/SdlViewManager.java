@@ -10,12 +10,12 @@ public class SdlViewManager {
 
     private SdlView mRootView;
     private SdlContext mSdlContext;
-    private Show mShow;
+    private SdlViewDecoratorVisitorImp mDecoratorVisitor;
     private String mTemplateName = "";
 
     public SdlViewManager (SdlContext sdlContext){
         mSdlContext = sdlContext;
-        mShow = new Show();
+        mDecoratorVisitor = new SdlViewDecoratorVisitorImp();
     }
 
     public void setRootView(SdlView view){
@@ -36,8 +36,9 @@ public class SdlViewManager {
             setDisplayLayout.setDisplayLayout(templateName);
             mSdlContext.sendRpc(setDisplayLayout);
         }
-        mRootView.decorate(mShow);
-        mSdlContext.sendRpc(mShow);
+        mRootView.accept(mDecoratorVisitor);
+        mSdlContext.sendRpc(mDecoratorVisitor.getShow());
+        mSdlContext.sendRpc(mDecoratorVisitor.getSetMediaClockTimer());
     }
 
     int registerButtonCallback(SdlButton.OnPressListener listener){

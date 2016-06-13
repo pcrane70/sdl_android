@@ -65,6 +65,11 @@ public class SdlTextView extends SdlView{
     }
 
     @Override
+    void accept(SdlViewDecoratorVisitor visitor) {
+        visitor.visit(this);
+    }
+
+    @Override
     public void clear() {
         Arrays.fill(mTextFields, "");
     }
