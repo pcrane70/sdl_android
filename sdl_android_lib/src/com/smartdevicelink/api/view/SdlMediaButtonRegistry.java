@@ -15,9 +15,14 @@ import java.util.HashSet;
  */
 public class SdlMediaButtonRegistry {
     HashSet<ButtonName> mButtonsSubscribed= new HashSet<>();
+    SdlContext mContext;
+
+    public SdlMediaButtonRegistry(SdlContext context){
+        mContext= context;
+    }
 
 
-    public boolean subscribeToMediaButton(final ButtonName name, SdlContext context){
+    public boolean subscribeToMediaButton(final ButtonName name){
         if(!mButtonsSubscribed.contains(name)){
             SubscribeButton newButtonSub= new SubscribeButton();
             newButtonSub.setButtonName(name);
@@ -32,13 +37,13 @@ public class SdlMediaButtonRegistry {
                     super.onError(correlationId, resultCode, info);
                 }
             });
-            context.sendRpc(newButtonSub);
+            mContext.sendRpc(newButtonSub);
             return true;
         }else
             return false;
     }
 
-    public boolean unsubScribeToMediaButton(final ButtonName name, SdlContext context){
+    public boolean unsubscribeToMediaButton(final ButtonName name){
         if(mButtonsSubscribed.contains(name)){
             UnsubscribeButton newButtonUnSub= new UnsubscribeButton();
             newButtonUnSub.setButtonName(name);
@@ -52,8 +57,18 @@ public class SdlMediaButtonRegistry {
                     super.onError(correlationId, resultCode, info);
                 }
             });
+            mContext.sendRpc(newButtonUnSub);
             return true;
         }else
             return false;
+    }
+
+    public boolean clearAllSubscriptions(){
+        for(ButtonName button:mButtonsSubscribed){
+            if(unsubscribeToMediaButton(button)){
+                return false;
+            }
+        }
+        return true;
     }
 }

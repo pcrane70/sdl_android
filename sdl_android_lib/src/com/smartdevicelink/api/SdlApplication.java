@@ -132,7 +132,7 @@ public class SdlApplication extends SdlContextAbsImpl implements IProxyListenerA
     private boolean isFirstHmiReceived = false;
     private boolean isFirstHmiNotNoneReceived = false;
     private SparseArray<SdlButtonBase.OnPressListener> mButtonListenerRegistry = new SparseArray<>();
-    private SdlMediaButtonRegistry mMediaButtonRegistry= new SdlMediaButtonRegistry();
+    private SdlMediaButtonRegistry mMediaButtonRegistry= new SdlMediaButtonRegistry(this);
     private SparseArray<SdlMenuItem.SelectListener> mMenuListenerRegistry = new SparseArray<>();
     private SdlAudioPassThruDialog.ReceiveDataListener mAudioPassThruListener;
 
@@ -270,7 +270,7 @@ public class SdlApplication extends SdlContextAbsImpl implements IProxyListenerA
     public int registerMediaButtonCallback(ButtonName mediaButtonName, SdlMediaButton.OnPressListener listener) {
         mButtonListenerRegistry.put(mediaButtonName.ordinal(),listener);
         //subscribes to the button if not done so already
-        mMediaButtonRegistry.subscribeToMediaButton(mediaButtonName,this);
+        mMediaButtonRegistry.subscribeToMediaButton(mediaButtonName);
         return mediaButtonName.ordinal();
     }
 
