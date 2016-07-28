@@ -4,6 +4,7 @@ import android.content.Context;
 import android.os.Handler;
 
 import com.smartdevicelink.api.SdlActivity;
+import com.smartdevicelink.api.view.SdlChoiceSetManager;
 import com.smartdevicelink.api.file.SdlFileManager;
 import com.smartdevicelink.api.menu.SdlMenuManager;
 import com.smartdevicelink.api.menu.SdlMenuOption;
@@ -13,6 +14,8 @@ import com.smartdevicelink.api.view.SdlAudioPassThruDialog;
 import com.smartdevicelink.api.view.SdlButton;
 import com.smartdevicelink.proxy.RPCRequest;
 import com.smartdevicelink.proxy.rpc.TTSChunk;
+import com.smartdevicelink.protocol.enums.FunctionID;
+import com.smartdevicelink.proxy.rpc.listeners.OnRPCNotificationListener;
 
 public interface SdlContext {
 
@@ -44,9 +47,16 @@ public interface SdlContext {
 
     boolean sendTextToSpeak(String text);
 
+    SdlChoiceSetManager getSdlChoiceSetManager();
+
     boolean sendTextToSpeak(TTSChunk chunk);
 
     SdlPermissionManager getSdlPermissionManager();
 
     SdlMenuTransaction beginGlobalMenuTransaction();
+
+    void registerRpcNotificationListener(FunctionID functionID, OnRPCNotificationListener rpcNotificationListener);
+
+    void unregisterRpcNotificationListener(FunctionID functionID, OnRPCNotificationListener rpcNotificationListener);
+
 }

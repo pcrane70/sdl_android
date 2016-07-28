@@ -4,6 +4,7 @@ import android.os.Handler;
 import android.support.annotation.CallSuper;
 import android.util.Log;
 
+import com.smartdevicelink.api.view.SdlChoiceSetManager;
 import com.smartdevicelink.api.file.SdlFileManager;
 import com.smartdevicelink.api.interfaces.SdlContext;
 import com.smartdevicelink.api.permission.SdlPermissionManager;
@@ -256,6 +257,11 @@ public abstract class SdlActivity extends SdlContextAbsImpl {
     @Override
     public final void unregisterMenuCallback(int id) {
         getSdlApplicationContext().unregisterMenuCallback(id);
+    }
+
+    @Override
+    public SdlChoiceSetManager getSdlChoiceSetManager(){
+        return  getSdlApplicationContext().getSdlChoiceSetManager();
     }
 
     @Override
