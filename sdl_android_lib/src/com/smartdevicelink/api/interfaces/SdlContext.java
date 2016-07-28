@@ -5,11 +5,12 @@ import android.os.Handler;
 
 import com.smartdevicelink.api.SdlActivity;
 import com.smartdevicelink.api.file.SdlFileManager;
+import com.smartdevicelink.api.menu.SdlMenuManager;
+import com.smartdevicelink.api.menu.SdlMenuOption;
+import com.smartdevicelink.api.menu.SdlMenuTransaction;
+import com.smartdevicelink.api.permission.SdlPermissionManager;
 import com.smartdevicelink.api.view.SdlAudioPassThruDialog;
 import com.smartdevicelink.api.view.SdlButton;
-import com.smartdevicelink.api.menu.SdlMenu;
-import com.smartdevicelink.api.menu.SdlMenuItem;
-import com.smartdevicelink.api.permission.SdlPermissionManager;
 import com.smartdevicelink.proxy.RPCRequest;
 import com.smartdevicelink.proxy.rpc.TTSChunk;
 
@@ -21,15 +22,15 @@ public interface SdlContext {
 
     Context getAndroidApplicationContext();
 
-    SdlPermissionManager getSdlPermissionManager();
-
     SdlFileManager getSdlFileManager();
 
     int registerButtonCallback(SdlButton.OnPressListener listener);
 
+    SdlMenuManager getSdlMenuManager();
+
     void unregisterButtonCallback(int id);
 
-    void registerMenuCallback(int id, SdlMenuItem.SelectListener listener);
+    void registerMenuCallback(int id, SdlMenuOption.SelectListener listener);
 
     void unregisterMenuCallback(int id);
 
@@ -39,12 +40,13 @@ public interface SdlContext {
 
     boolean sendRpc(RPCRequest request);
 
-    SdlMenu getTopMenu();
-
     Handler getExecutionHandler();
 
     boolean sendTextToSpeak(String text);
 
     boolean sendTextToSpeak(TTSChunk chunk);
 
+    SdlPermissionManager getSdlPermissionManager();
+
+    SdlMenuTransaction beginGlobalMenuTransaction();
 }
