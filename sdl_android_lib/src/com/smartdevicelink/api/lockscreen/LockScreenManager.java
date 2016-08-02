@@ -11,7 +11,7 @@ import com.smartdevicelink.proxy.rpc.enums.LockScreenStatus;
 
 import java.util.HashMap;
 
-public class LockScreenActivityManager implements LockScreenStatusListener{
+public class LockScreenManager implements LockScreenStatusListener{
 
     private static final Object UPDATE_LOCK = new Object();
 
@@ -20,32 +20,50 @@ public class LockScreenActivityManager implements LockScreenStatusListener{
 
     private boolean isShownInOptional = true;
     private Application mApplication = null;
-    private Class<? extends LockScreenActivity> mLockscreenClass;
+
+    private Class<? extends LockScreenActivity> mLockScreenClass;
+    private SdlLockScreenListener mSdlLockScreenListener;
 
     private HashMap<String, LockScreenStatus> mLockScreenStatusMap;
+    private LockScreenStatus mLastStatus = LockScreenStatus.OFF;
 
-    private static LockScreenActivityManager mInstance;
+    private static LockScreenManager mInstance;
 
-    private LockScreenActivityManager(Application androidApplication,
-                                      Class<? extends LockScreenActivity> lockScreen,
-                                      boolean isShownInOptional){
+    private LockScreenManager(Application androidApplication,
+                              Class<? extends LockScreenActivity> lockScreen,
+                              boolean isShownInOptional){
         mApplication = androidApplication;
-        mLockscreenClass = lockScreen;
+        mLockScreenClass = lockScreen;
         this.isShownInOptional = isShownInOptional;
         mLockScreenStatusMap = new HashMap<>();
     }
 
+    private LockScreenManager(Application androidApplication, SdlLockScreenListener sdlLockScreenListener){
+        mApplication = androidApplication;
+        mSdlLockScreenListener = sdlLockScreenListener;
+        mLockScreenClass = null;
+        mLockScreenStatusMap = new HashMap<>();
+    }
+
     @Nullable
-    static public LockScreenActivityManager getInstance(){
+    static public LockScreenManager getInstance(){
         synchronized (UPDATE_LOCK) {
             return mInstance;
+        }
+    }
+
+    public static void initialize(Application app, SdlLockScreenListener listener){
+        synchronized (UPDATE_LOCK) {
+            if (mInstance == null) {
+                mInstance = new LockScreenManager(app, listener);
+            }
         }
     }
 
     public static void initialize(Application app, LockScreenConfig config){
         synchronized (UPDATE_LOCK) {
             if (mInstance == null) {
-                mInstance = new LockScreenActivityManager(app, config.lockScreen,
+                mInstance = new LockScreenManager(app, config.lockScreen,
                         config.isShownInOptional);
 
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
@@ -124,31 +142,36 @@ public class LockScreenActivityManager implements LockScreenStatusListener{
             if(lss == LockScreenStatus.REQUIRED){
                 highestStatus = LockScreenStatus.REQUIRED;
                 break;
-            } else if(highestStatus == LockScreenStatus.OFF && lss == LockScreenStatus.OPTIONAL){
-                highestStatus = LockScreenStatus.OPTIONAL;
+            } else if(highestStatus == LockScreenStatus.OFF){
+                highestStatus = lss;
             }
         }
 
-        switch(highestStatus){
-            case OPTIONAL:
-                if(isShownInOptional){
+        if(mLockScreenClass != null) {
+            switch (highestStatus) {
+                case OPTIONAL:
+                    if (isShownInOptional) {
+                        launchLockScreen();
+                    } else {
+                        clearLockScreen();
+                    }
+                    break;
+                case REQUIRED:
                     launchLockScreen();
-                } else {
+                    break;
+                case OFF:
                     clearLockScreen();
-                }
-                break;
-            case REQUIRED:
-                launchLockScreen();
-                break;
-            case OFF:
-                clearLockScreen();
-                break;
+                    break;
+            }
+        } else if (mSdlLockScreenListener != null && highestStatus != mLastStatus){
+            mLastStatus = highestStatus;
+            mSdlLockScreenListener.onLockScreenStatus(highestStatus);
         }
     }
 
     private void launchLockScreen(){
         if(LOCK_SCREEN_INSTANCE == null && ACTIVITY_RUNNING){
-            Intent intent = new Intent(mApplication, mLockscreenClass);
+            Intent intent = new Intent(mApplication, mLockScreenClass);
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK |
                             Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS |
                             Intent.FLAG_ACTIVITY_NO_USER_ACTION);

@@ -10,7 +10,7 @@ import android.os.Looper;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
-import com.smartdevicelink.api.lockscreen.LockScreenActivityManager;
+import com.smartdevicelink.api.lockscreen.LockScreenManager;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -42,7 +42,7 @@ public class SdlConnectionService extends Service {
                         application = clazz.newInstance();
                     }
                     application.initialize(this, config, mConnectionStatusListener,
-                            LockScreenActivityManager.getInstance());
+                            LockScreenManager.getInstance());
                     mRunningApplications.put(config.getAppId(), application);
                 } catch (InstantiationException e) {
                     e.printStackTrace();
