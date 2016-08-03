@@ -44,6 +44,7 @@ import com.smartdevicelink.proxy.rpc.EndAudioPassThruResponse;
 import com.smartdevicelink.proxy.rpc.GenericResponse;
 import com.smartdevicelink.proxy.rpc.GetDTCsResponse;
 import com.smartdevicelink.proxy.rpc.GetVehicleDataResponse;
+import com.smartdevicelink.proxy.rpc.HMICapabilities;
 import com.smartdevicelink.proxy.rpc.ListFilesResponse;
 import com.smartdevicelink.proxy.rpc.OnAudioPassThru;
 import com.smartdevicelink.proxy.rpc.OnButtonEvent;
@@ -84,6 +85,7 @@ import com.smartdevicelink.proxy.rpc.TTSChunk;
 import com.smartdevicelink.proxy.rpc.UnsubscribeButtonResponse;
 import com.smartdevicelink.proxy.rpc.UnsubscribeVehicleDataResponse;
 import com.smartdevicelink.proxy.rpc.UpdateTurnListResponse;
+import com.smartdevicelink.proxy.rpc.VehicleType;
 import com.smartdevicelink.proxy.rpc.enums.HMILevel;
 import com.smartdevicelink.proxy.rpc.enums.LockScreenStatus;
 import com.smartdevicelink.proxy.rpc.enums.Result;
@@ -221,9 +223,11 @@ public class SdlApplication extends SdlContextAbsImpl {
             }
             mConnectionStatus = Status.DISCONNECTED;
 
-            if(notifyStatusListener)
+            if(notifyStatusListener) {
                 mLockScreenStatusListener.onLockScreenStatus(getId(), LockScreenStatus.OFF);
-                mApplicationStatusListener.onStatusChange(mApplicationConfig.getAppId(), Status.DISCONNECTED);
+                mApplicationStatusListener.onStatusChange(mApplicationConfig.getAppId(), mConnectionStatus);
+            }
+
             try {
                 mSdlProxyALM.dispose();
             } catch (SdlException e) {
@@ -235,15 +239,6 @@ public class SdlApplication extends SdlContextAbsImpl {
             mExecutionHandler = null;
             mExecutionThread.quit();
             mExecutionThread = null;
-        }
-    }
-
-    public DisplayCapabilities getDisplayCapabilities(){
-        try {
-            return mSdlProxyALM.getDisplayCapabilities();
-        } catch (SdlException e) {
-            e.printStackTrace();
-            return null;
         }
     }
 
@@ -335,6 +330,42 @@ public class SdlApplication extends SdlContextAbsImpl {
             if(listenerSet.isEmpty()){
                 mSdlProxyALM.removeOnRPCNotificationListener(functionID);
             }
+        }
+    }
+
+    @Override
+    public HMICapabilities getHmiCapabilities() {
+        if(mSdlProxyALM == null) return null;
+        try {
+            return mSdlProxyALM.getHmiCapabilities();
+        } catch (SdlException e) {
+            Log.e(TAG, "Unable to retrieve HMICapabilities");
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    @Override
+    public DisplayCapabilities getDisplayCapabilities() {
+        if(mSdlProxyALM == null) return null;
+        try {
+            return mSdlProxyALM.getDisplayCapabilities();
+        } catch (SdlException e) {
+            Log.e(TAG, "Unable to retrieve DisplayCapabilities");
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    @Override
+    public VehicleType getVehicleType() {
+        if(mSdlProxyALM == null) return null;
+        try {
+            return mSdlProxyALM.getVehicleType();
+        } catch (SdlException e) {
+            Log.e(TAG, "Unable to retrieve VehicleType");
+            e.printStackTrace();
+            return null;
         }
     }
 
