@@ -240,15 +240,6 @@ public class SdlApplication extends SdlContextAbsImpl {
         }
     }
 
-    public DisplayCapabilities getDisplayCapabilities(){
-        try {
-            return mSdlProxyALM.getDisplayCapabilities();
-        } catch (SdlException e) {
-            e.printStackTrace();
-            return null;
-        }
-    }
-
     @Override
     public final String toString() {
         return String.format("SdlApplication: %s-%s",
