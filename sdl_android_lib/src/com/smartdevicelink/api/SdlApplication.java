@@ -69,6 +69,7 @@ import com.smartdevicelink.proxy.rpc.PutFileResponse;
 import com.smartdevicelink.proxy.rpc.ReadDIDResponse;
 import com.smartdevicelink.proxy.rpc.ResetGlobalPropertiesResponse;
 import com.smartdevicelink.proxy.rpc.ScrollableMessageResponse;
+import com.smartdevicelink.proxy.rpc.SdlMsgVersion;
 import com.smartdevicelink.proxy.rpc.SendLocationResponse;
 import com.smartdevicelink.proxy.rpc.SetAppIconResponse;
 import com.smartdevicelink.proxy.rpc.SetDisplayLayoutResponse;
@@ -264,8 +265,13 @@ public class SdlApplication extends SdlContextAbsImpl {
     }
 
     @Override
-    public SdlPermissionManager getSdlPermissionManager() {
+    public final SdlPermissionManager getSdlPermissionManager() {
         return mSdlPermissionManager;
+    }
+
+    @Override
+    public final void startSdlActivity(Class<? extends SdlActivity> activity, int flags) {
+        startSdlActivity(activity, null, flags);
     }
 
     public final SdlFileManager getSdlFileManager() {
@@ -280,6 +286,7 @@ public class SdlApplication extends SdlContextAbsImpl {
     @Override
     public final SdlChoiceSetManager getSdlChoiceSetManager(){return mSdlChoiceSetManager;}
 
+    @Override
     public final int registerButtonCallback(SdlButton.OnPressListener listener) {
         int buttonId = mAutoButtonId++;
         mButtonListenerRegistry.append(buttonId, listener);
@@ -297,7 +304,7 @@ public class SdlApplication extends SdlContextAbsImpl {
     }
 
     @Override
-    public void registerRpcNotificationListener(FunctionID functionID, OnRPCNotificationListener rpcNotificationListener) {
+    public final void registerRpcNotificationListener(FunctionID functionID, OnRPCNotificationListener rpcNotificationListener) {
         final int id = functionID.getId();
         HashSet<OnRPCNotificationListener> listenerSet = mNotificationListeners.get(id);
         if(listenerSet == null){
@@ -323,7 +330,7 @@ public class SdlApplication extends SdlContextAbsImpl {
     }
 
     @Override
-    public void unregisterRpcNotificationListener(FunctionID functionID, OnRPCNotificationListener rpcNotificationListener) {
+    public final void unregisterRpcNotificationListener(FunctionID functionID, OnRPCNotificationListener rpcNotificationListener) {
         int id = functionID.getId();
         HashSet<OnRPCNotificationListener> listenerSet = mNotificationListeners.get(id);
         if(listenerSet != null){
@@ -335,7 +342,7 @@ public class SdlApplication extends SdlContextAbsImpl {
     }
 
     @Override
-    public HMICapabilities getHmiCapabilities() {
+    public final HMICapabilities getHmiCapabilities() {
         if(mSdlProxyALM == null) return null;
         try {
             return mSdlProxyALM.getHmiCapabilities();
@@ -347,7 +354,7 @@ public class SdlApplication extends SdlContextAbsImpl {
     }
 
     @Override
-    public DisplayCapabilities getDisplayCapabilities() {
+    public final DisplayCapabilities getDisplayCapabilities() {
         if(mSdlProxyALM == null) return null;
         try {
             return mSdlProxyALM.getDisplayCapabilities();
@@ -359,12 +366,24 @@ public class SdlApplication extends SdlContextAbsImpl {
     }
 
     @Override
-    public VehicleType getVehicleType() {
+    public final VehicleType getVehicleType() {
         if(mSdlProxyALM == null) return null;
         try {
             return mSdlProxyALM.getVehicleType();
         } catch (SdlException e) {
             Log.e(TAG, "Unable to retrieve VehicleType");
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    @Override
+    public final SdlMsgVersion getSdlMessageVersion() {
+        if(mSdlProxyALM == null) return null;
+        try{
+            return mSdlProxyALM.getSdlMsgVersion();
+        } catch (SdlException e) {
+            Log.e(TAG, "Unable to retrieve SdlMessageVersion");
             e.printStackTrace();
             return null;
         }
