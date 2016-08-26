@@ -2,7 +2,7 @@ package com.smartdevicelink.api.interfaces;
 
 import android.content.Context;
 import android.os.Bundle;
-import android.os.Handler;
+import android.os.Looper;
 
 import com.smartdevicelink.api.SdlActivity;
 import com.smartdevicelink.api.view.SdlChoiceSetManager;
@@ -50,8 +50,6 @@ public interface SdlContext {
 
     boolean sendRpc(RPCRequest request);
 
-    Handler getExecutionHandler();
-
     boolean sendTextToSpeak(String text);
 
     SdlChoiceSetManager getSdlChoiceSetManager();
@@ -59,6 +57,8 @@ public interface SdlContext {
     boolean sendTextToSpeak(TTSChunk chunk);
 
     SdlPermissionManager getSdlPermissionManager();
+
+    Looper getSdlExecutionLooper();
 
     SdlMenuTransaction beginGlobalMenuTransaction();
 
