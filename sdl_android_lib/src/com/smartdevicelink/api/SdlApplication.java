@@ -323,7 +323,9 @@ public class SdlApplication extends SdlContextAbsImpl {
                 }
             };
 
-            mSdlProxyALM.addOnRPCNotificationListener(functionID, dispatchingListener);
+            if(mSdlProxyALM != null) {
+                mSdlProxyALM.addOnRPCNotificationListener(functionID, dispatchingListener);
+            }
         } else {
             listenerSet.add(rpcNotificationListener);
         }
