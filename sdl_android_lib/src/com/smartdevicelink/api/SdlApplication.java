@@ -548,7 +548,7 @@ public class SdlApplication extends SdlContextAbsImpl {
 
     @Override
     public final Looper getSdlExecutionLooper() {
-        return mExecutionThread.getLooper();
+        return mExecutionThread != null ? mExecutionThread.getLooper(): null;
     }
 
     /***********************************
