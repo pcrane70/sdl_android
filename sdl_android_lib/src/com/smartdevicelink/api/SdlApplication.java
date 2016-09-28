@@ -33,6 +33,7 @@ import com.smartdevicelink.proxy.rpc.AddCommandResponse;
 import com.smartdevicelink.proxy.rpc.AddSubMenuResponse;
 import com.smartdevicelink.proxy.rpc.AlertManeuverResponse;
 import com.smartdevicelink.proxy.rpc.AlertResponse;
+import com.smartdevicelink.proxy.rpc.ChangeRegistration;
 import com.smartdevicelink.proxy.rpc.ChangeRegistrationResponse;
 import com.smartdevicelink.proxy.rpc.CreateInteractionChoiceSetResponse;
 import com.smartdevicelink.proxy.rpc.DeleteCommandResponse;
@@ -91,6 +92,7 @@ import com.smartdevicelink.proxy.rpc.UpdateTurnListResponse;
 import com.smartdevicelink.proxy.rpc.VehicleType;
 import com.smartdevicelink.proxy.rpc.enums.HMILevel;
 import com.smartdevicelink.proxy.rpc.enums.LockScreenStatus;
+import com.smartdevicelink.proxy.rpc.enums.Language;
 import com.smartdevicelink.proxy.rpc.enums.Result;
 import com.smartdevicelink.proxy.rpc.enums.SdlDisconnectedReason;
 import com.smartdevicelink.proxy.rpc.enums.TriggerSource;
@@ -109,6 +111,8 @@ public class SdlApplication extends SdlContextAbsImpl {
     private static final String THREAD_NAME_BASE = "SDL_THREAD_";
 
     public static final int BACK_BUTTON_ID = 0;
+
+    private static final int CHANGE_REGISTRATION_DELAY = 3000;
 
     public enum Status {
         CONNECTING,
@@ -137,6 +141,7 @@ public class SdlApplication extends SdlContextAbsImpl {
 
     private ConnectionStatusListener mApplicationStatusListener;
     private Status mConnectionStatus;
+    private Language mConnectedLanguage;
 
     private boolean isFirstHmiReceived = false;
     private boolean isFirstHmiNotNoneReceived = false;
@@ -163,11 +168,10 @@ public class SdlApplication extends SdlContextAbsImpl {
                 mSdlActivityManager = new SdlActivityManager();
                 mLockScreenStatusListener = lockScreenActivityManager;
                 mSdlPermissionManager = new SdlPermissionManager();
-                mSdlMenuManager = new SdlMenuManager();
                 mLifecycleListeners.add(mSdlActivityManager);
                 mSdlFileManager = new SdlFileManager(SdlApplication.this, mApplicationConfig);
-                mSdlChoiceSetManager = new SdlChoiceSetManager(SdlApplication.this);
                 mLifecycleListeners.add(mSdlFileManager);
+                createItemManagers();
                 if (mSdlProxyALM != null) {
                     mConnectionStatus = Status.CONNECTING;
                     listener.onStatusChange(mApplicationConfig.getAppId(), Status.CONNECTING);
@@ -176,6 +180,12 @@ public class SdlApplication extends SdlContextAbsImpl {
                 }
             }
         });
+    }
+
+    //TODO: have it so that we are not recreating the managers
+    private void createItemManagers(){
+        mSdlMenuManager = new SdlMenuManager();
+        mSdlChoiceSetManager = new SdlChoiceSetManager(SdlApplication.this);
     }
 
     // Methods to be overridden by developer.
@@ -219,7 +229,7 @@ public class SdlApplication extends SdlContextAbsImpl {
         return mSdlActivityManager;
     }
 
-    final void closeConnection(boolean notifyStatusListener) {
+    final void closeConnection(boolean notifyStatusListener, boolean destroyProxy, boolean destroyThread) {
         if (mConnectionStatus != Status.DISCONNECTED) {
             for (LifecycleListener listener : mLifecycleListeners) {
                 listener.onSdlDisconnect();
@@ -236,12 +246,23 @@ public class SdlApplication extends SdlContextAbsImpl {
             } catch (SdlException e) {
                 e.printStackTrace();
             }
+
             onDisconnect();
-            mSdlProxyALM = null;
-            mExecutionHandler.removeCallbacksAndMessages(null);
-            mExecutionHandler = null;
-            mExecutionThread.quit();
-            mExecutionThread = null;
+            if(destroyProxy){
+                try {
+                    mSdlProxyALM.dispose();
+                } catch (SdlException e) {
+                    e.printStackTrace();
+                }
+                mSdlProxyALM = null;
+
+            }
+            if(destroyThread){
+                mExecutionHandler.removeCallbacksAndMessages(null);
+                mExecutionHandler = null;
+                mExecutionThread.quit();
+                mExecutionThread = null;
+            }
         }
     }
 
@@ -390,6 +411,11 @@ public class SdlApplication extends SdlContextAbsImpl {
             e.printStackTrace();
             return null;
         }
+    }
+
+    @Override
+    public Language getConnectedLanguage() {
+        return mConnectedLanguage;
     }
 
     @Override
@@ -564,6 +590,21 @@ public class SdlApplication extends SdlContextAbsImpl {
 
                     if (!isFirstHmiReceived) {
                         isFirstHmiReceived = true;
+                        try {
+                            if(mApplicationConfig.languageIsSupported(mSdlProxyALM.getSdlLanguage())){
+                                 mConnectedLanguage = mSdlProxyALM.getSdlLanguage();
+                                Log.d(TAG,"Config indicates the app supports the lang the module requested");
+                            }else {
+                                mConnectedLanguage = mApplicationConfig.getDefaultLanguage();
+                                Log.d(TAG,"Config indicates the app does not support the lang the module requested, going to default");
+
+                            }
+                        } catch (SdlException e) {
+                            e.printStackTrace();
+                            Log.e(TAG, "Language could not be grabbed from proxy object");
+                            mConnectedLanguage = mApplicationConfig.getDefaultLanguage();
+                        }
+                        changeRegistrationTask().run();
                         mConnectionStatus = Status.CONNECTED;
                         onConnect();
                         mApplicationStatusListener.onStatusChange(mApplicationConfig.getAppId(), Status.CONNECTED);
@@ -574,11 +615,11 @@ public class SdlApplication extends SdlContextAbsImpl {
                     }
 
                     if (!isFirstHmiNotNoneReceived && hmiLevel != HMILevel.HMI_NONE) {
+                        isFirstHmiNotNoneReceived = true;
                         Log.i(TAG, toString() + " is launching activity: " + mApplicationConfig.getMainSdlActivityClass().getCanonicalName());
                         // TODO: Add check for resume
                         onCreate();
                         mSdlActivityManager.onSdlAppLaunch(SdlApplication.this, mApplicationConfig.getMainSdlActivityClass());
-                        isFirstHmiNotNoneReceived = true;
                     }
 
                     switch (hmiLevel) {
@@ -610,11 +651,20 @@ public class SdlApplication extends SdlContextAbsImpl {
         }
 
         @Override
-        public final void onProxyClosed(String info, Exception e, SdlDisconnectedReason reason) {
+        public final void onProxyClosed(String info, Exception e, final SdlDisconnectedReason reason) {
             mExecutionHandler.post(new Runnable() {
                 @Override
                 public void run() {
-                    closeConnection(true);
+                    if(reason!= SdlDisconnectedReason.LANGUAGE_CHANGE){
+                        closeConnection(true, true, true);
+                    }else {
+                        closeConnection(false, false, false);
+                        isFirstHmiReceived = false;
+                        isFirstHmiNotNoneReceived = false;
+                        createItemManagers();
+                        mConnectionStatus = Status.CONNECTING;
+                        mApplicationStatusListener.onStatusChange(mApplicationConfig.getAppId(), Status.CONNECTING);
+                    }
                 }
             });
         }
@@ -644,7 +694,7 @@ public class SdlApplication extends SdlContextAbsImpl {
             mExecutionHandler.post(new Runnable() {
                 @Override
                 public void run() {
-                    closeConnection(true);
+                    closeConnection(true, true, true);
                 }
             });
         }
@@ -977,6 +1027,36 @@ public class SdlApplication extends SdlContextAbsImpl {
         void onExit();
         void onSdlDisconnect();
 
+    }
+
+    private Runnable changeRegistrationTask(){
+        return new Runnable() {
+            boolean hasExecutedOnce = false;
+
+            @Override
+            public void run() {
+                Language connectedLang = getConnectedLanguage();
+                ChangeRegistration reRegister = new ChangeRegistration();
+                reRegister.setLanguage(connectedLang);
+                reRegister.setHmiDisplayLanguage(connectedLang);
+                final Runnable reuseRunnable = this;
+                reRegister.setOnRPCResponseListener(new OnRPCResponseListener() {
+                    @Override
+                    public void onResponse(int correlationId, final RPCResponse response) {
+                    }
+
+                    @Override
+                    public void onError(int correlationId, Result resultCode, String info) {
+                        super.onError(correlationId, resultCode, info);
+                        if(resultCode != Result.SUCCESS && !hasExecutedOnce){
+                            hasExecutedOnce = true;
+                            mExecutionHandler.postDelayed(reuseRunnable,CHANGE_REGISTRATION_DELAY);
+                        }
+                    }
+                });
+                sendRpc(reRegister);
+            }
+        };
     }
 
 }

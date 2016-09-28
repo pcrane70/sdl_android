@@ -24,6 +24,7 @@ import com.smartdevicelink.proxy.rpc.DisplayCapabilities;
 import com.smartdevicelink.proxy.rpc.HMICapabilities;
 import com.smartdevicelink.proxy.rpc.SdlMsgVersion;
 import com.smartdevicelink.proxy.rpc.VehicleType;
+import com.smartdevicelink.proxy.rpc.enums.Language;
 import com.smartdevicelink.proxy.rpc.listeners.OnRPCNotificationListener;
 
 public abstract class SdlActivity extends SdlContextAbsImpl {
@@ -33,6 +34,7 @@ public abstract class SdlActivity extends SdlContextAbsImpl {
     public static final int FLAG_DEFAULT = 0;
     public static final int FLAG_CLEAR_HISTORY = 1;
     public static final int FLAG_CLEAR_TOP = 2;
+    public static final int FLAG_PULL_TO_TOP = 3;
 
     enum SdlActivityState {
         PRE_CREATE,
@@ -327,6 +329,11 @@ public abstract class SdlActivity extends SdlContextAbsImpl {
     @Override
     public final SdlMsgVersion getSdlMessageVersion() {
         return getSdlApplicationContext().getSdlMessageVersion();
+    }
+
+    @Override
+    public final Language getConnectedLanguage() {
+        return getSdlApplicationContext().getConnectedLanguage();
     }
 
     public class SuperNotCalledException extends RuntimeException{
