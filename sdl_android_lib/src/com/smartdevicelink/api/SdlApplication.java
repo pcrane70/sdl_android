@@ -452,7 +452,6 @@ public class SdlApplication extends SdlContextAbsImpl {
         if (mSdlProxyALM != null) {
             try {
                 request.setCorrelationID(mAutoCoorId++);
-                Log.d(TAG, "Sending RPCRequest type " + request.getFunctionName());
                 Log.v(TAG, request.serializeJSON().toString(3));
                 final OnRPCResponseListener listener = request.getOnRPCResponseListener();
                 OnRPCResponseListener newListener = new OnRPCResponseListener() {
@@ -616,7 +615,7 @@ public class SdlApplication extends SdlContextAbsImpl {
 
                     if (!isFirstHmiNotNoneReceived && hmiLevel != HMILevel.HMI_NONE) {
                         isFirstHmiNotNoneReceived = true;
-                        Log.i(TAG, toString() + " is launching activity: " + mApplicationConfig.getMainSdlActivityClass().getCanonicalName());
+                        Log.i(TAG, toString() + " is launching entry point activity: " + mApplicationConfig.getMainSdlActivityClass().getCanonicalName());
                         // TODO: Add check for resume
                         onCreate();
                         mSdlActivityManager.onSdlAppLaunch(SdlApplication.this, mApplicationConfig.getMainSdlActivityClass());
