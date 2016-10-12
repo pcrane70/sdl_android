@@ -1,21 +1,33 @@
 package com.smartdevicelink.api;
 
-import android.os.Handler;
+import android.os.Bundle;
+import android.os.Looper;
 import android.support.annotation.CallSuper;
+import android.support.annotation.Nullable;
 import android.util.Log;
 
 import com.smartdevicelink.api.file.SdlFileManager;
 import com.smartdevicelink.api.interfaces.SdlContext;
-import com.smartdevicelink.api.menu.SdlMenuItem;
+import com.smartdevicelink.api.menu.SdlMenuManager;
+import com.smartdevicelink.api.menu.SdlMenuOption;
+import com.smartdevicelink.api.menu.SdlMenuTransaction;
 import com.smartdevicelink.api.permission.SdlPermissionManager;
 import com.smartdevicelink.api.view.SdlAudioPassThruDialog;
 import com.smartdevicelink.api.view.SdlButton;
 import com.smartdevicelink.api.view.SdlButtonBase;
 import com.smartdevicelink.api.view.SdlMediaButton;
+import com.smartdevicelink.api.view.SdlChoiceSetManager;
 import com.smartdevicelink.api.view.SdlView;
 import com.smartdevicelink.api.view.SdlViewManager;
+import com.smartdevicelink.protocol.enums.FunctionID;
 import com.smartdevicelink.proxy.RPCRequest;
 import com.smartdevicelink.proxy.rpc.enums.ButtonName;
+import com.smartdevicelink.proxy.rpc.DisplayCapabilities;
+import com.smartdevicelink.proxy.rpc.HMICapabilities;
+import com.smartdevicelink.proxy.rpc.SdlMsgVersion;
+import com.smartdevicelink.proxy.rpc.VehicleType;
+import com.smartdevicelink.proxy.rpc.enums.Language;
+import com.smartdevicelink.proxy.rpc.listeners.OnRPCNotificationListener;
 
 public abstract class SdlActivity extends SdlContextAbsImpl {
 
@@ -24,6 +36,7 @@ public abstract class SdlActivity extends SdlContextAbsImpl {
     public static final int FLAG_DEFAULT = 0;
     public static final int FLAG_CLEAR_HISTORY = 1;
     public static final int FLAG_CLEAR_TOP = 2;
+    public static final int FLAG_PULL_TO_TOP = 3;
 
     enum SdlActivityState {
         PRE_CREATE,
@@ -57,11 +70,11 @@ public abstract class SdlActivity extends SdlContextAbsImpl {
 
     public void setContentView(SdlView view) {
         mViewManager.setRootView(view);
-        view.setDisplayCapabilities(((SdlApplication) getSdlApplicationContext()).getDisplayCapabilities());
+        view.setDisplayCapabilities(getSdlApplicationContext().getDisplayCapabilities());
     }
 
     @CallSuper
-    protected void onCreate() {
+    protected void onCreate(@Nullable Bundle bundle) {
         superCalled = true;
     }
 
@@ -71,7 +84,7 @@ public abstract class SdlActivity extends SdlContextAbsImpl {
     }
 
     @CallSuper
-    protected void onRestart() {
+    protected void onRestart(){
         superCalled = true;
     }
 
@@ -104,7 +117,8 @@ public abstract class SdlActivity extends SdlContextAbsImpl {
         ((SdlApplication) getSdlApplicationContext()).getSdlActivityManager().finish();
     }
 
-    public void onBackNavigation() {
+
+    public final void onBackNavigation() {
         isBackHandled = false;
     }
 
@@ -120,10 +134,10 @@ public abstract class SdlActivity extends SdlContextAbsImpl {
         this.isFinishing = isFinishing;
     }
 
-    final void performCreate() {
+    final void performCreate(Bundle bundle) {
         superCalled = false;
         mActivityState = SdlActivityState.POST_CREATE;
-        this.onCreate();
+        this.onCreate(bundle);
         if (!superCalled) throw new SuperNotCalledException(this.getClass().getCanonicalName()
                 + " did not call through to super() in method onCreate(). This should NEVER happen.");
         performCreateViews();
@@ -144,9 +158,11 @@ public abstract class SdlActivity extends SdlContextAbsImpl {
                 + " did not call through to super() in method onRestart(). This should NEVER happen.");
     }
 
-    final void performStart() {
+    final void performStart(String currentTemplate) {
         superCalled = false;
         mActivityState = SdlActivityState.BACKGROUND;
+        getSdlMenuManager().redoTransactions(this);
+        mViewManager.setCurrentTemplate(currentTemplate);
         this.onStart();
         if (!superCalled) throw new SuperNotCalledException(this.getClass().getCanonicalName()
                 + " did not call through to super() in method onStart(). This should NEVER happen.");
@@ -161,7 +177,6 @@ public abstract class SdlActivity extends SdlContextAbsImpl {
         mViewManager.getRootView().setIsVisible(true);
         mViewManager.updateView();
         mViewManager.prepareImages();
-        getTopMenu().update();
     }
 
     final void performBackground() {
@@ -173,18 +188,21 @@ public abstract class SdlActivity extends SdlContextAbsImpl {
                 + " did not call through to super() in method onBackground(). This should NEVER happen.");
     }
 
-    final void performStop() {
+    final String performStop() {
         superCalled = false;
         mActivityState = SdlActivityState.STOPPED;
         this.onStop();
+        getSdlMenuManager().undoTransactions(this);
         if (!superCalled) throw new SuperNotCalledException(this.getClass().getCanonicalName()
                 + " did not call through to super() in method onStop(). This should NEVER happen.");
+        return mViewManager.getCurrentTemplate();
     }
 
     final void performDestroy() {
         superCalled = false;
         mActivityState = SdlActivityState.DESTROYED;
         this.onDestroy();
+        getSdlMenuManager().clearTransactionRecord(this);
         if (!superCalled) throw new SuperNotCalledException(this.getClass().getCanonicalName()
                 + " did not call through to super() in method onDestroy(). This should NEVER happen.");
     }
@@ -195,13 +213,18 @@ public abstract class SdlActivity extends SdlContextAbsImpl {
         return isBackHandled;
     }
 
+
+    public final SdlMenuTransaction beginLocalMenuTransaction() {
+        return new SdlMenuTransaction(this, this);
+    }
+
     @Override
-    public int registerButtonCallback(SdlButton.OnPressListener listener) {
+    public final int registerButtonCallback(SdlButton.OnPressListener listener) {
         return getSdlApplicationContext().registerButtonCallback(listener);
     }
 
     @Override
-    public void unregisterButtonCallback(int id) {
+    public final void unregisterButtonCallback(int id) {
         getSdlApplicationContext().unregisterButtonCallback(id);
     }
 
@@ -211,35 +234,31 @@ public abstract class SdlActivity extends SdlContextAbsImpl {
     }
 
     @Override
-    public boolean sendRpc(RPCRequest request) {
+    public final boolean sendRpc(RPCRequest request) {
         return getSdlApplicationContext().sendRpc(request);
     }
 
     @Override
-    public void registerAudioPassThruListener(SdlAudioPassThruDialog.ReceiveDataListener listener) {
+    public final void registerAudioPassThruListener(SdlAudioPassThruDialog.ReceiveDataListener listener) {
         getSdlApplicationContext().registerAudioPassThruListener(listener);
     }
 
     @Override
-    public void unregisterAudioPassThruListener(SdlAudioPassThruDialog.ReceiveDataListener listener) {
+    public final void unregisterAudioPassThruListener(SdlAudioPassThruDialog.ReceiveDataListener listener) {
         getSdlApplicationContext().unregisterAudioPassThruListener(listener);
     }
 
     @Override
-    public final void startSdlActivity(Class<? extends SdlActivity> activity, int flags) {
-        getSdlApplicationContext().startSdlActivity(activity, flags);
-    }
-
-    @Override
-    public SdlPermissionManager getSdlPermissionManager() {
+    public final SdlPermissionManager getSdlPermissionManager() {
         return getSdlApplicationContext().getSdlPermissionManager();
     }
 
-    public SdlFileManager getSdlFileManager() {
+    public final SdlFileManager getSdlFileManager() {
         return getSdlApplicationContext().getSdlFileManager();
     }
 
-    public final void registerMenuCallback(int id, SdlMenuItem.SelectListener listener) {
+    @Override
+    public final void registerMenuCallback(int id, SdlMenuOption.SelectListener listener) {
         getSdlApplicationContext().registerMenuCallback(id, listener);
     }
 
@@ -249,8 +268,68 @@ public abstract class SdlActivity extends SdlContextAbsImpl {
     }
 
     @Override
-    public Handler getExecutionHandler() {
-        return getSdlApplicationContext().getExecutionHandler();
+    public final SdlChoiceSetManager getSdlChoiceSetManager(){
+        return  getSdlApplicationContext().getSdlChoiceSetManager();
+    }
+
+    @Override
+    public final Looper getSdlExecutionLooper() {
+        return getSdlApplicationContext().getSdlExecutionLooper();
+    }
+
+    @Override
+    public final void startSdlActivity(Class<? extends SdlActivity> activity, Bundle bundle, int flags) {
+        getSdlApplicationContext().startSdlActivity(activity, bundle, flags);
+    }
+
+    @Override
+    public final void startSdlActivity(Class<? extends SdlActivity> activity, int flags) {
+        startSdlActivity(activity, null, flags);
+    }
+
+    @Override
+    public final SdlMenuManager getSdlMenuManager() {
+        return getSdlApplicationContext().getSdlMenuManager();
+    }
+
+    @Override
+    public final SdlMenuTransaction beginGlobalMenuTransaction() {
+        return getSdlApplicationContext().beginGlobalMenuTransaction();
+    }
+
+    @Override
+    public final void registerRpcNotificationListener(FunctionID functionID, OnRPCNotificationListener rpcNotificationListener) {
+        getSdlApplicationContext().registerRpcNotificationListener(functionID, rpcNotificationListener);
+    }
+
+    @Override
+    public final void unregisterRpcNotificationListener(FunctionID functionID, OnRPCNotificationListener rpcNotificationListener) {
+        getSdlApplicationContext().unregisterRpcNotificationListener(functionID, rpcNotificationListener);
+    }
+
+    @Override
+    public final HMICapabilities getHmiCapabilities() {
+        return getSdlApplicationContext().getHmiCapabilities();
+    }
+
+    @Override
+    public final DisplayCapabilities getDisplayCapabilities() {
+        return getSdlApplicationContext().getDisplayCapabilities();
+    }
+
+    @Override
+    public final VehicleType getVehicleType() {
+        return getSdlApplicationContext().getVehicleType();
+    }
+
+    @Override
+    public final SdlMsgVersion getSdlMessageVersion() {
+        return getSdlApplicationContext().getSdlMessageVersion();
+    }
+
+    @Override
+    public final Language getConnectedLanguage() {
+        return getSdlApplicationContext().getConnectedLanguage();
     }
 
     public class SuperNotCalledException extends RuntimeException{

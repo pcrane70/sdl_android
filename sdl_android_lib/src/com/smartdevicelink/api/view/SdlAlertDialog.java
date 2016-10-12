@@ -1,19 +1,13 @@
 package com.smartdevicelink.api.view;
 
-import android.support.annotation.NonNull;
-
 import com.smartdevicelink.api.interfaces.SdlContext;
 import com.smartdevicelink.api.permission.SdlPermission;
-import com.smartdevicelink.api.permission.SdlPermissionManager;
-import com.smartdevicelink.proxy.RPCResponse;
-import com.smartdevicelink.proxy.rpc.enums.Result;
-import com.smartdevicelink.proxy.rpc.listeners.OnRPCResponseListener;
 
 
 /**
  * Created by mschwerz on 4/21/16.
  */
-public class SdlAlertDialog extends SdlCommonAlert{
+public class SdlAlertDialog extends SdlAlertBase{
     private final String TAG = getClass().getSimpleName();
 
     protected SdlAlertDialog(Builder builder) {
@@ -21,13 +15,26 @@ public class SdlAlertDialog extends SdlCommonAlert{
     }
 
     @Override
-    protected boolean verifyRPCCanbeSent(SdlContext context) {
-        //TODO: Check here if the activity is in foreground
-        return super.verifyRPCCanbeSent(context) && true;
+    protected SdlInteractionSender getSender() {
+        if(mSender==null)
+            mSender= new SdlAlertDialogSender(SdlPermission.Alert);
+        return mSender;
+    }
+
+    public class SdlAlertDialogSender extends SdlInteractionSender{
+        public SdlAlertDialogSender(SdlPermission permission) {
+            super(permission);
+        }
+
+        @Override
+        protected boolean isAbleToSendInteraction(SdlPermission permission, SdlContext context) {
+            //TODO: Be able to know when the app is in foreground
+            return super.isAbleToSendInteraction(permission, context) && true;
+        }
     }
 
     //Extends the common Builder for the Alerts
-    public static class Builder extends SdlCommonAlert.Builder<Builder>{
+    public static class Builder extends SdlAlertBase.Builder<Builder>{
 
         public Builder() {
 

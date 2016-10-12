@@ -17,7 +17,7 @@ public class SdlGraphicView extends SdlView {
 
     private SdlImage mSdlImage;
     private boolean isImagePresent = false;
-    private boolean isWaitingToUpload = true;
+    private boolean isWaitingForUpload = false;
 
     private boolean isSecondaryGraphic = false;
 
@@ -45,8 +45,11 @@ public class SdlGraphicView extends SdlView {
     private void checkImagePresence() {
         SdlFileManager fileManager = mSdlContext.getSdlFileManager();
         isImagePresent = fileManager.isFileOnModule(mSdlImage.getSdlName());
-        if (!isWaitingToUpload && !isImagePresent) {
+        Log.i(TAG, "SdlImage: " + mSdlImage.getSdlName());
+        Log.i(TAG, "is " + (isImagePresent ? "" : "not ") + "present on module");
+        if (!isWaitingForUpload && !isImagePresent) {
             fileManager.uploadSdlImage(mSdlImage, mFileReadyListener);
+            isWaitingForUpload = true;
         }
     }
 
@@ -86,9 +89,7 @@ public class SdlGraphicView extends SdlView {
     @Override
     void uploadRequiredImages() {
         if(!isImagePresent && mSdlImage != null){
-            SdlFileManager fileManager = mSdlContext.getSdlFileManager();
-            fileManager.uploadSdlImage(mSdlImage, mFileReadyListener);
-            isWaitingToUpload = false;
+            checkImagePresence();
         }
     }
 
@@ -101,6 +102,7 @@ public class SdlGraphicView extends SdlView {
         @Override
         public void onFileReady(SdlFile sdlFile) {
             isImagePresent = true;
+            isWaitingForUpload = false;
             Log.d(TAG, "Graphic ready.");
             if(isVisible) {
                 redraw();

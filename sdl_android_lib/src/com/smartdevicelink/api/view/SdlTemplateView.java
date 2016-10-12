@@ -196,30 +196,31 @@ public class SdlTemplateView extends SdlView {
 
     private TemplateStatus createTemplate(LayoutTemplate template, SdlView mainView,
                                           SdlView secondaryView, SdlButtonView buttonView) {
-        Log.d(TAG, "Looking for template: " + template.name());
+        Log.d(TAG, "Desired template for view: " + template.name());
         if(mAvailableTemplateSet.contains(template)) {
             mLeftView = mainView;
             if(mLeftView != null){
                 mLeftView.setSdlViewManager(mViewManager);
                 mLeftView.setDisplayCapabilities(mDisplayCapabilities);
-                mLeftView.setSdlContext(mSdlContext);
+                if(mSdlContext != null) mLeftView.setSdlContext(mSdlContext);
             }
             mRightView = secondaryView;
             if(mRightView != null){
                 mRightView.setSdlViewManager(mViewManager);
                 mRightView.setDisplayCapabilities(mDisplayCapabilities);
-                mRightView.setSdlContext(mSdlContext);
+                if(mSdlContext != null) mRightView.setSdlContext(mSdlContext);
             }
             mSdlButtonView = buttonView;
             if(mSdlButtonView != null){
                 mSdlButtonView.setSdlViewManager(mViewManager);
                 mSdlButtonView.setDisplayCapabilities(mDisplayCapabilities);
-                mSdlButtonView.setSdlContext(mSdlContext);
+                if(mSdlContext != null) mSdlButtonView.setSdlContext(mSdlContext);
             }
             isLayoutDifferent = template != mTemplate;
             mTemplate = template;
-            Log.d(TAG, "My Template is: " + mTemplate.name());
+            Log.d(TAG, "Template " + template.name() + " is supported.");
         } else {
+            Log.d(TAG, "Template " + template.name() + " is not supported.");
             return TemplateStatus.INVALID_TEMPLATE_NOT_SUPPORTED;
         }
         return TemplateStatus.VALID;
@@ -263,12 +264,15 @@ public class SdlTemplateView extends SdlView {
         mSdlContext = sdlContext;
         if(mLeftView != null){
             mLeftView.setSdlViewManager(mViewManager);
+            mLeftView.setSdlContext(mSdlContext);
         }
         if(mRightView != null){
             mRightView.setSdlViewManager(mViewManager);
+            mRightView.setSdlContext(mSdlContext);
         }
         if(mSdlButtonView != null){
             mSdlButtonView.setSdlViewManager(mViewManager);
+            mRightView.setSdlContext(mSdlContext);
         }
     }
 
