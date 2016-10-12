@@ -14,7 +14,6 @@ import com.smartdevicelink.api.menu.SdlMenuOption;
 import com.smartdevicelink.api.menu.SdlMenuTransaction;
 import com.smartdevicelink.api.permission.SdlPermissionManager;
 import com.smartdevicelink.protocol.enums.FunctionID;
-import com.smartdevicelink.api.view.SdlButtonBase;
 import com.smartdevicelink.api.view.SdlMediaButton;
 import com.smartdevicelink.proxy.RPCRequest;
 import com.smartdevicelink.proxy.rpc.DisplayCapabilities;
