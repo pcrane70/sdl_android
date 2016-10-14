@@ -38,22 +38,36 @@ class SdlInteractionButtonManager {
                     softButtonFromSdlButton.setText(button.getText());
                     softButtonFromSdlButton.setType(SoftButtonType.SBT_TEXT);
                 }
-                softButtonFromSdlButton.setIsHighlighted(false);
-                softButtonFromSdlButton.setSystemAction(SystemAction.DEFAULT_ACTION);
+                if (button.isHighlighted()) {
+                    softButtonFromSdlButton.setIsHighlighted(true);
+                }
+                if (button.getSystemAction()!= null) {
+                    softButtonFromSdlButton.setSystemAction(button.getSystemAction());
+                } else {
+                    softButtonFromSdlButton.setSystemAction(SystemAction.DEFAULT_ACTION);
+                }
                 if(button.getSdlImage()!=null){
-                    if(context.getSdlFileManager().isFileOnModule(button.getSdlImage().getSdlName())){
+                    if (!button.getSdlImage().isStaticImage()) {
+                        if (context.getSdlFileManager().isFileOnModule(button.getSdlImage().getSdlName())) {
+                            Image image = new Image();
+                            image.setValue(button.getSdlImage().getSdlName());
+                            image.setImageType(ImageType.DYNAMIC);
+                            softButtonFromSdlButton.setImage(image);
+                            softButtonFromSdlButton.setType(SoftButtonType.SBT_IMAGE);
+                        } else {
+                            //unregistering the buttons since we have an SdlButton that has an image
+                            //that has not been uploaded to the module
+                            unregisterAllButtons(context);
+                            //The image with the SdlButton was not ready, therefore fail until
+                            //the user provides an uploaded image
+                            throw new SdlImageNotReadyException();
+                        }
+                    } else {
                         Image image = new Image();
                         image.setValue(button.getSdlImage().getSdlName());
-                        image.setImageType(ImageType.DYNAMIC);
+                        image.setImageType(ImageType.STATIC);
                         softButtonFromSdlButton.setImage(image);
                         softButtonFromSdlButton.setType(SoftButtonType.SBT_IMAGE);
-                    }else{
-                        //unregistering the buttons since we have an SdlButton that has an image
-                        //that has not been uploaded to the module
-                        unregisterAllButtons(context);
-                        //The image with the SdlButton was not ready, therefore fail until
-                        //the user provides an uploaded image
-                        throw new SdlImageNotReadyException();
                     }
                 }
                 int buttonID = context.registerButtonCallback(new SdlButton.OnPressListener() {

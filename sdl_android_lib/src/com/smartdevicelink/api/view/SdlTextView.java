@@ -6,7 +6,8 @@ import java.util.Arrays;
 
 public class SdlTextView extends SdlView{
 
-    private String[] mTextFields = new String[5];
+    private String[] mTextFields = new String[4];
+    private String mMediaTrack = null;
 
     public SdlTextView(){
         Arrays.fill(mTextFields, "");
@@ -16,6 +17,14 @@ public class SdlTextView extends SdlView{
         if(index < mTextFields.length){
             mTextFields[index] = text;
         }
+    }
+
+    public String getMediaTrack() {
+        return mMediaTrack;
+    }
+
+    public void setMediaTrack(String text) {
+        mMediaTrack = text;
     }
 
     public void setText(String text){
@@ -57,7 +66,7 @@ public class SdlTextView extends SdlView{
         show.setMainField2(mTextFields[1]);
         show.setMainField3(mTextFields[2]);
         show.setMainField4(mTextFields[3]);
-        show.setMediaTrack(mTextFields[4]);
+        show.setMediaTrack(mMediaTrack);
     }
 
     @Override

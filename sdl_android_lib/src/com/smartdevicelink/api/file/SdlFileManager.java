@@ -183,12 +183,14 @@ public class SdlFileManager implements SdlApplication.LifecycleListener{
 
             boolean isFileLoaded = false;
 
-            if(sdlImage.getResId() != null) {
+            if (sdlImage.getResId() != null) {
                 isFileLoaded = loadImageFromResource(sdlImage.getResId(), putFile);
-            } else if(sdlImage.getPath() != null){
+            } else if (sdlImage.getPath() != null){
                 isFileLoaded = loadImageFromPath(sdlImage.getPath(), putFile);
-            } else if(sdlImage.getURL() != null){
+            } else if (sdlImage.getURL() != null){
                 isFileLoaded = loadImageFromURL(sdlImage.getURL(), putFile);
+            } else if (sdlImage.getBitmap() != null) {
+                isFileLoaded = loadImageFromBitmap(sdlImage.getBitmap(), putFile);
             } else {
                 Log.w(TAG, "No image sent to module because no identifiers were provided.");
                 return null;
@@ -262,6 +264,12 @@ public class SdlFileManager implements SdlApplication.LifecycleListener{
             }
             sendBitmapPutfile(putFile, image);
             Log.i(TAG, "Loaded bitmap from URL: " + url.toExternalForm());
+            return true;
+        }
+
+        private boolean loadImageFromBitmap(Bitmap bitmap, PutFile putFile) {
+            sendBitmapPutfile(putFile, bitmap);
+            Log.i(TAG, "Loaded provided bitmap");
             return true;
         }
 

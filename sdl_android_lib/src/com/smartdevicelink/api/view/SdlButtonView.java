@@ -120,19 +120,36 @@ public class SdlButtonView extends SdlView {
         for(SdlButton button: mSdlButtons) {
             SoftButton softButton = new SoftButton();
             softButton.setSoftButtonID(button.getId());
-            softButton.setSystemAction(SystemAction.DEFAULT_ACTION);
+            if (button.isHighlighted()) {
+                softButton.setHighlighted(true);
+            }
+            if (button.getSystemAction() != null) {
+                softButton.setSystemAction(button.getSystemAction());
+            } else {
+                softButton.setSystemAction(SystemAction.DEFAULT_ACTION);
+            }
             SoftButtonType type = SoftButtonType.SBT_TEXT;
             softButton.setText(button.getText());
 
             SdlImage sdlImage = button.getSdlImage();
-            if(sdlImage != null) {
-                SdlButtonImageRecord bir = mImageStatusRegister.get(sdlImage.getSdlName());
-                if (bir != null && bir.isReady) {
-                    Image image = new Image();
-                    image.setImageType(ImageType.DYNAMIC);
+            if (sdlImage != null) {
+                Image image = null;
+
+                if (sdlImage.isStaticImage()) {
+                    image = new Image();
+                    image.setImageType(ImageType.STATIC);
+                } else {
+                    SdlButtonImageRecord bir = mImageStatusRegister.get(sdlImage.getSdlName());
+                    if (bir != null && bir.isReady) {
+                        image = new Image();
+                        image.setImageType(ImageType.DYNAMIC);
+                    }
+                }
+
+                if (image != null) {
                     image.setValue(sdlImage.getSdlName());
                     softButton.setImage(image);
-                    if(button.isGraphicOnly()){
+                    if (button.isGraphicOnly()) {
                         type = SoftButtonType.SBT_IMAGE;
                     } else {
                         type = SoftButtonType.SBT_BOTH;

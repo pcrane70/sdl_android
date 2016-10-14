@@ -13,11 +13,12 @@ import com.smartdevicelink.proxy.rpc.enums.SpeechCapabilities;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 
 /**
  * Created by mschwerz on 5/3/16.
  */
-abstract class SdlAlertBase {
+public abstract class SdlAlertBase {
     private final String TAG = getClass().getSimpleName();
 
     protected static final int MIN_DURATION = 3000;
@@ -28,7 +29,7 @@ abstract class SdlAlertBase {
     protected int mDuration;
     protected boolean mIsToneUsed;
     protected boolean mIsIndicatorUsed;
-    protected TTSChunk mTtsChunk;
+    protected List<TTSChunk> mTtsChunks;
     protected final ArrayList<SdlButton> mButtons= new ArrayList<>();
     protected SdlInteractionSender mSender;
     protected SdlInteractionButtonManager mButtonManager;
@@ -39,7 +40,7 @@ abstract class SdlAlertBase {
         this.mDuration= builder.mDuration;
         this.mIsToneUsed= builder.mIsToneUsed;
         this.mIsIndicatorUsed= builder.mIsIndicatorShown;
-        this.mTtsChunk= builder.mTtsChunk;
+        this.mTtsChunks= builder.mTtsChunks;
         this.mButtons.addAll(builder.mButtons);
         mButtonManager= new SdlInteractionButtonManager(mButtons);
     }
@@ -52,8 +53,8 @@ abstract class SdlAlertBase {
         newAlert.setDuration(mDuration);
         newAlert.setProgressIndicator(mIsIndicatorUsed);
         newAlert.setPlayTone(mIsToneUsed);
-        if(mTtsChunk!=null)
-            newAlert.setTtsChunks(Collections.singletonList(mTtsChunk));
+        newAlert.setTtsChunks(mTtsChunks);
+
         try {
             newAlert.setSoftButtons(mButtonManager.registerAllButtons(context));
         }catch (SdlInteractionButtonManager.SdlImageNotReadyException exception){
@@ -85,8 +86,8 @@ abstract class SdlAlertBase {
         private int mDuration = DEFAULT_DURATION;
         private boolean mIsToneUsed;
         private boolean mIsIndicatorShown;
-        private ArrayList<SdlButton> mButtons = new ArrayList<>();
-        private TTSChunk mTtsChunk;
+        private List<SdlButton> mButtons = new ArrayList<>();
+        private List<TTSChunk> mTtsChunks = new ArrayList<>();
 
         public Builder(){
 
@@ -179,6 +180,15 @@ abstract class SdlAlertBase {
             return grabBuilder();
         }
 
+        /**
+         * Sets the TTS to be spoken when the {@link SdlAlertBase} appears.
+         * @param ttsChunkList The list of descriptions of the Text To Speech to be read aloud
+         * @return The builder for the {@link SdlAlertBase}
+         */
+        public T setSpeakList(List<TTSChunk> ttsChunkList) {
+            mTtsChunks = ttsChunkList;
+            return grabBuilder();
+        }
 
         /**
          * Sets the TTS to be spoken when the {@link SdlAlertBase} appears.
@@ -186,7 +196,7 @@ abstract class SdlAlertBase {
          * @return The builder for the {@link SdlAlertBase}
          */
         public T setSpeak(TTSChunk ttsChunk){
-            mTtsChunk = ttsChunk;
+            mTtsChunks = Collections.singletonList(ttsChunk);
             return grabBuilder();
         }
 
@@ -200,7 +210,7 @@ abstract class SdlAlertBase {
             TTSChunk newChunk= new TTSChunk();
             newChunk.setText(textToSpeak);
             newChunk.setType(SpeechCapabilities.TEXT);
-            mTtsChunk= newChunk;
+            mTtsChunks= Collections.singletonList(newChunk);
             return grabBuilder();
         }
 
