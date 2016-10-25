@@ -6,7 +6,7 @@ public abstract class DiagnosticCommand implements Comparable<DiagnosticCommand>
 
     protected int mTimeout;
     protected int mPriority;
-    protected long mInsertTime;
+    protected int mCommandId;
 
     public DiagnosticCommand(SdlContext sdlContext, int timeout, int priority){
         mTimeout = timeout;
@@ -22,13 +22,17 @@ public abstract class DiagnosticCommand implements Comparable<DiagnosticCommand>
         return mPriority;
     }
 
-    public void setInsertTime(long insertTime){
-        mInsertTime = insertTime;
+    public int getCommandId() {
+        return mCommandId;
+    }
+
+    public void setCommandId(int commandId){
+        mCommandId = commandId;
     }
 
     abstract public void execute(CompletionCallback callback);
 
-    abstract public void timedOut();
+    abstract public void onTimeout();
 
     abstract public void cancel();
 
