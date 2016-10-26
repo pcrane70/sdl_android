@@ -90,6 +90,7 @@ import com.smartdevicelink.proxy.rpc.UnsubscribeButtonResponse;
 import com.smartdevicelink.proxy.rpc.UnsubscribeVehicleDataResponse;
 import com.smartdevicelink.proxy.rpc.UpdateTurnListResponse;
 import com.smartdevicelink.proxy.rpc.VehicleType;
+import com.smartdevicelink.proxy.rpc.enums.DriverDistractionState;
 import com.smartdevicelink.proxy.rpc.enums.HMILevel;
 import com.smartdevicelink.proxy.rpc.enums.LockScreenStatus;
 import com.smartdevicelink.proxy.rpc.enums.Language;
@@ -149,6 +150,8 @@ public class SdlApplication extends SdlContextAbsImpl {
     private SparseArray<SdlMenuOption.SelectListener> mMenuListenerRegistry = new SparseArray<>();
     private SparseArray<SdlButton.OnPressListener> mButtonListenerRegistry = new SparseArray<>();
     private SdlAudioPassThruDialog.ReceiveDataListener mAudioPassThruListener;
+
+    private DriverDistractionState mDriverDistractionState = DriverDistractionState.DD_ON;
 
     void initialize(final SdlConnectionService service,
                    final SdlApplicationConfig config,
@@ -564,6 +567,11 @@ public class SdlApplication extends SdlContextAbsImpl {
         return mExecutionThread.getLooper();
     }
 
+    @Override
+    public DriverDistractionState getCurrentDDState() {
+        return mDriverDistractionState;
+    }
+
     /***********************************
      * IProxyListenerALM interface methods
      * All notification and response handling
@@ -923,8 +931,13 @@ public class SdlApplication extends SdlContextAbsImpl {
         }
 
         @Override
-        public final void onOnDriverDistraction(OnDriverDistraction notification) {
-
+        public final void onOnDriverDistraction(final OnDriverDistraction notification) {
+            mExecutionHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    mDriverDistractionState = notification.getState();
+                }
+            });
         }
 
         @Override
