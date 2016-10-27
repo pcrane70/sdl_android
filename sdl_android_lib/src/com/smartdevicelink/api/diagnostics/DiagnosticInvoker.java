@@ -6,6 +6,8 @@ import java.util.concurrent.PriorityBlockingQueue;
 
 public class DiagnosticInvoker {
 
+    private static final String DIAGNOSTIC_THREAD_NAME = "sdl_diagnostic_command_thread";
+
     private static int SUBMISSION_COUNT = 0;
     private static final Object COUNT_LOCK = new Object();
     private PriorityBlockingQueue<DiagnosticCommand> mDiagnosticQueue = new PriorityBlockingQueue<>();
@@ -15,7 +17,8 @@ public class DiagnosticInvoker {
     private boolean isCommandComplete = false;
 
     public DiagnosticInvoker(){
-        mExecutionThread = new Thread(mExecutionRunnable);
+        mExecutionThread = new Thread(mExecutionRunnable, DIAGNOSTIC_THREAD_NAME);
+        mExecutionThread.start();
     }
 
     public int submitCommand(DiagnosticCommand command){
