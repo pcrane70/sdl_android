@@ -16,6 +16,7 @@ import com.smartdevicelink.api.menu.SdlMenuManager;
 import com.smartdevicelink.api.menu.SdlMenuOption;
 import com.smartdevicelink.api.menu.SdlMenuTransaction;
 import com.smartdevicelink.api.permission.SdlPermissionManager;
+import com.smartdevicelink.api.vehicledata.SdlVehicleDataManager;
 import com.smartdevicelink.exception.SdlException;
 import com.smartdevicelink.protocol.enums.FunctionID;
 import com.smartdevicelink.proxy.RPCNotification;
@@ -128,6 +129,7 @@ public class SdlApplication extends SdlContextAbsImpl {
     private SdlPermissionManager mSdlPermissionManager;
     private SdlFileManager mSdlFileManager;
     private SdlMenuManager mSdlMenuManager;
+    private SdlVehicleDataManager mSdlVehicleDataManager;
     private SdlProxyALM mSdlProxyALM;
 
     private final ArrayList<LifecycleListener> mLifecycleListeners = new ArrayList<>();
@@ -163,6 +165,7 @@ public class SdlApplication extends SdlContextAbsImpl {
                 mSdlPermissionManager = new SdlPermissionManager();
                 mLifecycleListeners.add(mSdlActivityManager);
                 mSdlFileManager = new SdlFileManager(SdlApplication.this, mApplicationConfig);
+                mSdlVehicleDataManager = new SdlVehicleDataManager(SdlApplication.this);
                 mLifecycleListeners.add(mSdlFileManager);
                 createItemManagers();
                 if (mSdlProxyALM != null) {
@@ -512,6 +515,11 @@ public class SdlApplication extends SdlContextAbsImpl {
         return mDriverDistractionState;
     }
 
+    @Override
+    public SdlVehicleDataManager getVehicleDataManager() {
+        return mSdlVehicleDataManager;
+    }
+
     /***********************************
      * IProxyListenerALM interface methods
      * All notification and response handling
@@ -788,13 +796,24 @@ public class SdlApplication extends SdlContextAbsImpl {
         }
 
         @Override
-        public final void onGetVehicleDataResponse(GetVehicleDataResponse response) {
+        public final void onGetVehicleDataResponse(final GetVehicleDataResponse response) {
+            mExecutionHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    mSdlVehicleDataManager.OnGetVehicleData(response);
+                }
+            });
 
         }
 
         @Override
-        public final void onOnVehicleData(OnVehicleData notification) {
-
+        public final void onOnVehicleData(final OnVehicleData notification) {
+            mExecutionHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    mSdlVehicleDataManager.OnVehicleData(notification);
+                }
+            });
         }
 
         @Override
