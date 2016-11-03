@@ -4,7 +4,6 @@ import android.support.annotation.Nullable;
 import android.util.Log;
 
 import com.smartdevicelink.api.interfaces.SdlContext;
-import com.smartdevicelink.api.permission.SdlPermission;
 import com.smartdevicelink.proxy.RPCMessage;
 import com.smartdevicelink.proxy.rpc.GetVehicleData;
 import com.smartdevicelink.proxy.rpc.GetVehicleDataResponse;
@@ -45,7 +44,7 @@ public class SdlVehicleDataManager {
             mVehDataListenerMap.put(dataEnum,dataListeners);
         }
         if(dataListeners.isEmpty() &&
-                mContext.getSdlPermissionManager().isPermissionAvailable(generatePermission("Subscribe",dataEnum))){
+                mContext.getSdlPermissionManager().isPermissionAvailable(dataEnum.getSubVehicleDataPermission())){
             SubscribeVehicleData request = new SubscribeVehicleData();
             request.setParameters(dataEnum.getKeyName(),true);
             mContext.sendRpc(request);
@@ -67,7 +66,7 @@ public class SdlVehicleDataManager {
         }
         boolean listenerRemoved = dataListeners.remove(listener);
         if(dataListeners.isEmpty() &&
-                mContext.getSdlPermissionManager().isPermissionAvailable(generatePermission("Unsubscribe",dataEnum))){
+                mContext.getSdlPermissionManager().isPermissionAvailable(dataEnum.getUnsubVehicleDataPermission())){
                 UnsubscribeVehicleData request = new UnsubscribeVehicleData();
                 request.setParameters(dataEnum.getKeyName(),true);
                 mContext.sendRpc(request);
@@ -77,7 +76,7 @@ public class SdlVehicleDataManager {
     }
 
     public boolean pullVehicleData(SdlDataEnums dataEnum){
-        if(mContext.getSdlPermissionManager().isPermissionAvailable(generatePermission("Get",dataEnum))){
+        if(mContext.getSdlPermissionManager().isPermissionAvailable(dataEnum.getGetVehicleDataPermission())){
             GetVehicleData request = new GetVehicleData();
             request.setParameters(dataEnum.getKeyName(),true);
             mContext.sendRpc(request);
@@ -101,12 +100,7 @@ public class SdlVehicleDataManager {
         }
     }
 
-    private SdlPermission generatePermission(String permissionPrefix, SdlDataEnums dataEnum ) throws IllegalArgumentException{
-        char[] chars = dataEnum.getKeyName().toCharArray();
-        chars[0] = Character.toUpperCase(chars[0]);
-        String permissionName = permissionPrefix + new String(chars);
-        return SdlPermission.valueOf(permissionName);
-    }
+
 
     private EnumSet<SdlDataEnums> updateData(RPCMessage data){
         synchronized (DATA_LOCK){
