@@ -1,13 +1,13 @@
 package com.smartdevicelink.api.diagnostics;
 
-import com.smartdevicelink.proxy.rpc.enums.VehicleDataResultCode;
+import com.smartdevicelink.proxy.rpc.enums.Result;
 
-import java.util.ArrayList;
+import java.util.List;
 
 public class DTC {
     private int mAddress;
-    private VehicleDataResultCode mResultCode;
-    private ArrayList<String> mCodes;
+    private Result mResultCode;
+    private List<String> mCodes;
     private Integer mEcuHeader;
 
     public int getAddress() {
@@ -18,19 +18,19 @@ public class DTC {
         mAddress = address;
     }
 
-    public VehicleDataResultCode getResultCode() {
+    public Result getResultCode() {
         return mResultCode;
     }
 
-    public void setResultCode(VehicleDataResultCode resultCode) {
+    public void setResultCode(Result resultCode) {
         mResultCode = resultCode;
     }
 
-    public ArrayList<String> getCodes() {
+    public List<String> getCodes() {
         return mCodes;
     }
 
-    public void setCodes(ArrayList<String> codes) {
+    public void setCodes(List<String> codes) {
         mCodes = codes;
     }
 

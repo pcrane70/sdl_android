@@ -1,10 +1,10 @@
 package com.smartdevicelink.api.diagnostics;
 
-import com.smartdevicelink.proxy.rpc.VehicleDataResult;
+import com.smartdevicelink.proxy.rpc.enums.VehicleDataResultCode;
 
 public class DIDLocation {
     private int mAddress;
-    private VehicleDataResult mResultCode;
+    private VehicleDataResultCode mResultCode;
     private String mData;
 
     public DIDLocation(int address){
@@ -19,11 +19,11 @@ public class DIDLocation {
         mAddress = address;
     }
 
-    public VehicleDataResult getResultCode() {
+    public VehicleDataResultCode getResultCode() {
         return mResultCode;
     }
 
-    public void setResultCode(VehicleDataResult resultCode) {
+    public void setResultCode(VehicleDataResultCode resultCode) {
         mResultCode = resultCode;
     }
 

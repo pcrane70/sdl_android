@@ -4,4 +4,8 @@ public interface DIDReadListener {
 
     void onReadComplete(DID dtc);
 
+    void onTimeout();
+
+    void onCanceled();
+
 }

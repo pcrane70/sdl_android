@@ -4,4 +4,8 @@ public interface DTCReadListener {
 
     void onReadComplete(DTC dtc);
 
+    void onTimeout();
+
+    void onCanceled();
+
 }

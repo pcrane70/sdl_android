@@ -14,7 +14,7 @@ public class DiagnosticInvoker {
     private SparseArray<DiagnosticCommand> mCommandRegistry = new SparseArray<>();
     private final Thread mExecutionThread;
     private boolean isStopping = false;
-    private boolean isCommandComplete = false;
+    private boolean didCommandTimeout = true;
 
     public DiagnosticInvoker(){
         mExecutionThread = new Thread(mExecutionRunnable, DIAGNOSTIC_THREAD_NAME);
@@ -47,11 +47,10 @@ public class DiagnosticInvoker {
                 }
 
                 if(!isStopping && command != null) {
-                    mCommandRegistry.remove(command.getCommandId());
                     command.execute(new DiagnosticCommand.CompletionCallback() {
                         @Override
                         public void onComplete() {
-                            isCommandComplete = true;
+                            didCommandTimeout = false;
                             mExecutionThread.notify();
                         }
                     });
@@ -62,10 +61,20 @@ public class DiagnosticInvoker {
                         e.printStackTrace();
                     }
 
-                    if(!isCommandComplete){
+                    if(didCommandTimeout){
                         command.onTimeout();
                     } else {
-                        isCommandComplete = false;
+                        didCommandTimeout = true;
+                    }
+
+                    /* Remove the command from the registry if it is finished, replace it in the queue if not.
+                     * This must be done to use the blocking operation PriorityBlockingQueue#take()
+                     * instead of the non-blocking operation PriorityBlockingQueue#peek();
+                     */
+                    if(command.isFinished()){
+                        mCommandRegistry.remove(command.getCommandId());
+                    } else {
+                        mDiagnosticQueue.put(command);
                     }
                 }
             }

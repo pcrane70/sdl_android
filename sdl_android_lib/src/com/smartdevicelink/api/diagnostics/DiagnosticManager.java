@@ -4,6 +4,8 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.SparseArray;
 
+import com.smartdevicelink.api.interfaces.SdlContext;
+
 import java.util.HashMap;
 import java.util.List;
 
@@ -17,14 +19,22 @@ public class DiagnosticManager {
     public static final int PRIORITY_HIGH = 3;
     public static final int PRIORITY_MAX = 4;
 
+    private final SdlContext mSdlContext;
+    private final DiagnosticInvoker mDiagnosticInvoker;
+
+    public DiagnosticManager(SdlContext sdlContext){
+        mSdlContext = sdlContext;
+        mDiagnosticInvoker = new DiagnosticInvoker();
+    }
+
     /**
      * Queues a DID read request with default timeout and priority.
      * @param address Address of the ECU on the CAN.
      * @param locations List of location on the given ECU to be read.
      * @param listener Listener that is called upon completion of the read.
-     * @return True if the request is successfully queued.
+     * @return Id of the resulting command submitted to the diagnostic queue. Will be -1 on failure to queue request.
      */
-    public boolean readDID(int address, List<Integer> locations, DIDReadListener listener){
+    public int readDID(int address, List<Integer> locations, DIDReadListener listener){
         return readDID(address, locations, DEFAULT_TIMEOUT, PRIORITY_DEFAULT, listener);
     }
 
@@ -35,10 +45,13 @@ public class DiagnosticManager {
      * @param timeout Amount of time to wait for a response from the module before timing out in ms.
      * @param priority Priority of the request relative to other diagnostic requests that have been made.
      * @param listener Listener that is called upon completion of the read.
-     * @return True if the request is successfully queued.
+     * @return Id of the resulting command submitted to the diagnostic queue. Will be -1 on failure to queue request.
      */
-    public boolean readDID(int address, List<Integer> locations, int timeout, int priority, DIDReadListener listener){
-        return false;
+    public int readDID(int address, List<Integer> locations, int timeout, int priority, DIDReadListener listener){
+        DID did = new DID();
+        did.setAddress(address);
+        ReadDidCommand command = new ReadDidCommand(mSdlContext, timeout, priority, did, locations, listener);
+        return mDiagnosticInvoker.submitCommand(command);
     }
 
     /**
@@ -46,9 +59,9 @@ public class DiagnosticManager {
      * @param locations 2d collection where the key of the outer SparseArray indicates the ECU
      *                  address and the inner list indicates the locations to read on that ECU.
      * @param listener Listener that is called upon completion of the batch.
-     * @return True if the request is successfully queued.
+     * @return Id of the resulting command submitted to the diagnostic queue. Will be -1 on failure to queue request.
      */
-    public boolean readDIDBatch(SparseArray<List<Integer>> locations, DIDBatchListener listener){
+    public int readDIDBatch(SparseArray<List<Integer>> locations, DIDBatchListener listener){
         return readDIDBatch(locations, DEFAULT_TIMEOUT, PRIORITY_DEFAULT, listener);
     }
 
@@ -61,10 +74,10 @@ public class DiagnosticManager {
      *                each read in the batch in ms.
      * @param priority Priority of the requests relative to other diagnostic requests that have been made.
      * @param listener Listener that is called upon completion of the batch.
-     * @return True if the request is successfully queued.
+     * @return Id of the resulting command submitted to the diagnostic queue. Will be -1 on failure to queue request.
      */
-    public boolean readDIDBatch(SparseArray<List<Integer>> locations, int timeout, int priority, DIDBatchListener listener){
-        return false;
+    public int readDIDBatch(SparseArray<List<Integer>> locations, int timeout, int priority, DIDBatchListener listener){
+        return -1;
     }
 
     /**
@@ -72,9 +85,9 @@ public class DiagnosticManager {
      * @param address Address of the ECU on the CAN to read DTCs from.
      * @param mask Mask to apply to DTC request.
      * @param listener Listener that is called upon completion of the read.
-     * @return True if the request is successfully queued.
+     * @return Id of the resulting command submitted to the diagnostic queue. Will be -1 on failure to queue request.
      */
-    public boolean readDTC(int address, @Nullable Integer mask, @NonNull DTCReadListener listener){
+    public int readDTC(int address, @Nullable Integer mask, @NonNull DTCReadListener listener){
         return readDTC(address, mask, DEFAULT_TIMEOUT, PRIORITY_DEFAULT, listener);
     }
 
@@ -85,10 +98,10 @@ public class DiagnosticManager {
      * @param timeout Amount of time to wait for a response from the module before timing out in ms.
      * @param priority Priority of the request relative to other diagnostic requests that have been made.
      * @param listener Listener that is called upon completion of the read.
-     * @return True if the request is successfully queued.
+     * @return Id of the resulting command submitted to the diagnostic queue. Will be -1 on failure to queue request.
      */
-    public boolean readDTC(int address, @Nullable Integer mask, int timeout, int priority, DTCReadListener listener){
-        return false;
+    public int readDTC(int address, @Nullable Integer mask, int timeout, int priority, DTCReadListener listener){
+        return -1;
     }
 
     /**
@@ -97,14 +110,14 @@ public class DiagnosticManager {
      *                                 value represents the mask to apply to the DTC request. A null
      *                                 mask will result in an unmasked read for the given key.
      * @param listener Listener that is called upon completion of the batch.
-     * @return True if the request is successfully queued.
+     * @return Id of the resulting command submitted to the diagnostic queue. Will be -1 on failure to queue request.
      */
-    public boolean readDIDBatch(HashMap<Integer, Integer> addresses, DIDBatchListener listener){
-        return readDIDBatch(addresses, DEFAULT_TIMEOUT, PRIORITY_DEFAULT, listener);
+    public int readDTCBatch(HashMap<Integer, Integer> addresses, DIDBatchListener listener){
+        return readDTCBatch(addresses, DEFAULT_TIMEOUT, PRIORITY_DEFAULT, listener);
     }
 
     /**
-     * Queues a batch of DID read requests.
+     * Queues a batch of DTC read requests.
      * @param addresses {@link HashMap} where the key represents the address to be read from and the
      *                                 value represents the mask to apply to the DTC request. A null
      *                                 mask will result in an unmasked read for the given key.
@@ -112,9 +125,9 @@ public class DiagnosticManager {
      *                each read in the batch in ms.
      * @param priority Priority of the requests relative to other diagnostic requests that have been made.
      * @param listener Listener that is called upon completion of the batch.
-     * @return True if the request is successfully queued.
+     * @return Id of the resulting command submitted to the diagnostic queue. Will be -1 on failure to queue request.
      */
-    public boolean readDIDBatch(HashMap<Integer, Integer> addresses, int timeout, int priority, DIDBatchListener listener){
-        return false;
+    public int readDTCBatch(HashMap<Integer, Integer> addresses, int timeout, int priority, DIDBatchListener listener){
+        return -1;
     }
 }

@@ -4,14 +4,18 @@ import com.smartdevicelink.api.interfaces.SdlContext;
 
 public abstract class DiagnosticCommand implements Comparable<DiagnosticCommand>{
 
-    protected int mTimeout;
-    protected int mPriority;
-    protected int mCommandId;
+    protected SdlContext mSdlContext;
+    protected boolean isFinished;
+
+    private boolean isBlocking;
+    private int mTimeout;
+    private int mPriority;
+    private int mCommandId;
 
     public DiagnosticCommand(SdlContext sdlContext, int timeout, int priority){
         mTimeout = timeout;
         mPriority = priority;
-
+        mSdlContext = sdlContext;
     }
 
     public int getTimeout() {
@@ -22,12 +26,16 @@ public abstract class DiagnosticCommand implements Comparable<DiagnosticCommand>
         return mPriority;
     }
 
-    public int getCommandId() {
+    public final int getCommandId() {
         return mCommandId;
     }
 
     public void setCommandId(int commandId){
         mCommandId = commandId;
+    }
+
+    public boolean isFinished(){
+        return isFinished;
     }
 
     abstract public void execute(CompletionCallback callback);
@@ -40,7 +48,7 @@ public abstract class DiagnosticCommand implements Comparable<DiagnosticCommand>
     public int compareTo(DiagnosticCommand another) {
         int difference = mPriority - another.getPriority();
         if(difference == 0){
-            difference = mTimeout - another.getTimeout();
+            difference = mCommandId - another.getCommandId();
         }
         return Integer.signum(difference);
     }
