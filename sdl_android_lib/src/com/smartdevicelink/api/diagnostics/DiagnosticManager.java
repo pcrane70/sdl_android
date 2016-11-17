@@ -50,7 +50,8 @@ public class DiagnosticManager {
     public int readDID(int address, List<Integer> locations, int timeout, int priority, DIDReadListener listener){
         DID did = new DID();
         did.setAddress(address);
-        ReadDidCommand command = new ReadDidCommand(mSdlContext, timeout, priority, did, locations, listener);
+        ReadDidCommand command = new ReadDidCommand(mSdlContext, timeout, priority, did, locations);
+        command.setListener(listener);
         return mDiagnosticInvoker.submitCommand(command);
     }
 
@@ -77,6 +78,18 @@ public class DiagnosticManager {
      * @return Id of the resulting command submitted to the diagnostic queue. Will be -1 on failure to queue request.
      */
     public int readDIDBatch(SparseArray<List<Integer>> locations, int timeout, int priority, DIDBatchListener listener){
+        DIDBatchCommand batchCommand = new DIDBatchCommand(mSdlContext, timeout, priority, listener);
+        for(int i = 0; i < locations.size(); i++){
+            DID did = new DID();
+            did.setAddress(locations.keyAt(i));
+            SparseArray<DIDLocation> didLocations = new SparseArray<>();
+            for(Integer integer: locations.valueAt(i)){
+                DIDLocation dl = new DIDLocation(integer);
+                didLocations.append(integer, dl);
+            }
+            did.setResults(didLocations);
+            ReadDidCommand didCommand = new ReadDidCommand(mSdlContext, timeout, priority, did, )
+        }
         return -1;
     }
 

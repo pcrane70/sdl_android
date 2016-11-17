@@ -19,12 +19,15 @@ public class ReadDidCommand extends DiagnosticCommand {
     private List<Integer> mLocations;
 
     public ReadDidCommand(SdlContext sdlContext, int timeout, int priority, DID didToRead,
-                          List<Integer> locations, DIDReadListener listener) {
+                          List<Integer> locations) {
         super(sdlContext, timeout, priority);
         mDidToRead = new DID();
         mDidToRead.setAddress(didToRead.getAddress());
-        mReadListener = listener;
         mLocations = locations;
+    }
+
+    public void setListener(DIDReadListener listener){
+        mReadListener = listener;
     }
 
     @Override
@@ -44,12 +47,7 @@ public class ReadDidCommand extends DiagnosticCommand {
                         results.append(location.getAddress(), location);
                     }
                 } else {
-                    for(Integer address: mLocations){
-                        DIDLocation location = new DIDLocation(address);
-                        location.setResultCode(VehicleDataResultCode.VEHICLE_DATA_NOT_AVAILABLE);
-
-                        results.append(location.getAddress(), location);
-                    }
+                    markResultsUnavailable(results);
                 }
                 mDidToRead.setResults(results);
                 mReadListener.onReadComplete(mDidToRead);
@@ -59,14 +57,29 @@ public class ReadDidCommand extends DiagnosticCommand {
         mSdlContext.sendRpc(rpc);
     }
 
+    private void markResultsUnavailable(SparseArray<DIDLocation> results) {
+        for(Integer address: mLocations){
+            DIDLocation location = new DIDLocation(address);
+            location.setResultCode(VehicleDataResultCode.VEHICLE_DATA_NOT_AVAILABLE);
+
+            results.append(location.getAddress(), location);
+        }
+    }
+
     @Override
     public void onTimeout() {
-        mReadListener.onTimeout();
+        SparseArray<DIDLocation> results = new SparseArray<>();
+        markResultsUnavailable(results);
+        mDidToRead.setResults(results);
+        mReadListener.onTimeout(mDidToRead);
     }
 
     @Override
     public void cancel() {
-        mReadListener.onCanceled();
+        SparseArray<DIDLocation> results = new SparseArray<>();
+        markResultsUnavailable(results);
+        mDidToRead.setResults(results);
+        mReadListener.onCanceled(mDidToRead);
     }
 
     private ReadDID didToRpc(DID did, List<Integer> locations){

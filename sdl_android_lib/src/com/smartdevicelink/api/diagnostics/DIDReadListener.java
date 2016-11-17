@@ -2,10 +2,10 @@ package com.smartdevicelink.api.diagnostics;
 
 public interface DIDReadListener {
 
-    void onReadComplete(DID dtc);
+    void onReadComplete(DID did);
 
-    void onTimeout();
+    void onTimeout(DID did);
 
-    void onCanceled();
+    void onCanceled(DID did);
 
 }
