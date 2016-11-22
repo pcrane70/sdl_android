@@ -84,13 +84,16 @@ public class DiagnosticManager {
             did.setAddress(locations.keyAt(i));
             SparseArray<DIDLocation> didLocations = new SparseArray<>();
             for(Integer integer: locations.valueAt(i)){
-                DIDLocation dl = new DIDLocation(integer);
-                didLocations.append(integer, dl);
+                if(integer != null) {
+                    DIDLocation dl = new DIDLocation(integer);
+                    didLocations.append(integer, dl);
+                }
             }
             did.setResults(didLocations);
-            ReadDidCommand didCommand = new ReadDidCommand(mSdlContext, timeout, priority, did, )
+            ReadDidCommand didCommand = new ReadDidCommand(mSdlContext, timeout, priority, did, locations.valueAt(i));
+            batchCommand.addCommand(didCommand);
         }
-        return -1;
+        return mDiagnosticInvoker.submitCommand(batchCommand);
     }
 
     /**
@@ -114,7 +117,8 @@ public class DiagnosticManager {
      * @return Id of the resulting command submitted to the diagnostic queue. Will be -1 on failure to queue request.
      */
     public int readDTC(int address, @Nullable Integer mask, int timeout, int priority, DTCReadListener listener){
-        return -1;
+        ReadDtcCommand dtcCommand = new ReadDtcCommand(mSdlContext, timeout, priority, address, mask, listener);
+        return mDiagnosticInvoker.submitCommand(dtcCommand);
     }
 
     /**
