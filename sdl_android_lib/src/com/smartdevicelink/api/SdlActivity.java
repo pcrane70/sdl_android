@@ -6,6 +6,7 @@ import android.support.annotation.CallSuper;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
+import com.smartdevicelink.api.diagnostics.DiagnosticManager;
 import com.smartdevicelink.api.file.SdlFileManager;
 import com.smartdevicelink.api.interfaces.SdlButtonListener;
 import com.smartdevicelink.api.interfaces.SdlContext;
@@ -205,6 +206,12 @@ public abstract class SdlActivity extends SdlContextAbsImpl {
         return getSdlApplicationContext().getSdlPermissionManager();
     }
 
+    @Override
+    public DiagnosticManager getDiagnosticManager() {
+        return getSdlApplicationContext().getDiagnosticManager();
+    }
+
+    @Override
     public final SdlFileManager getSdlFileManager() {
         return getSdlApplicationContext().getSdlFileManager();
     }

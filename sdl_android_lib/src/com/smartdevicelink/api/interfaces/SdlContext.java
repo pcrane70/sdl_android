@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.os.Looper;
 
 import com.smartdevicelink.api.SdlActivity;
+import com.smartdevicelink.api.diagnostics.DiagnosticManager;
 import com.smartdevicelink.api.file.SdlFileManager;
 import com.smartdevicelink.api.menu.SdlMenuManager;
 import com.smartdevicelink.api.menu.SdlMenuOption;
@@ -32,6 +33,8 @@ public interface SdlContext {
     SdlFileManager getSdlFileManager();
 
     SdlMenuManager getSdlMenuManager();
+
+    DiagnosticManager getDiagnosticManager();
 
     int registerButtonCallback(SdlButtonListener listener);
 
