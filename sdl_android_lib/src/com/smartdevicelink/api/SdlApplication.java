@@ -10,6 +10,7 @@ import android.support.annotation.VisibleForTesting;
 import android.util.Log;
 import android.util.SparseArray;
 
+import com.smartdevicelink.api.diagnostics.DiagnosticManager;
 import com.smartdevicelink.api.file.SdlFileManager;
 import com.smartdevicelink.api.lockscreen.LockScreenStatusListener;
 import com.smartdevicelink.api.menu.SdlMenuManager;
@@ -139,6 +140,7 @@ public class SdlApplication extends SdlContextAbsImpl {
     private SdlChoiceSetManager mSdlChoiceSetManager;
     private SdlFileManager mSdlFileManager;
     private SdlMenuManager mSdlMenuManager;
+    private DiagnosticManager mDiagnosticManager;
     private SdlProxyALM mSdlProxyALM;
 
     private final ArrayList<LifecycleListener> mLifecycleListeners = new ArrayList<>();
@@ -178,6 +180,7 @@ public class SdlApplication extends SdlContextAbsImpl {
                 mLifecycleListeners.add(mSdlActivityManager);
                 mSdlFileManager = new SdlFileManager(SdlApplication.this, mApplicationConfig);
                 mLifecycleListeners.add(mSdlFileManager);
+                mDiagnosticManager = new DiagnosticManager(SdlApplication.this);
                 createItemManagers();
                 if (mSdlProxyALM != null) {
                     mConnectionStatus = Status.CONNECTING;
@@ -306,7 +309,14 @@ public class SdlApplication extends SdlContextAbsImpl {
     }
 
     @Override
-    public final SdlChoiceSetManager getSdlChoiceSetManager(){return mSdlChoiceSetManager;}
+    public final SdlChoiceSetManager getSdlChoiceSetManager(){
+        return mSdlChoiceSetManager;
+    }
+
+    @Override
+    public DiagnosticManager getDiagnosticManager() {
+        return mDiagnosticManager;
+    }
 
     @Override
     public final int registerButtonCallback(SdlButton.OnPressListener listener) {

@@ -39,7 +39,7 @@ public class SdlProxyBuilder
 	private boolean preRegister;
 	private String sAppResumeHash;
 	private BaseTransportConfig mTransport;
-	private List<Class<? extends SdlSecurityBase>> sdlSecList;	
+	private List<Class<? extends SdlSecurityBase>> sdlSecList;
 	
 	public static class Builder
 	{

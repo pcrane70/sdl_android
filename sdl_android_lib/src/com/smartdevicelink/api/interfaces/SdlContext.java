@@ -5,7 +5,7 @@ import android.os.Bundle;
 import android.os.Looper;
 
 import com.smartdevicelink.api.SdlActivity;
-import com.smartdevicelink.api.view.SdlChoiceSetManager;
+import com.smartdevicelink.api.diagnostics.DiagnosticManager;
 import com.smartdevicelink.api.file.SdlFileManager;
 import com.smartdevicelink.api.menu.SdlMenuManager;
 import com.smartdevicelink.api.menu.SdlMenuOption;
@@ -13,12 +13,13 @@ import com.smartdevicelink.api.menu.SdlMenuTransaction;
 import com.smartdevicelink.api.permission.SdlPermissionManager;
 import com.smartdevicelink.api.view.SdlAudioPassThruDialog;
 import com.smartdevicelink.api.view.SdlButton;
-import com.smartdevicelink.proxy.RPCRequest;
-import com.smartdevicelink.proxy.rpc.TTSChunk;
+import com.smartdevicelink.api.view.SdlChoiceSetManager;
 import com.smartdevicelink.protocol.enums.FunctionID;
+import com.smartdevicelink.proxy.RPCRequest;
 import com.smartdevicelink.proxy.rpc.DisplayCapabilities;
 import com.smartdevicelink.proxy.rpc.HMICapabilities;
 import com.smartdevicelink.proxy.rpc.SdlMsgVersion;
+import com.smartdevicelink.proxy.rpc.TTSChunk;
 import com.smartdevicelink.proxy.rpc.VehicleType;
 import com.smartdevicelink.proxy.rpc.enums.DriverDistractionState;
 import com.smartdevicelink.proxy.rpc.enums.Language;
@@ -39,6 +40,8 @@ public interface SdlContext {
     int registerButtonCallback(SdlButton.OnPressListener listener);
 
     SdlMenuManager getSdlMenuManager();
+
+    DiagnosticManager getDiagnosticManager();
 
     void unregisterButtonCallback(int id);
 
