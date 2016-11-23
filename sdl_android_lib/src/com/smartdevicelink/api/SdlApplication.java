@@ -13,8 +13,8 @@ import android.util.SparseArray;
 import com.smartdevicelink.api.file.SdlFileManager;
 import com.smartdevicelink.api.lockscreen.LockScreenStatusListener;
 import com.smartdevicelink.api.menu.SdlMenuManager;
-import com.smartdevicelink.api.menu.SdlMenuOption;
 import com.smartdevicelink.api.menu.SdlMenuTransaction;
+import com.smartdevicelink.api.menu.SelectListener;
 import com.smartdevicelink.api.permission.SdlPermissionManager;
 import com.smartdevicelink.api.speak.SdlTextToSpeak;
 import com.smartdevicelink.api.view.SdlAudioPassThruDialog;
@@ -147,7 +147,7 @@ public class SdlApplication extends SdlContextAbsImpl {
     private boolean isFirstHmiReceived = false;
     private boolean isFirstHmiNotNoneReceived = false;
 
-    private SparseArray<SdlMenuOption.SelectListener> mMenuListenerRegistry = new SparseArray<>();
+    private SparseArray<SelectListener> mMenuListenerRegistry = new SparseArray<>();
     private SparseArray<SdlButton.OnPressListener> mButtonListenerRegistry = new SparseArray<>();
     private SdlAudioPassThruDialog.ReceiveDataListener mAudioPassThruListener;
 
@@ -324,7 +324,7 @@ public class SdlApplication extends SdlContextAbsImpl {
     }
 
     @Override
-    public final void registerMenuCallback(int id, SdlMenuOption.SelectListener listener) {
+    public final void registerMenuCallback(int id, SelectListener listener) {
         mMenuListenerRegistry.append(id, listener);
     }
 
@@ -717,7 +717,7 @@ public class SdlApplication extends SdlContextAbsImpl {
                 @Override
                 public void run() {
                     if (notification != null && notification.getCmdID() != null) {
-                        SdlMenuOption.SelectListener listener = mMenuListenerRegistry.get(notification.getCmdID());
+                        SelectListener listener = mMenuListenerRegistry.get(notification.getCmdID());
                         if (listener != null) {
                             TriggerSource triggerSource = notification.getTriggerSource();
                             listener.onSelect(triggerSource != null ? triggerSource : TriggerSource.TS_MENU);
