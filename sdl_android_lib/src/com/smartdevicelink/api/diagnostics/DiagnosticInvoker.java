@@ -31,7 +31,9 @@ public class DiagnosticInvoker {
 
     public void stop(){
         isStopping = true;
-        mExecutionThread.interrupt();
+        synchronized (mExecutionThread) {
+            mExecutionThread.interrupt();
+        }
     }
 
     private Runnable mExecutionRunnable = new Runnable() {
@@ -51,14 +53,18 @@ public class DiagnosticInvoker {
                         @Override
                         public void onComplete() {
                             didCommandTimeout = false;
-                            mExecutionThread.notify();
+                            synchronized (mExecutionThread) {
+                                mExecutionThread.notify();
+                            }
                         }
                     });
 
-                    try {
-                        mExecutionThread.wait(command.getTimeout());
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
+                    synchronized (mExecutionThread) {
+                        try {
+                            mExecutionThread.wait(command.getTimeout());
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
                     }
 
                     if(didCommandTimeout){

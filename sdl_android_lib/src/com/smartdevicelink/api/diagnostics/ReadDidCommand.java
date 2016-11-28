@@ -32,7 +32,7 @@ public class ReadDidCommand extends DiagnosticCommand {
 
     @Override
     public void execute(final CompletionCallback callback) {
-        ReadDID rpc = didToRpc(mDidToRead, mLocations);
+        final ReadDID rpc = didToRpc(mDidToRead, mLocations);
         rpc.setOnRPCResponseListener(new OnRPCResponseListener() {
             @Override
             public void onResponse(int correlationId, RPCResponse response) {
@@ -51,10 +51,16 @@ public class ReadDidCommand extends DiagnosticCommand {
                 }
                 mDidToRead.setResults(results);
                 mReadListener.onReadComplete(mDidToRead);
+                isFinished = true;
                 callback.onComplete();
             }
         });
-        mSdlContext.sendRpc(rpc);
+        mSdlHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                mSdlContext.sendRpc(rpc);
+            }
+        });
     }
 
     private void markResultsUnavailable(SparseArray<DIDLocation> results) {
