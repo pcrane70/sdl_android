@@ -1,10 +1,13 @@
 package com.smartdevicelink.api.diagnostics;
 
+import android.os.Handler;
+
 import com.smartdevicelink.api.interfaces.SdlContext;
 
 public abstract class DiagnosticCommand implements Comparable<DiagnosticCommand>{
 
     protected SdlContext mSdlContext;
+    protected Handler mSdlHandler;
     protected boolean isFinished;
 
     private boolean isBlocking;
@@ -16,6 +19,7 @@ public abstract class DiagnosticCommand implements Comparable<DiagnosticCommand>
         mTimeout = timeout;
         mPriority = priority;
         mSdlContext = sdlContext;
+        mSdlHandler = new Handler(mSdlContext.getSdlExecutionLooper());
     }
 
     public int getTimeout() {

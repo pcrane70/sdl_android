@@ -25,7 +25,7 @@ public class ReadDtcCommand extends DiagnosticCommand {
 
     @Override
     public void execute(final CompletionCallback callback) {
-        GetDTCs rpc = makeRpc(mAddress, mMask);
+        final GetDTCs rpc = makeRpc(mAddress, mMask);
         rpc.setOnRPCResponseListener(new OnRPCResponseListener() {
             @Override
             public void onResponse(int correlationId, RPCResponse response) {
@@ -38,10 +38,16 @@ public class ReadDtcCommand extends DiagnosticCommand {
                     dtc.setEcuHeader(dtcResponse.getEcuHeader());
                 }
                 mReadListener.onReadComplete(dtc);
+                isFinished = true;
                 callback.onComplete();
             }
         });
-        mSdlContext.sendRpc(rpc);
+        mSdlHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                mSdlContext.sendRpc(rpc);
+            }
+        });
     }
 
     @Override
