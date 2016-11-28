@@ -4,24 +4,33 @@ import com.smartdevicelink.api.interfaces.SdlContext;
 
 public abstract class SdlMenuItem {
 
+    private static volatile int autoId = 1;
+
+    protected String mName;
+    protected int mId;
     protected int mIndex = -1;
-    private SdlCommandInfo mInfo;
 
     public SdlMenuItem(String name){
-        mInfo = new SdlCommandInfo(name);
+        mName = name;
+        mId = generateId();
     }
 
     public SdlMenuItem(String name, int index){
-        this(name);
+        mName = name;
         mIndex = index;
+        mId = generateId();
     }
 
     public final String getName(){
-        return mInfo.getName();
+        return mName;
     }
 
     final int getId(){
-        return mInfo.getId();
+        return mId;
+    }
+
+    static synchronized int generateId(){
+        return autoId++;
     }
 
     abstract void update(SdlContext sdlContext, int subMenuId);

@@ -7,8 +7,8 @@ import android.os.Looper;
 import com.smartdevicelink.api.SdlActivity;
 import com.smartdevicelink.api.file.SdlFileManager;
 import com.smartdevicelink.api.menu.SdlMenuManager;
+import com.smartdevicelink.api.menu.SdlMenuOption;
 import com.smartdevicelink.api.menu.SdlMenuTransaction;
-import com.smartdevicelink.api.menu.SelectListener;
 import com.smartdevicelink.protocol.enums.FunctionID;
 import com.smartdevicelink.proxy.RPCRequest;
 import com.smartdevicelink.proxy.rpc.DisplayCapabilities;
@@ -37,7 +37,7 @@ public interface SdlContext {
 
     void unregisterButtonCallback(int id);
 
-    void registerMenuCallback(int id, SelectListener listener);
+    void registerMenuCallback(int id, SdlMenuOption.SelectListener listener);
 
     void unregisterMenuCallback(int id);
 

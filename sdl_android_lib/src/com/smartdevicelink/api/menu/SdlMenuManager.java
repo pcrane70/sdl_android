@@ -10,7 +10,6 @@ public class SdlMenuManager {
     private SdlMenu mSdlMenu;
     private HashMap<SdlActivity, ArrayList<SdlMenuTransaction>> mTransactionRecords;
     private SdlGlobalPropertiesManager mPropertiesManager = new SdlGlobalPropertiesManager();
-    private SdlVoiceMenuManager mVoiceManager = new SdlVoiceMenuManager();
 
     public SdlMenuManager(){
         mSdlMenu = new SdlMenu("RootMenu", true);
@@ -37,7 +36,6 @@ public class SdlMenuManager {
                 transactionRecord.get(i).undo();
             }
             mPropertiesManager.update(sdlActivity);
-            mVoiceManager.update(sdlActivity);
             mSdlMenu.update(sdlActivity, 0);
         }
     }
@@ -49,7 +47,6 @@ public class SdlMenuManager {
                 transaction.execute();
             }
             mPropertiesManager.update(sdlActivity);
-            mVoiceManager.update(sdlActivity);
             mSdlMenu.update(sdlActivity, 0);
         }
     }
@@ -59,6 +56,5 @@ public class SdlMenuManager {
     }
 
     SdlGlobalPropertiesManager getPropertiesManager(){return mPropertiesManager;}
-    SdlVoiceMenuManager getVoiceManager(){return mVoiceManager;}
 
 }

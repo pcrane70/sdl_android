@@ -53,20 +53,6 @@ public class SdlMenuTransaction{
         mCommandList.add(new AddMenuItemCommand(subMenu, sdlMenuOption, index));
     }
 
-    public void addVoiceOption(SdlVoiceOption option){
-        mCommandList.add(new AddVoiceCommand(option));
-    }
-
-    public void removeVoiceOption(String voiceName){
-        SdlVoiceOption option = mMenuManager.getVoiceManager().getVoiceOption(voiceName);
-        removeVoiceOption(option);
-    }
-
-    public void removeVoiceOption(SdlVoiceOption voiceOption){
-        if(voiceOption==null) return;
-        mCommandList.add(new RemoveCommand<>(new AddVoiceCommand(voiceOption)));
-    }
-
     public void setMenuProperties(final SdlGlobalProperties properties){
         mCommandList.add(new PropertiesItemCommand(properties));
     }
@@ -90,7 +76,7 @@ public class SdlMenuTransaction{
     public void removeMenuItem(SdlMenu rootMenu, SdlMenuItem menuItem){
         if(menuItem == null || rootMenu == null) return;
         int index = rootMenu.indexOf(menuItem);
-        mCommandList.add(new RemoveCommand<>(new AddMenuItemCommand(rootMenu, menuItem, index)));
+        mCommandList.add(new RemoveMenuItemCommand(rootMenu, menuItem, index));
     }
 
     public void commit(){
@@ -99,7 +85,6 @@ public class SdlMenuTransaction{
             mMenuManager.registerTransaction(mTopActivity, this);
         }
         mMenuManager.getPropertiesManager().update(mSdlContext);
-        mMenuManager.getVoiceManager().update(mSdlContext);
         mMenuManager.getTopMenu().update(mSdlContext, 0);
     }
 
@@ -159,41 +144,22 @@ public class SdlMenuTransaction{
         }
     }
 
+    class RemoveMenuItemCommand implements SdlMenuCommand{
 
-    class AddVoiceCommand implements SdlMenuCommand{
-        SdlVoiceOption mOption;
+        private AddMenuItemCommand mAddMenuItemCommand;
 
-        AddVoiceCommand(SdlVoiceOption newOption){
-            mOption = newOption;
+        RemoveMenuItemCommand(@NonNull SdlMenu rootMenu, @NonNull SdlMenuItem sdlMenuItem, int index){
+            mAddMenuItemCommand = new AddMenuItemCommand(rootMenu, sdlMenuItem, index);
         }
 
         @Override
         public void execute() {
-            Log.d(TAG, "Executing command for SdlVoiceOption: " + mOption.getName());
-            mMenuManager.getVoiceManager().addVoiceCommand(mOption);
+            mAddMenuItemCommand.undo();
         }
 
         @Override
         public void undo() {
-            mMenuManager.getVoiceManager().removeVoiceCommand(mOption);
-        }
-    }
-
-    class RemoveCommand<T extends SdlMenuCommand> implements SdlMenuCommand{
-        T mCommand;
-
-        RemoveCommand(T command){
-            mCommand = command;
-        }
-
-        @Override
-        public void execute() {
-            mCommand.undo();
-        }
-
-        @Override
-        public void undo() {
-            mCommand.execute();
+            mAddMenuItemCommand.execute();
         }
     }
 
