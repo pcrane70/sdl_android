@@ -15,84 +15,131 @@ public class SdlMenu extends SdlMenuItem {
 
     private static final String TAG = SdlMenu.class.getSimpleName();
 
+    //tracks menu items that are visible on the UI
     private final HashMap<String, SdlMenuItem> mEntryMap;
+    //tracks menu items that are voice exclusive
+    private final HashMap<String, SdlMenuItem> mVoiceMap;
+    //contains set of all registered voiceCommands, only created at root level
+    private final HashSet<String> mRegisteredVoiceCommands;
     // Used to keep track of indexes
     private final ArrayList<String> mEntryKeyList;
     // Used to queue up items to be removed.
     private final LinkedList<SdlMenuItem> mPendingRemovals;
-    private final HashSet<String> mPendingAdditions;
-    private boolean isRootMenu = false;
+    private final HashSet<SdlMenuItem> mPendingAdditions;
 
     // True if menu has been created on head unit
     private boolean isCreated = false;
     // True if menu on head unit needs updated
 
-    SdlMenu(String name, int index, boolean isRootMenu){
+    SdlMenu(String name, int index, SdlMenuItem parent){
         super(name);
         mIndex = index;
-        this.isRootMenu = isCreated = isRootMenu;
+        isCreated = parent==null;
         mEntryKeyList = new ArrayList<>();
         mEntryMap = new HashMap<>();
+        mParent = parent;
+        mVoiceMap = new HashMap<>();
+        mRegisteredVoiceCommands = isCreated? new HashSet<String>():null;
         mPendingRemovals = new LinkedList<>();
         mPendingAdditions = new HashSet<>();
     }
 
-    SdlMenu(String name, boolean isRootMenu){
-        this(name, -1, isRootMenu);
+    SdlMenu(String name, SdlMenuItem parent){
+        this(name, -1, parent);
     }
 
     void addMenuItem(SdlMenuItem item){
-        if(!mEntryMap.containsKey(item.getName())){
+        if(item.getName()!=null && !mEntryMap.containsKey(item.getName())){
             String itemName = item.getName();
             Log.d(TAG, mName + ": adding item name " + itemName);
             mEntryKeyList.add(itemName);
             mEntryMap.put(itemName, item);
-            mPendingAdditions.add(itemName);
-        } else {
+            mPendingAdditions.add(item);
+        } else if(item.getName()!=null){
             throw new IllegalArgumentException(String.format("Menu named '%s' already contains item " +
                     "named '%s", mName, item.mName));
+        }
+        if(item.getVoiceCommands()!=null){
+            registerVoiceCommands(item);
+            if(item.getName()==null){
+                for(String voiceCommand:item.getVoiceCommands()){
+                    mVoiceMap.put(voiceCommand,item);
+                }
+                mPendingAdditions.add(item);
+            }
         }
     }
 
     void addMenuItem(int index, SdlMenuItem item){
-        if(!mEntryMap.containsKey(item.getName())){
+        if(item.getName()!=null && !mEntryMap.containsKey(item.getName())){
             String itemName = item.getName();
             Log.d(TAG, mName + ": adding item name " + itemName);
             mEntryKeyList.add(index, itemName);
             mEntryMap.put(itemName, item);
-            mPendingAdditions.add(itemName);
-        } else {
+            mPendingAdditions.add(item);
+        } else if(item.getName()!=null){
             throw new IllegalArgumentException(String.format("Menu named '%s' already contains item " +
                     "named '%s", mName, item.mName));
+        }
+        if(item.getVoiceCommands()!=null){
+            registerVoiceCommands(item);
+            if(item.getName()==null){
+                for(String voiceCommand:item.getVoiceCommands()){
+                    mVoiceMap.put(voiceCommand,item);
+                }
+                mPendingAdditions.add(item);
+            }
         }
     }
 
     void removeMenuItem(SdlMenuItem menuItem){
         String name = menuItem.getName();
-        if(mEntryMap.containsKey(name)){
+        if(name!=null && mEntryMap.containsKey(name)){
             Log.d(TAG, mName + ": removing item name " + name);
             SdlMenuItem item = mEntryMap.remove(name);
             removeEntryKey(name);
             if(item != null){
-                if(mPendingAdditions.contains(name)){
-                    mPendingAdditions.remove(name);
+                if(mPendingAdditions.contains(menuItem)){
+                    mPendingAdditions.remove(menuItem);
                 } else {
                     mPendingRemovals.add(item);
+                }
+            }
+        }
+        if(menuItem.getVoiceCommands()!=null){
+            unregisterVoiceCommands(menuItem);
+            if(menuItem.getName()==null){
+                for(String voiceCommand:menuItem.getVoiceCommands()){
+                    mVoiceMap.remove(voiceCommand);
+                }
+                if(mPendingAdditions.contains(menuItem)){
+                    mPendingAdditions.remove(menuItem);
+                } else {
+                    mPendingRemovals.add(menuItem);
                 }
             }
         }
     }
 
     public boolean contains(SdlMenuItem sdlMenuItem){
-        return sdlMenuItem != null && contains(sdlMenuItem.getName());
+        return sdlMenuItem != null && containsMenuName(sdlMenuItem.getName());
     }
 
-    public boolean contains(String itemName){
+    public boolean containsMenuName(String itemName){
         return itemName != null && mEntryMap.containsKey(itemName);
+    }
+
+    public boolean containsVRCommand(String vrCommand){
+        return vrCommand != null;
     }
 
     SdlMenuItem getMenuItemByName(String name){
         return mEntryMap.get(name);
+    }
+
+    SdlMenuItem getMenuItemByVRCommand(String vrCommand){
+        SdlMenuItem item = mVoiceMap.get(vrCommand);
+        return item==null? getUIMenuItem(vrCommand):item;
     }
 
     int indexOf(SdlMenuItem item){
@@ -101,7 +148,7 @@ public class SdlMenu extends SdlMenuItem {
 
     @Override
     void update(SdlContext sdlContext, int subMenuId) {
-        if(!isCreated && !isRootMenu) {
+        if(!isCreated && mParent!=null) {
             isCreated = true;
             sendAddSubMenu(sdlContext);
         }
@@ -110,11 +157,10 @@ public class SdlMenu extends SdlMenuItem {
     }
 
     private void sendPendingAdditions(SdlContext sdlContext){
-        for(String key: mPendingAdditions){
-            SdlMenuItem item = mEntryMap.get(key);
+        for(SdlMenuItem item: mPendingAdditions){
             if(item != null){
                 item.update(sdlContext,
-                        isRootMenu ? -1: mId);
+                        mParent==null ? -1: mId);
             }
         }
         mPendingAdditions.clear();
@@ -137,11 +183,21 @@ public class SdlMenu extends SdlMenuItem {
         for(int i = 0; i < mEntryKeyList.size(); i++){
             SdlMenuItem item = mEntryMap.remove(mEntryKeyList.get(i));
             item.remove(sdlContext);
+            item.unregisterSelectListener(sdlContext);
         }
 
         mEntryKeyList.clear();
 
-        if(!isRootMenu){
+        //only need to have each voice command remove itself once
+        HashSet<SdlMenuItem> uniqueMenuItems = new HashSet<>(mVoiceMap.values());
+        for(SdlMenuItem voiceOnlyCommands:uniqueMenuItems){
+            unregisterVoiceCommands(voiceOnlyCommands);
+            voiceOnlyCommands.remove(sdlContext);
+            voiceOnlyCommands.unregisterSelectListener(sdlContext);
+        }
+        mVoiceMap.clear();
+
+        if(mParent!=null){
             sendDeleteSubMenu(sdlContext);
         }
 
@@ -161,6 +217,31 @@ public class SdlMenu extends SdlMenuItem {
         for(int i = 0; i < mEntryKeyList.size(); i++){
             SdlMenuItem item = mEntryMap.get(mEntryKeyList.get(i));
             item.unregisterSelectListener(sdlContext);
+        }
+    }
+
+    @Override
+    void registerVoiceCommands(SdlMenuItem item){
+        if(mParent==null){
+            for(String voiceCommand: item.getVoiceCommands()){
+                if(mRegisteredVoiceCommands.contains(voiceCommand)){
+                    mRegisteredVoiceCommands.add(voiceCommand);
+                } else {
+                    throw new IllegalArgumentException(String.format("Menu already contains voice command " +
+                            "named '%s", voiceCommand));
+                }
+            }
+        } else {
+            mParent.registerVoiceCommands(item);
+        }
+    }
+
+    @Override
+    void unregisterVoiceCommands(SdlMenuItem item){
+        if(mParent==null){
+            mRegisteredVoiceCommands.removeAll(item.getVoiceCommands());
+        } else {
+            mParent.unregisterVoiceCommands(item);
         }
     }
 
@@ -185,5 +266,14 @@ public class SdlMenu extends SdlMenuItem {
                 break;
             }
         }
+    }
+
+    private SdlMenuItem getUIMenuItem (String vrCommand){
+        for(SdlMenuItem item:mEntryMap.values()){
+            if(item.getVoiceCommands()!=null && item.getVoiceCommands().contains(vrCommand)){
+                return item;
+            }
+        }
+        return null;
     }
 }

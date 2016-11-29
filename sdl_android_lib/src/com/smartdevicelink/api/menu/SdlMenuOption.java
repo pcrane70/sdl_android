@@ -1,6 +1,7 @@
 package com.smartdevicelink.api.menu;
 
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.util.Log;
 
 import com.smartdevicelink.api.file.SdlFile;
@@ -16,33 +17,24 @@ import com.smartdevicelink.proxy.rpc.enums.ImageType;
 import com.smartdevicelink.proxy.rpc.enums.TriggerSource;
 import com.smartdevicelink.proxy.rpc.listeners.OnRPCResponseListener;
 
+import java.util.ArrayList;
+
 public class SdlMenuOption extends SdlMenuItem {
 
     private static final String TAG = SdlMenuOption.class.getSimpleName();
 
-    private SdlImage mSdlImage;
-    private SelectListener mListener;
+    private final SdlImage mSdlImage;
+    private final SelectListener mListener;
     private boolean isVisible;
     private boolean isRegistered;
+    private final ArrayList<String> mVoiceCommands;
 
-    public SdlMenuOption(@NonNull String name, @NonNull SelectListener listener) {
-        this(name, listener, null);
-    }
-
-    public SdlMenuOption(@NonNull String name, @NonNull SelectListener listener, SdlImage image){
-        super(name);
-        mListener = listener;
-        mSdlImage = image;
-    }
-
-    public SdlMenuOption(int index, @NonNull String name, @NonNull SelectListener listener) {
-        this(index, name, listener, null);
-    }
-
-    public SdlMenuOption(int index, @NonNull String name, @NonNull SelectListener listener, SdlImage image){
-        super(name, index);
-        mListener = listener;
-        mSdlImage = image;
+    private SdlMenuOption(Builder builder){
+        super(builder.mName, builder.mIndex);
+        mSdlImage = builder.mSdlImage;
+        mListener = builder.mListener;
+        mVoiceCommands = builder.mVoiceCommands;
+        mParent = builder.mParent;
     }
 
     @Override
@@ -72,6 +64,29 @@ public class SdlMenuOption extends SdlMenuItem {
             sdlContext.unregisterMenuCallback(mId);
             isRegistered = false;
         }
+    }
+
+    @Override
+    void registerVoiceCommands(SdlMenuItem item) {
+        if(mParent!=null){
+            mParent.registerVoiceCommands(item);
+        } else {
+            Log.w(TAG,"Menu option has null parent while registering");
+        }
+    }
+
+    @Override
+    void unregisterVoiceCommands(SdlMenuItem item) {
+        if(mParent!=null){
+            mParent.unregisterVoiceCommands(item);
+        } else {
+            Log.w(TAG,"Menu option has null parent while unregistering");
+        }
+    }
+
+    @Override
+    ArrayList<String> getVoiceCommands() {
+        return mVoiceCommands;
     }
 
     private void sendDeleteCommand(SdlContext sdlContext, OnRPCResponseListener listener) {
@@ -127,6 +142,52 @@ public class SdlMenuOption extends SdlMenuItem {
 
         sdlContext.sendRpc(ac);
         isVisible = true;
+    }
+
+    public static class Builder{
+        private SdlImage mSdlImage;
+        private final SelectListener mListener;
+        private ArrayList<String> mVoiceCommands = new ArrayList<>();
+        private final SdlMenuItem mParent;
+        private String mName;
+        private int mIndex =-1;
+
+
+        public Builder(@NonNull SelectListener listener, @NonNull SdlMenuManager menuManager, @Nullable SdlMenu sdlMenu){
+            mListener = listener;
+            if(sdlMenu==null){
+                mParent = menuManager.getTopMenu();
+            } else {
+                mParent = sdlMenu;
+            }
+        }
+
+        public Builder setName(String name){
+            mName = name;
+            return this;
+        }
+
+        public Builder setImage(SdlImage image){
+            mSdlImage = image;
+            return this;
+        }
+
+        public Builder setVoiceCommands(ArrayList<String> voiceCommands){
+            mVoiceCommands.clear();
+            mVoiceCommands.addAll(voiceCommands);
+            return this;
+        }
+
+        public Builder setIndex(int index){
+            mIndex = index;
+            return this;
+        }
+
+        public SdlMenuOption build(){
+            return new SdlMenuOption(this);
+        }
+
+
     }
 
     public interface SelectListener{

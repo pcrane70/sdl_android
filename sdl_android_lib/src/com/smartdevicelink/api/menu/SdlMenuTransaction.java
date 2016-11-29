@@ -25,13 +25,13 @@ public class SdlMenuTransaction{
     }
 
     public SdlMenu createSubMenu(String menuName){
-        SdlMenu subMenu = new SdlMenu(menuName, false);
+        SdlMenu subMenu = new SdlMenu(menuName, mMenuManager.getTopMenu());
         mCommandList.add(new AddMenuItemCommand(mMenuManager.getTopMenu(), subMenu, null));
         return subMenu;
     }
 
     public SdlMenu createSubMenu(String menuName, int index){
-        SdlMenu subMenu = new SdlMenu(menuName, false);
+        SdlMenu subMenu = new SdlMenu(menuName, mMenuManager.getTopMenu());
         mCommandList.add(new AddMenuItemCommand(mMenuManager.getTopMenu(), subMenu, index));
         return subMenu;
     }

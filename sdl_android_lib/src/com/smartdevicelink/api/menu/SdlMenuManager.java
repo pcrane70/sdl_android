@@ -12,7 +12,7 @@ public class SdlMenuManager {
     private SdlGlobalPropertiesManager mPropertiesManager = new SdlGlobalPropertiesManager();
 
     public SdlMenuManager(){
-        mSdlMenu = new SdlMenu("RootMenu", true);
+        mSdlMenu = new SdlMenu("RootMenu", null);
         mTransactionRecords = new HashMap<>();
     }
 

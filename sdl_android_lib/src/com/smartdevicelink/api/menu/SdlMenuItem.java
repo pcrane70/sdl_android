@@ -2,6 +2,8 @@ package com.smartdevicelink.api.menu;
 
 import com.smartdevicelink.api.interfaces.SdlContext;
 
+import java.util.ArrayList;
+
 public abstract class SdlMenuItem {
 
     private static volatile int autoId = 1;
@@ -9,6 +11,7 @@ public abstract class SdlMenuItem {
     protected String mName;
     protected int mId;
     protected int mIndex = -1;
+    protected SdlMenuItem mParent;
 
     public SdlMenuItem(String name){
         mName = name;
@@ -40,5 +43,13 @@ public abstract class SdlMenuItem {
     abstract void registerSelectListener(SdlContext sdlContext);
 
     abstract void unregisterSelectListener(SdlContext sdlContext);
+
+    abstract void registerVoiceCommands(SdlMenuItem item);
+
+    abstract void unregisterVoiceCommands(SdlMenuItem item);
+
+    ArrayList<String> getVoiceCommands(){
+        return null;
+    }
 
 }
