@@ -34,4 +34,12 @@ public class DIDLocation {
     public void setData(String data) {
         mData = data;
     }
+
+    @Override
+    protected DIDLocation clone() {
+        DIDLocation newLocation = new DIDLocation(mAddress);
+        newLocation.setResultCode(mResultCode);
+        newLocation.setData(mData);
+        return newLocation;
+    }
 }
