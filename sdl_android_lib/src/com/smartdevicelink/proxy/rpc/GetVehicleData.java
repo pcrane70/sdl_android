@@ -226,6 +226,10 @@ public class GetVehicleData extends RPCRequest {
 	public static final String KEY_EMERGENCY_EVENT = "emergencyEvent";
 	public static final String KEY_CLUSTER_MODE_STATUS = "clusterModeStatus";
 	public static final String KEY_MY_KEY = "myKey";
+    public static final String KEY_ACCELEROMETER = "accelerometer";
+    public static final String KEY_GYROSCOPE = "gyroscope";
+    public static final String KEY_WHEEL_SPEEDS = "wheelSpeeds";
+
 	/**
 	 * Constructs a new GetVehicleData object
 	 */
@@ -508,5 +512,38 @@ public class GetVehicleData extends RPCRequest {
     }
     public Boolean getMyKey() {
         return (Boolean) parameters.get(KEY_MY_KEY);
-    }        
+    }
+
+    public void setAccelerometer(Boolean accelerometer) {
+        if (accelerometer != null) {
+            parameters.put(KEY_ACCELEROMETER, accelerometer);
+        } else {
+            parameters.remove(KEY_ACCELEROMETER);
+        }
+    }
+    public Boolean getAccelerometer() {
+        return (Boolean) parameters.get(KEY_ACCELEROMETER);
+    }
+
+    public void setGyroscope(Boolean gyroscope) {
+        if (gyroscope != null) {
+            parameters.put(KEY_GYROSCOPE, gyroscope);
+        } else {
+            parameters.remove(KEY_GYROSCOPE);
+        }
+    }
+    public Boolean getGyroscope() {
+        return (Boolean) parameters.get(KEY_GYROSCOPE);
+    }
+
+    public void setWheelSpeeds(Boolean wheelSpeeds) {
+        if (wheelSpeeds != null) {
+            parameters.put(KEY_WHEEL_SPEEDS, wheelSpeeds);
+        } else {
+            parameters.remove(KEY_WHEEL_SPEEDS);
+        }
+    }
+    public Boolean getWheelSpeeds() {
+        return (Boolean) parameters.get(KEY_WHEEL_SPEEDS);
+    }
 }

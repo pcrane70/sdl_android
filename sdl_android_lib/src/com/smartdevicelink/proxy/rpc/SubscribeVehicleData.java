@@ -239,29 +239,44 @@ import com.smartdevicelink.proxy.RPCRequest;
  */
 public class SubscribeVehicleData extends RPCRequest {
 	public static final String KEY_RPM = "rpm";
+	public static final String KEY_RPM_ARRAY = "rpmArray";
 	public static final String KEY_EXTERNAL_TEMPERATURE = "externalTemperature";
+	public static final String KEY_EXTERNAL_TEMPERATURE_ARRAY = "externalTemperatureArray";
 	public static final String KEY_FUEL_LEVEL = "fuelLevel";
+	public static final String KEY_FUEL_LEVEL_ARRAY = "fuelLevelArray";
 	public static final String KEY_PRNDL = "prndl";
+	public static final String KEY_PRNDL_ARRAY = "prndlArray";
 	public static final String KEY_TIRE_PRESSURE = "tirePressure";
+	public static final String KEY_TIRE_PRESSURE_ARRAY = "tirePressureArray";
 	public static final String KEY_ENGINE_TORQUE = "engineTorque";
+	public static final String KEY_ENGINE_TORQUE_ARRAY = "engineTorqueArray";
 	public static final String KEY_ODOMETER = "odometer";
 	public static final String KEY_GPS = "gps";
+	public static final String KEY_GPS_ARRAY= "gpsArray";
 	public static final String KEY_FUEL_LEVEL_STATE = "fuelLevel_State";
+	public static final String KEY_FUEL_LEVEL_STATE_ARRAY = "fuelLevel_StateArray";
 	public static final String KEY_INSTANT_FUEL_CONSUMPTION = "instantFuelConsumption";
 	public static final String KEY_BELT_STATUS = "beltStatus";
 	public static final String KEY_BODY_INFORMATION = "bodyInformation";
 	public static final String KEY_DEVICE_STATUS = "deviceStatus";
 	public static final String KEY_DRIVER_BRAKING = "driverBraking";
+	public static final String KEY_DRIVER_BRAKING_ARRAY = "driverBrakingArray";
 	public static final String KEY_WIPER_STATUS = "wiperStatus";
 	public static final String KEY_HEAD_LAMP_STATUS = "headLampStatus";
 	public static final String KEY_ACC_PEDAL_POSITION = "accPedalPosition";
+	public static final String KEY_ACC_PEDAL_POSITION_ARRAY = "accPedalPositionArray";
 	public static final String KEY_STEERING_WHEEL_ANGLE = "steeringWheelAngle";
+	public static final String KEY_STEERING_WHEEL_ANGLE_ARRAY = "steeringWheelAngleArray";
 	public static final String KEY_E_CALL_INFO = "eCallInfo";
 	public static final String KEY_AIRBAG_STATUS = "airbagStatus";
 	public static final String KEY_EMERGENCY_EVENT = "emergencyEvent";
 	public static final String KEY_CLUSTER_MODE_STATUS = "clusterModeStatus";
 	public static final String KEY_MY_KEY = "myKey";
 	public static final String KEY_SPEED = "speed";
+	public static final String KEY_SPEED_ARRAY = "speedArray";
+	public static final String KEY_ACCELEROMETER_ARRAY = "accelerometerArray";
+	public static final String KEY_GYROSCOPE_ARRAY = "gyroscopeArray";
+	public static final String KEY_WHEEL_SPEEDS_ARRAY = "wheelSpeedsArray";
 
 	/**
 	 * Constructs a new SubscribeVehicleData object
@@ -306,6 +321,18 @@ public class SubscribeVehicleData extends RPCRequest {
         return (Boolean) parameters.get(KEY_GPS);
     }
 
+	public void setGpsArray(Boolean gpsArray) {
+		if (gpsArray != null) {
+			parameters.put(KEY_GPS_ARRAY, gpsArray);
+		} else {
+			parameters.remove(KEY_GPS_ARRAY);
+		}
+	}
+
+	public Boolean getGpsArray() {
+		return (Boolean) parameters.get(KEY_GPS_ARRAY);
+	}
+
 	/**
 	 * Sets a boolean value. If true, subscribes speed data
 	 * 
@@ -329,6 +356,54 @@ public class SubscribeVehicleData extends RPCRequest {
     public Boolean getSpeed() {
         return (Boolean) parameters.get(KEY_SPEED);
     }
+
+	public void setSpeedArray(Boolean speedArray) {
+		if (speedArray != null) {
+			parameters.put(KEY_SPEED_ARRAY, speedArray);
+		} else {
+			parameters.remove(KEY_SPEED_ARRAY);
+		}
+	}
+
+	public Boolean getSpeedArray() {
+		return (Boolean) parameters.get(KEY_SPEED_ARRAY);
+	}
+
+	public void setAccelerometerArray(Boolean accelerometerArray) {
+		if (accelerometerArray != null) {
+			parameters.put(KEY_ACCELEROMETER_ARRAY, accelerometerArray);
+		} else {
+			parameters.remove(KEY_ACCELEROMETER_ARRAY);
+		}
+	}
+
+	public Boolean getAccelerometerArray() {
+		return (Boolean) parameters.get(KEY_ACCELEROMETER_ARRAY);
+	}
+
+	public void setGyroscopeArray(Boolean gyroscopeArray) {
+		if (gyroscopeArray != null) {
+			parameters.put(KEY_GYROSCOPE_ARRAY, gyroscopeArray);
+		} else {
+			parameters.remove(KEY_GYROSCOPE_ARRAY);
+		}
+	}
+
+	public Boolean getGyroscopeArray() {
+		return (Boolean) parameters.get(KEY_GYROSCOPE_ARRAY);
+	}
+
+	public void setWheelSpeedsArray(Boolean wheelSpeedsArray) {
+		if (wheelSpeedsArray != null) {
+			parameters.put(KEY_WHEEL_SPEEDS_ARRAY, wheelSpeedsArray);
+		} else {
+			parameters.remove(KEY_WHEEL_SPEEDS_ARRAY);
+		}
+	}
+
+	public Boolean getWheelSpeedsArray() {
+		return (Boolean) parameters.get(KEY_WHEEL_SPEEDS_ARRAY);
+	}
 
 	/**
 	 * Sets a boolean value. If true, subscribes rpm data
@@ -354,6 +429,18 @@ public class SubscribeVehicleData extends RPCRequest {
         return (Boolean) parameters.get(KEY_RPM);
     }
 
+	public void setRpmArray(Boolean rpmArray) {
+		if (rpmArray != null) {
+			parameters.put(KEY_RPM_ARRAY, rpmArray);
+		} else {
+			parameters.remove(KEY_RPM_ARRAY);
+		}
+	}
+
+	public Boolean getRpmArray() {
+		return (Boolean) parameters.get(KEY_RPM_ARRAY);
+	}
+
 	/**
 	 * Sets a boolean value. If true, subscribes FuelLevel data
 	 * 
@@ -378,6 +465,18 @@ public class SubscribeVehicleData extends RPCRequest {
     public Boolean getFuelLevel() {
         return (Boolean) parameters.get(KEY_FUEL_LEVEL);
     }
+
+	public void setFuelLevelArray(Boolean fuelLevelArray) {
+		if (fuelLevelArray != null) {
+			parameters.put(KEY_FUEL_LEVEL_ARRAY, fuelLevelArray);
+		} else {
+			parameters.remove(KEY_FUEL_LEVEL_ARRAY);
+		}
+	}
+
+	public Boolean getFuelLevelArray() {
+		return (Boolean) parameters.get(KEY_FUEL_LEVEL_ARRAY);
+	}
 
     /**
      * Sets a boolean value. If true, subscribes fuelLevel_State data
@@ -426,6 +525,18 @@ public class SubscribeVehicleData extends RPCRequest {
     public Boolean getFuelLevelState() {
         return (Boolean) parameters.get(KEY_FUEL_LEVEL_STATE);
     }
+
+	public void setFuelLevelStateArray(Boolean fuelLevelStateArray) {
+		if (fuelLevelStateArray != null) {
+			parameters.put(KEY_FUEL_LEVEL_STATE_ARRAY, fuelLevelStateArray);
+		} else {
+			parameters.remove(KEY_FUEL_LEVEL_STATE_ARRAY);
+		}
+	}
+
+	public Boolean getFuelLevelStateArray() {
+		return (Boolean) parameters.get(KEY_FUEL_LEVEL_STATE_ARRAY);
+	}
 
 	/**
 	 * Sets a boolean value. If true, subscribes instantFuelConsumption data
@@ -477,6 +588,18 @@ public class SubscribeVehicleData extends RPCRequest {
         return (Boolean) parameters.get(KEY_EXTERNAL_TEMPERATURE);
     }
 
+	public void setExternalTemperatureArray(Boolean externalTemperatureArray) {
+		if (externalTemperatureArray != null) {
+			parameters.put(KEY_EXTERNAL_TEMPERATURE_ARRAY, externalTemperatureArray);
+		} else {
+			parameters.remove(KEY_EXTERNAL_TEMPERATURE_ARRAY);
+		}
+	}
+
+	public Boolean getExternalTemperatureArray() {
+		return (Boolean) parameters.get(KEY_EXTERNAL_TEMPERATURE_ARRAY);
+	}
+
 	/**
 	 * Sets a boolean value. If true, subscribes Currently selected gear data
 	 * 
@@ -502,6 +625,18 @@ public class SubscribeVehicleData extends RPCRequest {
         return (Boolean) parameters.get(KEY_PRNDL);
     }
 
+	public void setPrndlArray(Boolean prndlArray) {
+		if (prndlArray != null) {
+			parameters.put(KEY_PRNDL_ARRAY, prndlArray);
+		} else {
+			parameters.remove(KEY_PRNDL_ARRAY);
+		}
+	}
+
+	public Boolean getPrndlArray() {
+		return (Boolean) parameters.get(KEY_PRNDL_ARRAY);
+	}
+
 	/**
 	 * Sets a boolean value. If true, subscribes tire pressure status data
 	 * 
@@ -526,6 +661,18 @@ public class SubscribeVehicleData extends RPCRequest {
     public Boolean getTirePressure() {
         return (Boolean) parameters.get(KEY_TIRE_PRESSURE);
     }
+
+	public void setTirePressureArray(Boolean tirePressureArray) {
+		if (tirePressureArray != null) {
+			parameters.put(KEY_TIRE_PRESSURE_ARRAY, tirePressureArray);
+		} else {
+			parameters.remove(KEY_TIRE_PRESSURE_ARRAY);
+		}
+	}
+
+	public Boolean getTirePressureArray() {
+		return (Boolean) parameters.get(KEY_TIRE_PRESSURE_ARRAY);
+	}
 
 	/**
 	 * Sets a boolean value. If true, subscribes odometer data
@@ -652,6 +799,18 @@ public class SubscribeVehicleData extends RPCRequest {
         return (Boolean) parameters.get(KEY_DRIVER_BRAKING);
     }
 
+	public void setDriverBrakingArray(Boolean driverBrakingArray) {
+		if (driverBrakingArray != null) {
+			parameters.put(KEY_DRIVER_BRAKING_ARRAY, driverBrakingArray);
+		} else {
+			parameters.remove(KEY_DRIVER_BRAKING_ARRAY);
+		}
+	}
+
+	public Boolean getDriverBrakingArray() {
+		return (Boolean) parameters.get(KEY_DRIVER_BRAKING_ARRAY);
+	}
+
 	/**
 	 * Sets a boolean value. If true, subscribes wiper Status data
 	 * 
@@ -727,6 +886,18 @@ public class SubscribeVehicleData extends RPCRequest {
         return (Boolean) parameters.get(KEY_ENGINE_TORQUE);
     }
 
+	public void setEngineTorqueArray(Boolean engineTorqueArray) {
+		if (engineTorqueArray != null) {
+			parameters.put(KEY_ENGINE_TORQUE_ARRAY, engineTorqueArray);
+		} else {
+			parameters.remove(KEY_ENGINE_TORQUE_ARRAY);
+		}
+	}
+
+	public Boolean getEngineTorqueArray() {
+		return (Boolean) parameters.get(KEY_ENGINE_TORQUE_ARRAY);
+	}
+
 	/**
 	 * Sets a boolean value. If true, subscribes accPedalPosition data
 	 * 
@@ -751,7 +922,19 @@ public class SubscribeVehicleData extends RPCRequest {
     public Boolean getAccPedalPosition() {
         return (Boolean) parameters.get(KEY_ACC_PEDAL_POSITION);
     }
-  
+
+	public void setAccPedalPositionArray(Boolean accPedalPositionArray) {
+		if (accPedalPositionArray != null) {
+			parameters.put(KEY_ACC_PEDAL_POSITION_ARRAY, accPedalPositionArray);
+		} else {
+			parameters.remove(KEY_ACC_PEDAL_POSITION_ARRAY);
+		}
+	}
+
+	public Boolean getAccPedalPositionArray() {
+		return (Boolean) parameters.get(KEY_ACC_PEDAL_POSITION_ARRAY);
+	}
+
     public void setSteeringWheelAngle(Boolean steeringWheelAngle) {
         if (steeringWheelAngle != null) {
             parameters.put(KEY_STEERING_WHEEL_ANGLE, steeringWheelAngle);
@@ -762,8 +945,21 @@ public class SubscribeVehicleData extends RPCRequest {
 
     public Boolean getSteeringWheelAngle() {
         return (Boolean) parameters.get(KEY_STEERING_WHEEL_ANGLE);
-    }    
-    public void setECallInfo(Boolean eCallInfo) {
+    }
+
+	public void setSteeringWheelAngleArray(Boolean steeringWheelAngleArray) {
+		if (steeringWheelAngleArray != null) {
+			parameters.put(KEY_STEERING_WHEEL_ANGLE_ARRAY, steeringWheelAngleArray);
+		} else {
+			parameters.remove(KEY_STEERING_WHEEL_ANGLE_ARRAY);
+		}
+	}
+
+	public Boolean getSteeringWheelAngleArray() {
+		return (Boolean) parameters.get(KEY_STEERING_WHEEL_ANGLE_ARRAY);
+	}
+
+	public void setECallInfo(Boolean eCallInfo) {
         if (eCallInfo != null) {
             parameters.put(KEY_E_CALL_INFO, eCallInfo);
         } else {

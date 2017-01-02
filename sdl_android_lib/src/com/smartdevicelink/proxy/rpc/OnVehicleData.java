@@ -1,6 +1,8 @@
 package com.smartdevicelink.proxy.rpc;
 
+import java.util.ArrayList;
 import java.util.Hashtable;
+import java.util.List;
 
 import com.smartdevicelink.protocol.enums.FunctionID;
 import com.smartdevicelink.proxy.RPCNotification;
@@ -245,30 +247,45 @@ import com.smartdevicelink.util.SdlDataTypeConverter;
  */
 public class OnVehicleData extends RPCNotification {
 	public static final String KEY_SPEED = "speed";
+    public static final String KEY_SPEED_ARRAY = "speedArray";
 	public static final String KEY_RPM = "rpm";
+    public static final String KEY_RPM_ARRAY = "rpmArray";
 	public static final String KEY_EXTERNAL_TEMPERATURE = "externalTemperature";
+    public static final String KEY_EXTERNAL_TEMPERATURE_ARRAY = "externalTemperatureArray";
 	public static final String KEY_FUEL_LEVEL = "fuelLevel";
+    public static final String KEY_FUEL_LEVEL_ARRAY = "fuelLevelArray";
 	public static final String KEY_VIN = "vin";
 	public static final String KEY_PRNDL = "prndl";
+    public static final String KEY_PRNDL_ARRAY = "prndlArray";
 	public static final String KEY_TIRE_PRESSURE = "tirePressure";
+    public static final String KEY_TIRE_PRESSURE_ARRAY = "tirePressureArray";
 	public static final String KEY_ENGINE_TORQUE = "engineTorque";
+    public static final String KEY_ENGINE_TORQUE_ARRAY = "engineTorqueArray";
 	public static final String KEY_ODOMETER = "odometer";
 	public static final String KEY_GPS = "gps";
+    public static final String KEY_GPS_ARRAY = "gpsArray";
 	public static final String KEY_FUEL_LEVEL_STATE = "fuelLevel_State";
+    public static final String KEY_FUEL_LEVEL_STATE_ARRAY = "fuelLevel_StateArray";
 	public static final String KEY_INSTANT_FUEL_CONSUMPTION = "instantFuelConsumption";
 	public static final String KEY_BELT_STATUS = "beltStatus";
 	public static final String KEY_BODY_INFORMATION = "bodyInformation";
 	public static final String KEY_DEVICE_STATUS = "deviceStatus";
 	public static final String KEY_DRIVER_BRAKING = "driverBraking";
+    public static final String KEY_DRIVER_BRAKING_ARRAY = "driverBrakingArray";
 	public static final String KEY_WIPER_STATUS = "wiperStatus";
 	public static final String KEY_HEAD_LAMP_STATUS = "headLampStatus";
 	public static final String KEY_ACC_PEDAL_POSITION = "accPedalPosition";
+    public static final String KEY_ACC_PEDAL_POSITION_ARRAY = "accPedalPositionArray";
 	public static final String KEY_STEERING_WHEEL_ANGLE = "steeringWheelAngle";
+    public static final String KEY_STEERING_WHEEL_ANGLE_ARRAY = "steeringWheelAngleArray";
 	public static final String KEY_E_CALL_INFO = "eCallInfo";
 	public static final String KEY_AIRBAG_STATUS = "airbagStatus";
 	public static final String KEY_EMERGENCY_EVENT = "emergencyEvent";
 	public static final String KEY_CLUSTER_MODE_STATUS = "clusterModeStatus";
 	public static final String KEY_MY_KEY = "myKey";
+    public static final String KEY_ACCELEROMETER_ARRAY = "accelerometerArray";
+    public static final String KEY_GYROSCOPE_ARRAY = "gyroscopeArray";
+    public static final String KEY_WHEEL_SPEEDS_ARRAY = "wheelSpeedsArray";
 
     public OnVehicleData() {
         super(FunctionID.ON_VEHICLE_DATA.toString());
@@ -276,6 +293,7 @@ public class OnVehicleData extends RPCNotification {
     public OnVehicleData(Hashtable<String, Object> hash) {
         super(hash);
     }
+
     public void setGps(GPSData gps) {
     	if (gps != null) {
     		parameters.put(KEY_GPS, gps);
@@ -299,6 +317,38 @@ public class OnVehicleData extends RPCNotification {
         }
         return null;
     }
+
+
+    public void setGpsArray(List<GPSDataType> gpsArray){
+        if(gpsArray != null){
+            parameters.put(KEY_GPS_ARRAY, gpsArray);
+        }
+        else{
+            parameters.remove(KEY_GPS_ARRAY);
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    public List<GPSDataType> getGpsArray(){
+        if(parameters.get(KEY_GPS_ARRAY) instanceof List<?>){
+            List<?> list = (List<?>) parameters.get(KEY_GPS_ARRAY);
+            if(list != null && list.size() > 0){
+                Object obj = list.get(0);
+                if(obj instanceof GPSDataType){
+                    return (List<GPSDataType>) list;
+                }
+                else if(obj instanceof Hashtable){
+                    List<GPSDataType> newList = new ArrayList<GPSDataType>();
+                    for(Object hashObj : list){
+                        newList.add(new GPSDataType((Hashtable<String, Object>) hashObj));
+                    }
+                    return newList;
+                }
+            }
+        }
+        return null;
+    }
+
     public void setSpeed(Double speed) {
     	if (speed != null) {
     		parameters.put(KEY_SPEED, speed);
@@ -310,6 +360,37 @@ public class OnVehicleData extends RPCNotification {
     	Object object = parameters.get(KEY_SPEED);
     	return SdlDataTypeConverter.objectToDouble(object);
     }
+
+    public void setSpeedArray(List<SpeedType> speedArray){
+        if(speedArray != null){
+            parameters.put(KEY_SPEED_ARRAY, speedArray);
+        }
+        else{
+            parameters.remove(KEY_SPEED_ARRAY);
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    public List<SpeedType> getSpeedArray(){
+        if(parameters.get(KEY_SPEED_ARRAY) instanceof List<?>){
+            List<?> list = (List<?>) parameters.get(KEY_SPEED_ARRAY);
+            if(list != null && list.size() > 0){
+                Object obj = list.get(0);
+                if(obj instanceof SpeedType){
+                    return (List<SpeedType>) list;
+                }
+                else if(obj instanceof Hashtable){
+                    List<SpeedType> newList = new ArrayList<SpeedType>();
+                    for(Object hashObj : list){
+                        newList.add(new SpeedType((Hashtable<String, Object>) hashObj));
+                    }
+                    return newList;
+                }
+            }
+        }
+        return null;
+    }
+
     public void setRpm(Integer rpm) {
     	if (rpm != null) {
     		parameters.put(KEY_RPM, rpm);
@@ -320,6 +401,37 @@ public class OnVehicleData extends RPCNotification {
     public Integer getRpm() {
     	return (Integer) parameters.get(KEY_RPM);
     }
+
+    public void setRpmArray(List<RpmType> rpmArray){
+        if(rpmArray != null){
+            parameters.put(KEY_RPM_ARRAY, rpmArray);
+        }
+        else{
+            parameters.remove(KEY_RPM_ARRAY);
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    public List<RpmType> getRpmArray(){
+        if(parameters.get(KEY_RPM_ARRAY) instanceof List<?>){
+            List<?> list = (List<?>) parameters.get(KEY_RPM_ARRAY);
+            if(list != null && list.size() > 0){
+                Object obj = list.get(0);
+                if(obj instanceof RpmType){
+                    return (List<RpmType>) list;
+                }
+                else if(obj instanceof Hashtable){
+                    List<RpmType> newList = new ArrayList<RpmType>();
+                    for(Object hashObj : list){
+                        newList.add(new RpmType((Hashtable<String, Object>) hashObj));
+                    }
+                    return newList;
+                }
+            }
+        }
+        return null;
+    }
+
     public void setFuelLevel(Double fuelLevel) {
     	if (fuelLevel != null) {
     		parameters.put(KEY_FUEL_LEVEL, fuelLevel);
@@ -331,6 +443,37 @@ public class OnVehicleData extends RPCNotification {
     	Object object = parameters.get(KEY_FUEL_LEVEL);
     	return SdlDataTypeConverter.objectToDouble(object);
     }
+
+    public void setFuelLevelArray(List<FuelLevelType> fuelLevelArray){
+        if(fuelLevelArray != null){
+            parameters.put(KEY_FUEL_LEVEL_ARRAY, fuelLevelArray);
+        }
+        else{
+            parameters.remove(KEY_FUEL_LEVEL_ARRAY);
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    public List<FuelLevelType> getFuelLevelArray(){
+        if(parameters.get(KEY_FUEL_LEVEL_ARRAY) instanceof List<?>){
+            List<?> list = (List<?>) parameters.get(KEY_FUEL_LEVEL_ARRAY);
+            if(list != null && list.size() > 0){
+                Object obj = list.get(0);
+                if(obj instanceof FuelLevelType){
+                    return (List<FuelLevelType>) list;
+                }
+                else if(obj instanceof Hashtable){
+                    List<FuelLevelType> newList = new ArrayList<FuelLevelType>();
+                    for(Object hashObj : list){
+                        newList.add(new FuelLevelType((Hashtable<String, Object>) hashObj));
+                    }
+                    return newList;
+                }
+            }
+        }
+        return null;
+    }
+
     @Deprecated
     public void setFuelLevel_State(ComponentVolumeStatus fuelLevel_State) {
         setFuelLevelState(fuelLevel_State);
@@ -361,6 +504,37 @@ public class OnVehicleData extends RPCNotification {
         }
         return null;
     }
+
+    public void setFuelLevelStateArray(List<ComponentVolumeStatusType> fuelLevelStateArray){
+        if(fuelLevelStateArray != null){
+            parameters.put(KEY_FUEL_LEVEL_STATE_ARRAY, fuelLevelStateArray);
+        }
+        else{
+            parameters.remove(KEY_FUEL_LEVEL_STATE_ARRAY);
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    public List<ComponentVolumeStatusType> getFuelLevelStateArray(){
+        if(parameters.get(KEY_FUEL_LEVEL_STATE_ARRAY) instanceof List<?>){
+            List<?> list = (List<?>) parameters.get(KEY_FUEL_LEVEL_STATE_ARRAY);
+            if(list != null && list.size() > 0){
+                Object obj = list.get(0);
+                if(obj instanceof ComponentVolumeStatusType){
+                    return (List<ComponentVolumeStatusType>) list;
+                }
+                else if(obj instanceof Hashtable){
+                    List<ComponentVolumeStatusType> newList = new ArrayList<ComponentVolumeStatusType>();
+                    for(Object hashObj : list){
+                        newList.add(new ComponentVolumeStatusType((Hashtable<String, Object>) hashObj));
+                    }
+                    return newList;
+                }
+            }
+        }
+        return null;
+    }
+
     public void setInstantFuelConsumption(Double instantFuelConsumption) {
     	if (instantFuelConsumption != null) {
     		parameters.put(KEY_INSTANT_FUEL_CONSUMPTION, instantFuelConsumption);
@@ -383,6 +557,37 @@ public class OnVehicleData extends RPCNotification {
     	Object object = parameters.get(KEY_EXTERNAL_TEMPERATURE);
     	return SdlDataTypeConverter.objectToDouble(object);
     }
+
+    public void setExternalTemperatureArray(List<ExternalTemperatureType> externalTemperatureArray){
+        if(externalTemperatureArray != null){
+            parameters.put(KEY_EXTERNAL_TEMPERATURE_ARRAY, externalTemperatureArray);
+        }
+        else{
+            parameters.remove(KEY_EXTERNAL_TEMPERATURE_ARRAY);
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    public List<ExternalTemperatureType> getExternalTemperatureArray(){
+        if(parameters.get(KEY_EXTERNAL_TEMPERATURE_ARRAY) instanceof List<?>){
+            List<?> list = (List<?>) parameters.get(KEY_EXTERNAL_TEMPERATURE_ARRAY);
+            if(list != null && list.size() > 0){
+                Object obj = list.get(0);
+                if(obj instanceof ExternalTemperatureType){
+                    return (List<ExternalTemperatureType>) list;
+                }
+                else if(obj instanceof Hashtable){
+                    List<ExternalTemperatureType> newList = new ArrayList<ExternalTemperatureType>();
+                    for(Object hashObj : list){
+                        newList.add(new ExternalTemperatureType((Hashtable<String, Object>) hashObj));
+                    }
+                    return newList;
+                }
+            }
+        }
+        return null;
+    }
+
     public void setVin(String vin) {
     	if (vin != null) {
     		parameters.put(KEY_VIN, vin);
@@ -409,6 +614,37 @@ public class OnVehicleData extends RPCNotification {
         }
         return null;
     }
+
+    public void setPrndlArray(List<PRNDLType> prndlArray){
+        if(prndlArray != null){
+            parameters.put(KEY_PRNDL_ARRAY, prndlArray);
+        }
+        else{
+            parameters.remove(KEY_PRNDL_ARRAY);
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    public List<PRNDLType> getPrndlArray(){
+        if(parameters.get(KEY_PRNDL_ARRAY) instanceof List<?>){
+            List<?> list = (List<?>) parameters.get(KEY_PRNDL_ARRAY);
+            if(list != null && list.size() > 0){
+                Object obj = list.get(0);
+                if(obj instanceof PRNDLType){
+                    return (List<PRNDLType>) list;
+                }
+                else if(obj instanceof Hashtable){
+                    List<PRNDLType> newList = new ArrayList<PRNDLType>();
+                    for(Object hashObj : list){
+                        newList.add(new PRNDLType((Hashtable<String, Object>) hashObj));
+                    }
+                    return newList;
+                }
+            }
+        }
+        return null;
+    }
+
     public void setTirePressure(TireStatus tirePressure) {
     	if (tirePressure != null) {
     		parameters.put(KEY_TIRE_PRESSURE, tirePressure);
@@ -430,6 +666,37 @@ public class OnVehicleData extends RPCNotification {
         }
         return null;
     }
+
+    public void setTirePressureArray(List<TireStatusType> tirePressureArray){
+        if(tirePressureArray != null){
+            parameters.put(KEY_TIRE_PRESSURE_ARRAY, tirePressureArray);
+        }
+        else{
+            parameters.remove(KEY_TIRE_PRESSURE_ARRAY);
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    public List<TireStatusType> getTirePressureArray(){
+        if(parameters.get(KEY_TIRE_PRESSURE_ARRAY) instanceof List<?>){
+            List<?> list = (List<?>) parameters.get(KEY_TIRE_PRESSURE_ARRAY);
+            if(list != null && list.size() > 0){
+                Object obj = list.get(0);
+                if(obj instanceof TireStatusType){
+                    return (List<TireStatusType>) list;
+                }
+                else if(obj instanceof Hashtable){
+                    List<TireStatusType> newList = new ArrayList<TireStatusType>();
+                    for(Object hashObj : list){
+                        newList.add(new TireStatusType((Hashtable<String, Object>) hashObj));
+                    }
+                    return newList;
+                }
+            }
+        }
+        return null;
+    }
+
     public void setOdometer(Integer odometer) {
     	if (odometer != null) {
     		parameters.put(KEY_ODOMETER, odometer);
@@ -519,6 +786,37 @@ public class OnVehicleData extends RPCNotification {
         }
         return null;
     }
+
+    public void setDriverBrakingArray(List<VehicleDataEventStatusType> driverBrakingArray){
+        if(driverBrakingArray != null){
+            parameters.put(KEY_DRIVER_BRAKING_ARRAY, driverBrakingArray);
+        }
+        else{
+            parameters.remove(KEY_DRIVER_BRAKING_ARRAY);
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    public List<VehicleDataEventStatusType> getDriverBrakingArray(){
+        if(parameters.get(KEY_DRIVER_BRAKING_ARRAY) instanceof List<?>){
+            List<?> list = (List<?>) parameters.get(KEY_DRIVER_BRAKING_ARRAY);
+            if(list != null && list.size() > 0){
+                Object obj = list.get(0);
+                if(obj instanceof VehicleDataEventStatusType){
+                    return (List<VehicleDataEventStatusType>) list;
+                }
+                else if(obj instanceof Hashtable){
+                    List<VehicleDataEventStatusType> newList = new ArrayList<VehicleDataEventStatusType>();
+                    for(Object hashObj : list){
+                        newList.add(new VehicleDataEventStatusType((Hashtable<String, Object>) hashObj));
+                    }
+                    return newList;
+                }
+            }
+        }
+        return null;
+    }
+
     public void setWiperStatus(WiperStatus wiperStatus) {
         if (wiperStatus != null) {
             parameters.put(KEY_WIPER_STATUS, wiperStatus);
@@ -567,6 +865,37 @@ public class OnVehicleData extends RPCNotification {
     	Object object = parameters.get(KEY_ENGINE_TORQUE);
     	return SdlDataTypeConverter.objectToDouble(object);
     }
+
+    public void setEngineTorqueArray(List<EngineTorqueType> engineTorqueArray){
+        if(engineTorqueArray != null){
+            parameters.put(KEY_ENGINE_TORQUE_ARRAY, engineTorqueArray);
+        }
+        else{
+            parameters.remove(KEY_ENGINE_TORQUE_ARRAY);
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    public List<EngineTorqueType> getEngineTorqueArray(){
+        if(parameters.get(KEY_ENGINE_TORQUE_ARRAY) instanceof List<?>){
+            List<?> list = (List<?>) parameters.get(KEY_ENGINE_TORQUE_ARRAY);
+            if(list != null && list.size() > 0){
+                Object obj = list.get(0);
+                if(obj instanceof EngineTorqueType){
+                    return (List<EngineTorqueType>) list;
+                }
+                else if(obj instanceof Hashtable){
+                    List<EngineTorqueType> newList = new ArrayList<EngineTorqueType>();
+                    for(Object hashObj : list){
+                        newList.add(new EngineTorqueType((Hashtable<String, Object>) hashObj));
+                    }
+                    return newList;
+                }
+            }
+        }
+        return null;
+    }
+
     public void setAccPedalPosition(Double accPedalPosition) {
         if (accPedalPosition != null) {
             parameters.put(KEY_ACC_PEDAL_POSITION, accPedalPosition);
@@ -578,6 +907,37 @@ public class OnVehicleData extends RPCNotification {
     	Object object = parameters.get(KEY_ACC_PEDAL_POSITION);
     	return SdlDataTypeConverter.objectToDouble(object);
     }
+
+    public void setAccPedalPositionArray(List<AccPedalPositionType> accPedalPositionArray){
+        if(accPedalPositionArray != null){
+            parameters.put(KEY_ACC_PEDAL_POSITION_ARRAY, accPedalPositionArray);
+        }
+        else{
+            parameters.remove(KEY_ACC_PEDAL_POSITION_ARRAY);
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    public List<AccPedalPositionType> getAccPedalPositionArray(){
+        if(parameters.get(KEY_ACC_PEDAL_POSITION_ARRAY) instanceof List<?>){
+            List<?> list = (List<?>) parameters.get(KEY_ACC_PEDAL_POSITION_ARRAY);
+            if(list != null && list.size() > 0){
+                Object obj = list.get(0);
+                if(obj instanceof AccPedalPositionType){
+                    return (List<AccPedalPositionType>) list;
+                }
+                else if(obj instanceof Hashtable){
+                    List<AccPedalPositionType> newList = new ArrayList<AccPedalPositionType>();
+                    for(Object hashObj : list){
+                        newList.add(new AccPedalPositionType((Hashtable<String, Object>) hashObj));
+                    }
+                    return newList;
+                }
+            }
+        }
+        return null;
+    }
+
     public void setSteeringWheelAngle(Double steeringWheelAngle) {
         if (steeringWheelAngle != null) {
             parameters.put(KEY_STEERING_WHEEL_ANGLE, steeringWheelAngle);
@@ -589,6 +949,37 @@ public class OnVehicleData extends RPCNotification {
     	Object object = parameters.get(KEY_STEERING_WHEEL_ANGLE);
     	return SdlDataTypeConverter.objectToDouble(object);
     }
+
+    public void setSteeringWheelAngleArray(List<SteeringWheelAngleType> steeringWheelAngleArray){
+        if(steeringWheelAngleArray != null){
+            parameters.put(KEY_STEERING_WHEEL_ANGLE_ARRAY, steeringWheelAngleArray);
+        }
+        else{
+            parameters.remove(KEY_STEERING_WHEEL_ANGLE_ARRAY);
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    public List<SteeringWheelAngleType> getSteeringWheelAngleArray(){
+        if(parameters.get(KEY_STEERING_WHEEL_ANGLE_ARRAY) instanceof List<?>){
+            List<?> list = (List<?>) parameters.get(KEY_STEERING_WHEEL_ANGLE_ARRAY);
+            if(list != null && list.size() > 0){
+                Object obj = list.get(0);
+                if(obj instanceof SteeringWheelAngleType){
+                    return (List<SteeringWheelAngleType>) list;
+                }
+                else if(obj instanceof Hashtable){
+                    List<SteeringWheelAngleType> newList = new ArrayList<SteeringWheelAngleType>();
+                    for(Object hashObj : list){
+                        newList.add(new SteeringWheelAngleType((Hashtable<String, Object>) hashObj));
+                    }
+                    return newList;
+                }
+            }
+        }
+        return null;
+    }
+
     public void setECallInfo(ECallInfo eCallInfo) {
         if (eCallInfo != null) {
             parameters.put(KEY_E_CALL_INFO, eCallInfo);
@@ -693,5 +1084,96 @@ public class OnVehicleData extends RPCNotification {
             }
         }
         return null;
-    }    
+    }
+
+    public void setAccelerometerArray(List<AxisSensorDataType> accelerometerArray){
+        if(accelerometerArray != null){
+            parameters.put(KEY_ACCELEROMETER_ARRAY, accelerometerArray);
+        }
+        else{
+            parameters.remove(KEY_ACCELEROMETER_ARRAY);
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    public List<AxisSensorDataType> getAccelerometerArray(){
+        if(parameters.get(KEY_ACCELEROMETER_ARRAY) instanceof List<?>){
+            List<?> list = (List<?>) parameters.get(KEY_ACCELEROMETER_ARRAY);
+            if(list != null && list.size() > 0){
+                Object obj = list.get(0);
+                if(obj instanceof AxisSensorDataType){
+                    return (List<AxisSensorDataType>) list;
+                }
+                else if(obj instanceof Hashtable){
+                    List<AxisSensorDataType> newList = new ArrayList<AxisSensorDataType>();
+                    for(Object hashObj : list){
+                        newList.add(new AxisSensorDataType((Hashtable<String, Object>) hashObj));
+                    }
+                    return newList;
+                }
+            }
+        }
+        return null;
+    }
+
+    public void setGyroscopeArray(List<AxisSensorDataType> gyroscopeArray){
+        if(gyroscopeArray != null){
+            parameters.put(KEY_GYROSCOPE_ARRAY, gyroscopeArray);
+        }
+        else{
+            parameters.remove(KEY_GYROSCOPE_ARRAY);
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    public List<AxisSensorDataType> getGyroscopeArray(){
+        if(parameters.get(KEY_GYROSCOPE_ARRAY) instanceof List<?>){
+            List<?> list = (List<?>) parameters.get(KEY_GYROSCOPE_ARRAY);
+            if(list != null && list.size() > 0){
+                Object obj = list.get(0);
+                if(obj instanceof AxisSensorDataType){
+                    return (List<AxisSensorDataType>) list;
+                }
+                else if(obj instanceof Hashtable){
+                    List<AxisSensorDataType> newList = new ArrayList<AxisSensorDataType>();
+                    for(Object hashObj : list){
+                        newList.add(new AxisSensorDataType((Hashtable<String, Object>) hashObj));
+                    }
+                    return newList;
+                }
+            }
+        }
+        return null;
+    }
+
+    public void setWheelSpeedsArray(List<WheelSpeedsDataType> wheelSpeedsArray){
+        if(wheelSpeedsArray != null){
+            parameters.put(KEY_WHEEL_SPEEDS_ARRAY, wheelSpeedsArray);
+        }
+        else{
+            parameters.remove(KEY_WHEEL_SPEEDS_ARRAY);
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    public List<WheelSpeedsDataType> getWheelSpeedsArray(){
+        if(parameters.get(KEY_WHEEL_SPEEDS_ARRAY) instanceof List<?>){
+            List<?> list = (List<?>) parameters.get(KEY_WHEEL_SPEEDS_ARRAY);
+            if(list != null && list.size() > 0){
+                Object obj = list.get(0);
+                if(obj instanceof WheelSpeedsDataType){
+                    return (List<WheelSpeedsDataType>) list;
+                }
+                else if(obj instanceof Hashtable){
+                    List<WheelSpeedsDataType> newList = new ArrayList<WheelSpeedsDataType>();
+                    for(Object hashObj : list){
+                        newList.add(new WheelSpeedsDataType((Hashtable<String, Object>) hashObj));
+                    }
+                    return newList;
+                }
+            }
+        }
+        return null;
+    }
+
 }
