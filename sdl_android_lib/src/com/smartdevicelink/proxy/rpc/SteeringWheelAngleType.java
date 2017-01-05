@@ -1,6 +1,7 @@
 package com.smartdevicelink.proxy.rpc;
 
 import com.smartdevicelink.proxy.RPCStruct;
+import com.smartdevicelink.util.DebugTool;
 import com.smartdevicelink.util.SdlDataTypeConverter;
 
 import java.util.Hashtable;
@@ -28,7 +29,7 @@ public class SteeringWheelAngleType extends RPCStruct {
         }
     }
 
-    public void setTimeStamp(Integer timeStamp) {
+    public void setTimeStamp(TimeStampType timeStamp) {
         if (timeStamp != null) {
             store.put(KEY_TIMESTAMP, timeStamp);
         } else {
@@ -36,7 +37,18 @@ public class SteeringWheelAngleType extends RPCStruct {
         }
     }
 
-    public Integer getTimeStamp() {
-        return (Integer) store.get(KEY_TIMESTAMP);
+    @SuppressWarnings("unchecked")
+    public TimeStampType getTimeStamp() {
+        Object obj = store.get(KEY_TIMESTAMP);
+        if (obj instanceof TimeStampType) {
+            return (TimeStampType) obj;
+        } else if (obj instanceof Hashtable) {
+            try {
+                return new TimeStampType((Hashtable<String, Object>) obj);
+            } catch (Exception e) {
+                DebugTool.logError("Failed to parse " + getClass().getSimpleName() + "." + KEY_TIMESTAMP, e);
+            }
+        }
+        return null;
     }
 }
