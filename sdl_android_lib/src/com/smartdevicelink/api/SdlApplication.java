@@ -118,7 +118,8 @@ public class SdlApplication extends SdlContextAbsImpl {
     public enum Status {
         CONNECTING,
         CONNECTED,
-        DISCONNECTED
+        DISCONNECTED,
+        RECONNECTING
     }
 
     private HandlerThread mExecutionThread;
@@ -600,18 +601,21 @@ public class SdlApplication extends SdlContextAbsImpl {
                         try {
                             if(mApplicationConfig.languageIsSupported(mSdlProxyALM.getSdlLanguage())){
                                  mConnectedLanguage = mSdlProxyALM.getSdlLanguage();
-                                Log.d(TAG,"Config indicates the app supports the lang the module requested");
+                                Log.v(TAG,"Config indicates the app supports the lang the module requested");
                             }else {
                                 mConnectedLanguage = mApplicationConfig.getDefaultLanguage();
-                                Log.d(TAG,"Config indicates the app does not support the lang the module requested, going to default");
+                                Log.v(TAG,"Config indicates the app does not support the lang the module requested, going to default");
 
                             }
+                            Log.v(TAG,"Connected Lang: "+ mConnectedLanguage.toString()+ " "+"Module Lang: "+ mSdlProxyALM.getSdlLanguage().toString());
                         } catch (SdlException e) {
                             e.printStackTrace();
                             Log.e(TAG, "Language could not be grabbed from proxy object");
                             mConnectedLanguage = mApplicationConfig.getDefaultLanguage();
                         }
-                        changeRegistrationTask().run();
+                        if(mConnectedLanguage!=mApplicationConfig.getDefaultLanguage()){
+                            changeRegistrationTask().run();
+                        }
                         mConnectionStatus = Status.CONNECTED;
                         onConnect();
                         mApplicationStatusListener.onStatusChange(mApplicationConfig.getAppId(), Status.CONNECTED);
@@ -669,8 +673,8 @@ public class SdlApplication extends SdlContextAbsImpl {
                         isFirstHmiReceived = false;
                         isFirstHmiNotNoneReceived = false;
                         createItemManagers();
-                        mConnectionStatus = Status.CONNECTING;
-                        mApplicationStatusListener.onStatusChange(mApplicationConfig.getAppId(), Status.CONNECTING);
+                        mConnectionStatus = Status.RECONNECTING;
+                        mApplicationStatusListener.onStatusChange(mApplicationConfig.getAppId(), Status.RECONNECTING);
                     }
                 }
             });
