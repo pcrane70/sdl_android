@@ -271,7 +271,6 @@ public class OnVehicleData extends RPCNotification {
 	public static final String KEY_BODY_INFORMATION = "bodyInformation";
 	public static final String KEY_DEVICE_STATUS = "deviceStatus";
 	public static final String KEY_DRIVER_BRAKING = "driverBraking";
-    public static final String KEY_DRIVER_BRAKING_ARRAY = "driverBrakingArray";
 	public static final String KEY_WIPER_STATUS = "wiperStatus";
 	public static final String KEY_HEAD_LAMP_STATUS = "headLampStatus";
 	public static final String KEY_ACC_PEDAL_POSITION = "accPedalPosition";
@@ -286,6 +285,8 @@ public class OnVehicleData extends RPCNotification {
     public static final String KEY_ACCELEROMETER_ARRAY = "accelerometerArray";
     public static final String KEY_GYROSCOPE_ARRAY = "gyroscopeArray";
     public static final String KEY_WHEEL_SPEEDS_ARRAY = "wheelSpeedsArray";
+    public static final String KEY_FUEL_REMAINING_RANGE_ARRAY = "fuelRemainingRangeArray";
+    public static final String KEY_BRAKE_PEDAL_POSITION_ARRAY = "brakePedalPositionArray";
 
     public OnVehicleData() {
         super(FunctionID.ON_VEHICLE_DATA.toString());
@@ -787,36 +788,6 @@ public class OnVehicleData extends RPCNotification {
         return null;
     }
 
-    public void setDriverBrakingArray(List<VehicleDataEventStatusType> driverBrakingArray){
-        if(driverBrakingArray != null){
-            parameters.put(KEY_DRIVER_BRAKING_ARRAY, driverBrakingArray);
-        }
-        else{
-            parameters.remove(KEY_DRIVER_BRAKING_ARRAY);
-        }
-    }
-
-    @SuppressWarnings("unchecked")
-    public List<VehicleDataEventStatusType> getDriverBrakingArray(){
-        if(parameters.get(KEY_DRIVER_BRAKING_ARRAY) instanceof List<?>){
-            List<?> list = (List<?>) parameters.get(KEY_DRIVER_BRAKING_ARRAY);
-            if(list != null && list.size() > 0){
-                Object obj = list.get(0);
-                if(obj instanceof VehicleDataEventStatusType){
-                    return (List<VehicleDataEventStatusType>) list;
-                }
-                else if(obj instanceof Hashtable){
-                    List<VehicleDataEventStatusType> newList = new ArrayList<VehicleDataEventStatusType>();
-                    for(Object hashObj : list){
-                        newList.add(new VehicleDataEventStatusType((Hashtable<String, Object>) hashObj));
-                    }
-                    return newList;
-                }
-            }
-        }
-        return null;
-    }
-
     public void setWiperStatus(WiperStatus wiperStatus) {
         if (wiperStatus != null) {
             parameters.put(KEY_WIPER_STATUS, wiperStatus);
@@ -1168,6 +1139,66 @@ public class OnVehicleData extends RPCNotification {
                     List<WheelSpeedsDataType> newList = new ArrayList<WheelSpeedsDataType>();
                     for(Object hashObj : list){
                         newList.add(new WheelSpeedsDataType((Hashtable<String, Object>) hashObj));
+                    }
+                    return newList;
+                }
+            }
+        }
+        return null;
+    }
+
+    public void setFuelRemainingRangeArray(List<FuelRemainingRangeType> fuelRemainingRangeArray){
+        if(fuelRemainingRangeArray != null){
+            parameters.put(KEY_FUEL_REMAINING_RANGE_ARRAY, fuelRemainingRangeArray);
+        }
+        else{
+            parameters.remove(KEY_FUEL_REMAINING_RANGE_ARRAY);
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    public List<FuelRemainingRangeType> getFuelRemainingRangeArray(){
+        if(parameters.get(KEY_FUEL_REMAINING_RANGE_ARRAY) instanceof List<?>){
+            List<?> list = (List<?>) parameters.get(KEY_FUEL_REMAINING_RANGE_ARRAY);
+            if(list != null && list.size() > 0){
+                Object obj = list.get(0);
+                if(obj instanceof FuelRemainingRangeType){
+                    return (List<FuelRemainingRangeType>) list;
+                }
+                else if(obj instanceof Hashtable){
+                    List<FuelRemainingRangeType> newList = new ArrayList<FuelRemainingRangeType>();
+                    for(Object hashObj : list){
+                        newList.add(new FuelRemainingRangeType((Hashtable<String, Object>) hashObj));
+                    }
+                    return newList;
+                }
+            }
+        }
+        return null;
+    }
+
+    public void setBrakePedalPositionArray(List<BrakePedalPositionType> brakePedalPositionArray){
+        if(brakePedalPositionArray != null){
+            parameters.put(KEY_BRAKE_PEDAL_POSITION_ARRAY, brakePedalPositionArray);
+        }
+        else{
+            parameters.remove(KEY_BRAKE_PEDAL_POSITION_ARRAY);
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    public List<BrakePedalPositionType> getBrakePedalPositionArray(){
+        if(parameters.get(KEY_BRAKE_PEDAL_POSITION_ARRAY) instanceof List<?>){
+            List<?> list = (List<?>) parameters.get(KEY_BRAKE_PEDAL_POSITION_ARRAY);
+            if(list != null && list.size() > 0){
+                Object obj = list.get(0);
+                if(obj instanceof BrakePedalPositionType){
+                    return (List<BrakePedalPositionType>) list;
+                }
+                else if(obj instanceof Hashtable){
+                    List<BrakePedalPositionType> newList = new ArrayList<BrakePedalPositionType>();
+                    for(Object hashObj : list){
+                        newList.add(new BrakePedalPositionType((Hashtable<String, Object>) hashObj));
                     }
                     return newList;
                 }

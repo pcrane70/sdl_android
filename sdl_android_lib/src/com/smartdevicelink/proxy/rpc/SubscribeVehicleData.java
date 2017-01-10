@@ -260,7 +260,6 @@ public class SubscribeVehicleData extends RPCRequest {
 	public static final String KEY_BODY_INFORMATION = "bodyInformation";
 	public static final String KEY_DEVICE_STATUS = "deviceStatus";
 	public static final String KEY_DRIVER_BRAKING = "driverBraking";
-	public static final String KEY_DRIVER_BRAKING_ARRAY = "driverBrakingArray";
 	public static final String KEY_WIPER_STATUS = "wiperStatus";
 	public static final String KEY_HEAD_LAMP_STATUS = "headLampStatus";
 	public static final String KEY_ACC_PEDAL_POSITION = "accPedalPosition";
@@ -277,6 +276,8 @@ public class SubscribeVehicleData extends RPCRequest {
 	public static final String KEY_ACCELEROMETER_ARRAY = "accelerometerArray";
 	public static final String KEY_GYROSCOPE_ARRAY = "gyroscopeArray";
 	public static final String KEY_WHEEL_SPEEDS_ARRAY = "wheelSpeedsArray";
+	public static final String KEY_FUEL_REMAINING_RANGE_ARRAY = "fuelRemainingRangeArray";
+	public static final String KEY_BRAKE_PEDAL_POSITION_ARRAY = "brakePedalPositionArray";
 
 	/**
 	 * Constructs a new SubscribeVehicleData object
@@ -379,6 +380,30 @@ public class SubscribeVehicleData extends RPCRequest {
 
 	public Boolean getAccelerometerArray() {
 		return (Boolean) parameters.get(KEY_ACCELEROMETER_ARRAY);
+	}
+
+	public void setFuelRemainingRangeArray(Boolean fuelRemainingRangeArray) {
+		if (fuelRemainingRangeArray != null) {
+			parameters.put(KEY_FUEL_REMAINING_RANGE_ARRAY, fuelRemainingRangeArray);
+		} else {
+			parameters.remove(KEY_FUEL_REMAINING_RANGE_ARRAY);
+		}
+	}
+
+	public Boolean getFuelRemainingRangeArray() {
+		return (Boolean) parameters.get(KEY_FUEL_REMAINING_RANGE_ARRAY);
+	}
+
+	public void setBrakePedalPositionArray(Boolean brakePedalPositionArray) {
+		if (brakePedalPositionArray != null) {
+			parameters.put(KEY_BRAKE_PEDAL_POSITION_ARRAY, brakePedalPositionArray);
+		} else {
+			parameters.remove(KEY_BRAKE_PEDAL_POSITION_ARRAY);
+		}
+	}
+
+	public Boolean getBrakePedalPositionArray() {
+		return (Boolean) parameters.get(KEY_BRAKE_PEDAL_POSITION_ARRAY);
 	}
 
 	public void setGyroscopeArray(Boolean gyroscopeArray) {
@@ -798,18 +823,6 @@ public class SubscribeVehicleData extends RPCRequest {
     public Boolean getDriverBraking() {
         return (Boolean) parameters.get(KEY_DRIVER_BRAKING);
     }
-
-	public void setDriverBrakingArray(Boolean driverBrakingArray) {
-		if (driverBrakingArray != null) {
-			parameters.put(KEY_DRIVER_BRAKING_ARRAY, driverBrakingArray);
-		} else {
-			parameters.remove(KEY_DRIVER_BRAKING_ARRAY);
-		}
-	}
-
-	public Boolean getDriverBrakingArray() {
-		return (Boolean) parameters.get(KEY_DRIVER_BRAKING_ARRAY);
-	}
 
 	/**
 	 * Sets a boolean value. If true, subscribes wiper Status data

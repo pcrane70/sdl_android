@@ -36,7 +36,6 @@ public class SubscribeVehicleDataResponse extends RPCResponse {
 	public static final String KEY_BODY_INFORMATION = "bodyInformation";
 	public static final String KEY_DEVICE_STATUS = "deviceStatus";
 	public static final String KEY_DRIVER_BRAKING = "driverBraking";
-    public static final String KEY_DRIVER_BRAKING_ARRAY = "driverBrakingArray";
 	public static final String KEY_WIPER_STATUS = "wiperStatus";
 	public static final String KEY_HEAD_LAMP_STATUS = "headLampStatus";
 	public static final String KEY_ACC_PEDAL_POSITION = "accPedalPosition";
@@ -51,6 +50,8 @@ public class SubscribeVehicleDataResponse extends RPCResponse {
     public static final String KEY_ACCELEROMETER_ARRAY = "accelerometerArray";
     public static final String KEY_GYROSCOPE_ARRAY = "gyroscopeArray";
     public static final String KEY_WHEEL_SPEEDS_ARRAY = "wheelSpeedsArray";
+    public static final String KEY_FUEL_REMAINING_RANGE_ARRAY = "fuelRemainingRangeArray";
+    public static final String KEY_BRAKE_PEDAL_POSITION_ARRAY = "brakePedalPositionArray";
 
 	/**
 	 * Constructs a new SubscribeVehicleDataResponse object
@@ -677,29 +678,6 @@ public class SubscribeVehicleDataResponse extends RPCResponse {
         return null;
     }
 
-    public void setDriverBrakingArray(VehicleDataResult driverBrakingArray) {
-        if (driverBrakingArray != null) {
-            parameters.put(KEY_DRIVER_BRAKING_ARRAY, driverBrakingArray);
-        } else {
-            parameters.remove(KEY_DRIVER_BRAKING_ARRAY);
-        }
-    }
-
-    @SuppressWarnings("unchecked")
-    public VehicleDataResult getDriverBrakingArray() {
-        Object obj = parameters.get(KEY_DRIVER_BRAKING_ARRAY);
-        if (obj instanceof VehicleDataResult) {
-            return (VehicleDataResult) obj;
-        } else if (obj instanceof Hashtable) {
-            try {
-                return new VehicleDataResult((Hashtable<String, Object>) obj);
-            } catch (Exception e) {
-                DebugTool.logError("Failed to parse " + getClass().getSimpleName() + "." + KEY_DRIVER_BRAKING_ARRAY, e);
-            }
-        }
-        return null;
-    }
-
     /**
      * Sets wiper Status
      * @param wiperStatus
@@ -1035,6 +1013,52 @@ public class SubscribeVehicleDataResponse extends RPCResponse {
                 return new VehicleDataResult((Hashtable<String, Object>) obj);
             } catch (Exception e) {
                 DebugTool.logError("Failed to parse " + getClass().getSimpleName() + "." + KEY_ACCELEROMETER_ARRAY, e);
+            }
+        }
+        return null;
+    }
+
+    public void setFuelRemainingRangeArray(VehicleDataResult fuelRemainingRangeArray) {
+        if (fuelRemainingRangeArray != null) {
+            parameters.put(KEY_FUEL_REMAINING_RANGE_ARRAY, fuelRemainingRangeArray);
+        } else {
+            parameters.remove(KEY_FUEL_REMAINING_RANGE_ARRAY);
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    public VehicleDataResult getFuelRemainingRangeArray() {
+        Object obj = parameters.get(KEY_FUEL_REMAINING_RANGE_ARRAY);
+        if (obj instanceof VehicleDataResult) {
+            return (VehicleDataResult) obj;
+        } else if (obj instanceof Hashtable) {
+            try {
+                return new VehicleDataResult((Hashtable<String, Object>) obj);
+            } catch (Exception e) {
+                DebugTool.logError("Failed to parse " + getClass().getSimpleName() + "." + KEY_FUEL_REMAINING_RANGE_ARRAY, e);
+            }
+        }
+        return null;
+    }
+
+    public void setBrakePedalPositionArray(VehicleDataResult brakePedalPositionArray) {
+        if (brakePedalPositionArray != null) {
+            parameters.put(KEY_BRAKE_PEDAL_POSITION_ARRAY, brakePedalPositionArray);
+        } else {
+            parameters.remove(KEY_BRAKE_PEDAL_POSITION_ARRAY);
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    public VehicleDataResult getBrakePedalPositionArray() {
+        Object obj = parameters.get(KEY_BRAKE_PEDAL_POSITION_ARRAY);
+        if (obj instanceof VehicleDataResult) {
+            return (VehicleDataResult) obj;
+        } else if (obj instanceof Hashtable) {
+            try {
+                return new VehicleDataResult((Hashtable<String, Object>) obj);
+            } catch (Exception e) {
+                DebugTool.logError("Failed to parse " + getClass().getSimpleName() + "." + KEY_BRAKE_PEDAL_POSITION_ARRAY, e);
             }
         }
         return null;
