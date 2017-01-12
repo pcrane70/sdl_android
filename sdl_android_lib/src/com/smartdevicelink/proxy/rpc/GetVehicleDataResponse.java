@@ -43,9 +43,6 @@ public class GetVehicleDataResponse extends RPCResponse {
 	public static final String KEY_EMERGENCY_EVENT = "emergencyEvent";
 	public static final String KEY_CLUSTER_MODE_STATUS = "clusterModeStatus";
 	public static final String KEY_MY_KEY = "myKey";
-    public static final String KEY_ACCELEROMETER = "accelerometer";
-    public static final String KEY_GYROSCOPE = "gyroscope";
-    public static final String KEY_WHEEL_SPEEDS = "wheelSpeeds";
 
 	/** 
 	 * Constructs a new GetVehicleDataResponse object
@@ -477,72 +474,6 @@ public class GetVehicleDataResponse extends RPCResponse {
         		return new MyKey((Hashtable<String, Object>) obj);
             } catch (Exception e) {
             	DebugTool.logError("Failed to parse " + getClass().getSimpleName() + "." + KEY_MY_KEY, e);
-            }
-        }
-        return null;
-    }
-
-    public void setAccelerometer(AxisSensorData accelerometer) {
-        if (accelerometer != null) {
-            parameters.put(KEY_ACCELEROMETER, accelerometer);
-        } else {
-            parameters.remove(KEY_ACCELEROMETER);
-        }
-    }
-    @SuppressWarnings("unchecked")
-    public AxisSensorData getAccelerometer() {
-        Object obj = parameters.get(KEY_ACCELEROMETER);
-        if (obj instanceof AxisSensorData) {
-            return (AxisSensorData) obj;
-        } else if (obj instanceof Hashtable) {
-            try {
-                return new AxisSensorData((Hashtable<String, Object>) obj);
-            } catch (Exception e) {
-                DebugTool.logError("Failed to parse " + getClass().getSimpleName() + "." + KEY_ACCELEROMETER, e);
-            }
-        }
-        return null;
-    }
-
-    public void setGyroscope(AxisSensorData gyroscope) {
-        if (gyroscope != null) {
-            parameters.put(KEY_GYROSCOPE, gyroscope);
-        } else {
-            parameters.remove(KEY_GYROSCOPE);
-        }
-    }
-    @SuppressWarnings("unchecked")
-    public AxisSensorData getGyroscope() {
-        Object obj = parameters.get(KEY_GYROSCOPE);
-        if (obj instanceof AxisSensorData) {
-            return (AxisSensorData) obj;
-        } else if (obj instanceof Hashtable) {
-            try {
-                return new AxisSensorData((Hashtable<String, Object>) obj);
-            } catch (Exception e) {
-                DebugTool.logError("Failed to parse " + getClass().getSimpleName() + "." + KEY_GYROSCOPE, e);
-            }
-        }
-        return null;
-    }
-
-    public void setWheelSpeeds(WheelSpeedsData wheelSpeeds) {
-        if (wheelSpeeds != null) {
-            parameters.put(KEY_WHEEL_SPEEDS, wheelSpeeds);
-        } else {
-            parameters.remove(KEY_WHEEL_SPEEDS);
-        }
-    }
-    @SuppressWarnings("unchecked")
-    public WheelSpeedsData getWheelSpeeds() {
-        Object obj = parameters.get(KEY_WHEEL_SPEEDS);
-        if (obj instanceof WheelSpeedsData) {
-            return (WheelSpeedsData) obj;
-        } else if (obj instanceof Hashtable) {
-            try {
-                return new WheelSpeedsData((Hashtable<String, Object>) obj);
-            } catch (Exception e) {
-                DebugTool.logError("Failed to parse " + getClass().getSimpleName() + "." + KEY_WHEEL_SPEEDS, e);
             }
         }
         return null;
