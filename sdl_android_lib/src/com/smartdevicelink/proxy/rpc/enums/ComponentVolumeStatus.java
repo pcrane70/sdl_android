@@ -28,7 +28,9 @@ public enum ComponentVolumeStatus {
 	/**
 	 * Not supported
 	 */
-	NOT_SUPPORTED;
+	NOT_SUPPORTED,
+	VERY_LOW,
+	;
 
     /**
      * Convert String to ComponentVolumeStatus
