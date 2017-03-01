@@ -51,7 +51,6 @@ public class ReadDidCommand extends DiagnosticCommand {
                 }
                 mDidToRead.setResults(results);
                 mReadListener.onReadComplete(mDidToRead);
-                isFinished = true;
                 callback.onComplete();
             }
         });
