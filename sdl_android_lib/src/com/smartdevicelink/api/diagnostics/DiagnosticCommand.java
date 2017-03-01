@@ -8,7 +8,6 @@ public abstract class DiagnosticCommand implements Comparable<DiagnosticCommand>
 
     protected SdlContext mSdlContext;
     protected Handler mSdlHandler;
-    protected boolean isFinished;
 
     private boolean isBlocking;
     private int mTimeout;
@@ -39,7 +38,7 @@ public abstract class DiagnosticCommand implements Comparable<DiagnosticCommand>
     }
 
     public boolean isFinished(){
-        return isFinished;
+        return true;
     }
 
     abstract public void execute(CompletionCallback callback);
