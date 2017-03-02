@@ -3283,7 +3283,7 @@ public abstract class SdlProxyBase<proxyListenerType extends IProxyListenerBase>
 				
 		if (_advancedLifecycleManagementEnabled) {
 			if (request.getFunctionName().equals(FunctionID.REGISTER_APP_INTERFACE.toString())
-					|| request.getFunctionName().equals(FunctionID.UNREGISTER_APP_INTERFACE.toString())) {
+					) {
 				
 				SdlTrace.logProxyEvent("Application attempted to send a RegisterAppInterface or UnregisterAppInterface while using ALM.", SDL_LIB_TRACE_KEY);
 				throw new SdlException("The RPCRequest, " + request.getFunctionName() + 
