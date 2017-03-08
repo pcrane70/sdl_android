@@ -38,7 +38,6 @@ public class ReadDtcCommand extends DiagnosticCommand {
                     dtc.setEcuHeader(dtcResponse.getEcuHeader());
                 }
                 mReadListener.onReadComplete(dtc);
-                isFinished = true;
                 callback.onComplete();
             }
         });
