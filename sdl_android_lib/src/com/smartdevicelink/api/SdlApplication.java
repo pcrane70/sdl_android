@@ -1115,7 +1115,7 @@ public class SdlApplication extends SdlContextAbsImpl {
     }
 
     private final class RPCNotificationListenerRecord{
-        boolean isValid = true;
+        volatile boolean isValid = true;
         final OnRPCNotificationListener notificationListener;
 
         RPCNotificationListenerRecord(OnRPCNotificationListener listener){
