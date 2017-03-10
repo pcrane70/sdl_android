@@ -248,6 +248,7 @@ public class UnsubscribeVehicleData extends RPCRequest {
 	public static final String KEY_ODOMETER = "odometer";
 	public static final String KEY_GPS = "gps";
 	public static final String KEY_GPS_ARRAY= "gpsArray";
+	public static final String KEY_GPS_DR_ARRAY= "gpsDrArray";
 	public static final String KEY_FUEL_LEVEL_STATE = "fuelLevel_State";
 	public static final String KEY_FUEL_LEVEL_STATE_ARRAY = "fuelLevel_StateArray";
 	public static final String KEY_INSTANT_FUEL_CONSUMPTION = "instantFuelConsumption";
@@ -326,6 +327,18 @@ public class UnsubscribeVehicleData extends RPCRequest {
 
 	public Boolean getGpsArray() {
 		return (Boolean) parameters.get(KEY_GPS_ARRAY);
+	}
+
+	public void setGpsDrArray(Boolean gpsDrArray) {
+		if (gpsDrArray != null) {
+			parameters.put(KEY_GPS_DR_ARRAY, gpsDrArray);
+		} else {
+			parameters.remove(KEY_GPS_DR_ARRAY);
+		}
+	}
+
+	public Boolean getGpsDrArray() {
+		return (Boolean) parameters.get(KEY_GPS_DR_ARRAY);
 	}
 
 	/**

@@ -264,6 +264,7 @@ public class OnVehicleData extends RPCNotification {
 	public static final String KEY_ODOMETER = "odometer";
 	public static final String KEY_GPS = "gps";
     public static final String KEY_GPS_ARRAY = "gpsArray";
+    public static final String KEY_GPS_DR_ARRAY = "gpsDrArray";
 	public static final String KEY_FUEL_LEVEL_STATE = "fuelLevel_State";
     public static final String KEY_FUEL_LEVEL_STATE_ARRAY = "fuelLevel_StateArray";
 	public static final String KEY_INSTANT_FUEL_CONSUMPTION = "instantFuelConsumption";
@@ -342,6 +343,36 @@ public class OnVehicleData extends RPCNotification {
                     List<GPSDataType> newList = new ArrayList<GPSDataType>();
                     for(Object hashObj : list){
                         newList.add(new GPSDataType((Hashtable<String, Object>) hashObj));
+                    }
+                    return newList;
+                }
+            }
+        }
+        return null;
+    }
+
+    public void setGpsDrArray(List<GPSDrDataType> gpsDrArray){
+        if(gpsDrArray != null){
+            parameters.put(KEY_GPS_DR_ARRAY, gpsDrArray);
+        }
+        else{
+            parameters.remove(KEY_GPS_DR_ARRAY);
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    public List<GPSDrDataType> getGpsDrArray(){
+        if(parameters.get(KEY_GPS_DR_ARRAY) instanceof List<?>){
+            List<?> list = (List<?>) parameters.get(KEY_GPS_DR_ARRAY);
+            if(list != null && list.size() > 0){
+                Object obj = list.get(0);
+                if(obj instanceof GPSDrDataType){
+                    return (List<GPSDrDataType>) list;
+                }
+                else if(obj instanceof Hashtable){
+                    List<GPSDrDataType> newList = new ArrayList<GPSDrDataType>();
+                    for(Object hashObj : list){
+                        newList.add(new GPSDrDataType((Hashtable<String, Object>) hashObj));
                     }
                     return newList;
                 }

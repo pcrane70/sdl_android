@@ -29,6 +29,7 @@ public class UnsubscribeVehicleDataResponse extends RPCResponse {
 	public static final String KEY_ODOMETER = "odometer";
 	public static final String KEY_GPS = "gps";
     public static final String KEY_GPS_ARRAY = "gpsArray";
+    public static final String KEY_GPS_DR_ARRAY = "gpsDrArray";
 	public static final String KEY_FUEL_LEVEL_STATE = "fuelLevel_State";
     public static final String KEY_FUEL_LEVEL_STATE_ARRAY = "fuelLevel_StateArray";
 	public static final String KEY_INSTANT_FUEL_CONSUMPTION = "instantFuelConsumption";
@@ -119,6 +120,29 @@ public class UnsubscribeVehicleDataResponse extends RPCResponse {
                 return new VehicleDataResult((Hashtable<String, Object>) obj);
             } catch (Exception e) {
                 DebugTool.logError("Failed to parse " + getClass().getSimpleName() + "." + KEY_GPS_ARRAY, e);
+            }
+        }
+        return null;
+    }
+
+    public void setGpsDrArray(VehicleDataResult gpsDrArray) {
+        if (gpsDrArray != null) {
+            parameters.put(KEY_GPS_DR_ARRAY, gpsDrArray);
+        } else {
+            parameters.remove(KEY_GPS_DR_ARRAY);
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    public VehicleDataResult getGpsDrArray() {
+        Object obj = parameters.get(KEY_GPS_DR_ARRAY);
+        if (obj instanceof VehicleDataResult) {
+            return (VehicleDataResult) obj;
+        } else if (obj instanceof Hashtable) {
+            try {
+                return new VehicleDataResult((Hashtable<String, Object>) obj);
+            } catch (Exception e) {
+                DebugTool.logError("Failed to parse " + getClass().getSimpleName() + "." + KEY_GPS_DR_ARRAY, e);
             }
         }
         return null;
