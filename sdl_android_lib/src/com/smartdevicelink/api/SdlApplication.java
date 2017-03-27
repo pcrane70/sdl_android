@@ -797,12 +797,6 @@ public class SdlApplication extends SdlContextAbsImpl {
 
         @Override
         public final void onGetVehicleDataResponse(final GetVehicleDataResponse response) {
-            mExecutionHandler.post(new Runnable() {
-                @Override
-                public void run() {
-                    mSdlVehicleDataManager.OnGetVehicleData(response);
-                }
-            });
 
         }
 
