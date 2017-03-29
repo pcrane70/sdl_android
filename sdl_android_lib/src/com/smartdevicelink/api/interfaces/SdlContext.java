@@ -11,12 +11,14 @@ import com.smartdevicelink.api.menu.SdlMenuManager;
 import com.smartdevicelink.api.menu.SdlMenuOption;
 import com.smartdevicelink.api.menu.SdlMenuTransaction;
 import com.smartdevicelink.api.permission.SdlPermissionManager;
+import com.smartdevicelink.api.vehicledata.SdlVehicleDataManager;
 import com.smartdevicelink.protocol.enums.FunctionID;
 import com.smartdevicelink.proxy.RPCRequest;
 import com.smartdevicelink.proxy.rpc.DisplayCapabilities;
 import com.smartdevicelink.proxy.rpc.HMICapabilities;
 import com.smartdevicelink.proxy.rpc.SdlMsgVersion;
 import com.smartdevicelink.proxy.rpc.VehicleType;
+import com.smartdevicelink.proxy.rpc.enums.DriverDistractionState;
 import com.smartdevicelink.proxy.rpc.enums.Language;
 import com.smartdevicelink.proxy.rpc.listeners.OnRPCNotificationListener;
 
@@ -65,5 +67,9 @@ public interface SdlContext {
     SdlMsgVersion getSdlMessageVersion();
 
     Language getConnectedLanguage();
+
+    DriverDistractionState getCurrentDDState();
+
+    SdlVehicleDataManager getVehicleDataManager();
 
 }

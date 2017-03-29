@@ -14,12 +14,14 @@ import com.smartdevicelink.api.permission.SdlPermissionManager;
 import com.smartdevicelink.api.menu.SdlMenuManager;
 import com.smartdevicelink.api.menu.SdlMenuOption;
 import com.smartdevicelink.api.menu.SdlMenuTransaction;
+import com.smartdevicelink.api.vehicledata.SdlVehicleDataManager;
 import com.smartdevicelink.protocol.enums.FunctionID;
 import com.smartdevicelink.proxy.RPCRequest;
 import com.smartdevicelink.proxy.rpc.DisplayCapabilities;
 import com.smartdevicelink.proxy.rpc.HMICapabilities;
 import com.smartdevicelink.proxy.rpc.SdlMsgVersion;
 import com.smartdevicelink.proxy.rpc.VehicleType;
+import com.smartdevicelink.proxy.rpc.enums.DriverDistractionState;
 import com.smartdevicelink.proxy.rpc.enums.Language;
 import com.smartdevicelink.proxy.rpc.listeners.OnRPCNotificationListener;
 
@@ -284,6 +286,16 @@ public abstract class SdlActivity extends SdlContextAbsImpl {
     @Override
     public final Language getConnectedLanguage() {
         return getSdlApplicationContext().getConnectedLanguage();
+    }
+
+    @Override
+    public DriverDistractionState getCurrentDDState() {
+        return getSdlApplicationContext().getCurrentDDState();
+    }
+
+    @Override
+    public SdlVehicleDataManager getVehicleDataManager() {
+        return getSdlApplicationContext().getVehicleDataManager();
     }
 
     public class SuperNotCalledException extends RuntimeException{

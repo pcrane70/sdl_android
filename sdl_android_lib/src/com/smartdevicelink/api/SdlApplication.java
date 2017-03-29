@@ -17,6 +17,7 @@ import com.smartdevicelink.api.menu.SdlMenuManager;
 import com.smartdevicelink.api.menu.SdlMenuOption;
 import com.smartdevicelink.api.menu.SdlMenuTransaction;
 import com.smartdevicelink.api.permission.SdlPermissionManager;
+import com.smartdevicelink.api.vehicledata.SdlVehicleDataManager;
 import com.smartdevicelink.exception.SdlException;
 import com.smartdevicelink.protocol.enums.FunctionID;
 import com.smartdevicelink.proxy.RPCNotification;
@@ -86,6 +87,7 @@ import com.smartdevicelink.proxy.rpc.UnsubscribeButtonResponse;
 import com.smartdevicelink.proxy.rpc.UnsubscribeVehicleDataResponse;
 import com.smartdevicelink.proxy.rpc.UpdateTurnListResponse;
 import com.smartdevicelink.proxy.rpc.VehicleType;
+import com.smartdevicelink.proxy.rpc.enums.DriverDistractionState;
 import com.smartdevicelink.proxy.rpc.enums.HMILevel;
 import com.smartdevicelink.proxy.rpc.enums.Language;
 import com.smartdevicelink.proxy.rpc.enums.Result;
@@ -129,6 +131,7 @@ public class SdlApplication extends SdlContextAbsImpl {
     private SdlFileManager mSdlFileManager;
     private SdlMenuManager mSdlMenuManager;
     private DiagnosticManager mDiagnosticManager;
+    private SdlVehicleDataManager mSdlVehicleDataManager;
     private SdlProxyALM mSdlProxyALM;
 
     private final ArrayList<LifecycleListener> mLifecycleListeners = new ArrayList<>();
@@ -143,6 +146,8 @@ public class SdlApplication extends SdlContextAbsImpl {
 
     private SparseArray<SdlButtonListener> mButtonListenerRegistry = new SparseArray<>();
     private SparseArray<SdlMenuOption.SelectListener> mMenuListenerRegistry = new SparseArray<>();
+
+    private DriverDistractionState mDriverDistractionState = DriverDistractionState.DD_ON;
 
     void initialize(final SdlConnectionService service,
                    final SdlApplicationConfig config,
@@ -162,6 +167,7 @@ public class SdlApplication extends SdlContextAbsImpl {
                 mSdlPermissionManager = new SdlPermissionManager();
                 mLifecycleListeners.add(mSdlActivityManager);
                 mSdlFileManager = new SdlFileManager(SdlApplication.this, mApplicationConfig);
+                mSdlVehicleDataManager = new SdlVehicleDataManager(SdlApplication.this);
                 mLifecycleListeners.add(mSdlFileManager);
                 mDiagnosticManager = new DiagnosticManager(SdlApplication.this);
                 createItemManagers();
@@ -512,6 +518,16 @@ public class SdlApplication extends SdlContextAbsImpl {
         return mExecutionThread.getLooper();
     }
 
+    @Override
+    public DriverDistractionState getCurrentDDState() {
+        return mDriverDistractionState;
+    }
+
+    @Override
+    public SdlVehicleDataManager getVehicleDataManager() {
+        return mSdlVehicleDataManager;
+    }
+
     /***********************************
      * IProxyListenerALM interface methods
      * All notification and response handling
@@ -788,13 +804,18 @@ public class SdlApplication extends SdlContextAbsImpl {
         }
 
         @Override
-        public final void onGetVehicleDataResponse(GetVehicleDataResponse response) {
+        public final void onGetVehicleDataResponse(final GetVehicleDataResponse response) {
 
         }
 
         @Override
-        public final void onOnVehicleData(OnVehicleData notification) {
-
+        public final void onOnVehicleData(final OnVehicleData notification) {
+            mExecutionHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    mSdlVehicleDataManager.OnVehicleData(notification);
+                }
+            });
         }
 
         @Override
@@ -863,8 +884,13 @@ public class SdlApplication extends SdlContextAbsImpl {
         }
 
         @Override
-        public final void onOnDriverDistraction(OnDriverDistraction notification) {
-
+        public final void onOnDriverDistraction(final OnDriverDistraction notification) {
+            mExecutionHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    mDriverDistractionState = notification.getState();
+                }
+            });
         }
 
         @Override
