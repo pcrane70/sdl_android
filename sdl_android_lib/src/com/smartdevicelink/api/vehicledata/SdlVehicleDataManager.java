@@ -9,11 +9,9 @@ import com.smartdevicelink.api.permission.SdlPermissionEvent;
 import com.smartdevicelink.api.permission.SdlPermissionFilter;
 import com.smartdevicelink.api.permission.SdlPermissionListener;
 import com.smartdevicelink.api.permission.SdlPermissionManager;
-import com.smartdevicelink.proxy.RPCMessage;
 import com.smartdevicelink.proxy.rpc.OnVehicleData;
 
 import java.util.EnumSet;
-import java.util.HashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 public class SdlVehicleDataManager {
@@ -28,8 +26,7 @@ public class SdlVehicleDataManager {
 
     private static final String TAG = SdlVehicleDataManager.class.getSimpleName();
 
-    private final HashMap<SdlDataEnums, Object> mCurrentData = new HashMap<>();
-    private final SparseArray<CopyOnWriteArrayList<SdlVehicleDataListener>> mVehDataListenerMap = new SparseArray<>();
+    private final SparseArray<CopyOnWriteArrayList<SubscribeVehicleDataRecord>> mVehDataListenerMap = new SparseArray<>();
     private final SparseArray<SdlPermissionListener> mPermissionListenerRegistry = new SparseArray<>();
     private final Object LISTENER_LOCK = new Object();
     private final Object PERM_LOCK = new Object();
@@ -44,45 +41,116 @@ public class SdlVehicleDataManager {
         mSdlContext = context;
     }
 
+    /***
+     * Subscribes to the vehicle data requested by {@param dataEnum}. The {@link SdlVehicleDataManager}
+     * will provide callback events when the data is received to the {@param listener} provided. The
+     * {@link SdlVehicleDataManager} handles permissions automatically for subscribing.
+     * @param dataEnum Specifies the vehicle data being subscribed to
+     * @param listener The callback for vehicle data received
+     */
     public void subscribeVehicleData(@NonNull final SdlDataEnums dataEnum,
                                      @NonNull SdlVehicleDataListener listener){
         synchronized (LISTENER_LOCK){
-            CopyOnWriteArrayList<SdlVehicleDataListener> dataListeners = mVehDataListenerMap.get(dataEnum.ordinal());
-            if(dataEnum == SdlDataEnums.VIN){
-                throw new RuntimeException("VIN is not supported for Vehicle data subscription");
+            CopyOnWriteArrayList<SubscribeVehicleDataRecord> dataListeners = mVehDataListenerMap
+                    .get(dataEnum.ordinal());
+            if(dataEnum.getSubscribeVehicleDataRequestKeyName() == null){
+                throw new RuntimeException("Vehicle data subscription is not supported for: "+ dataEnum);
             }
+            //nothing has been listening for this data, therefore we should subscribe at this point
             if(dataListeners == null){
                 dataListeners = new CopyOnWriteArrayList<>();
                 mVehDataListenerMap.append(dataEnum.ordinal() , dataListeners);
+                synchronized (PERM_LOCK){
+                    final SubscribeVehicleDataCommand subCommand = new SubscribeVehicleDataCommand(
+                            DEFAULT_TIMEOUT, PRIORITY_DEFAULT,
+                            mSdlContext, true, EnumSet.of(dataEnum));
+                    //check to see if the permission is already available
+                    if(mPermissionManager.isPermissionAvailable(dataEnum.getSubVehicleDataPermission())){
+                        Log.v(TAG,"Permissions available currently for "+ dataEnum.toString() + "." +
+                                " Subscribing to vehicle data.");
+                        mCommandInvoker.submitCommand(subCommand);
+                    } else {
+                        //adding a listener for when the permissions become available
+                        SdlPermissionListener permissionListener = new SdlPermissionListener() {
+                            @Override
+                            public void onPermissionChanged(@NonNull SdlPermissionEvent event) {
+                                synchronized (PERM_LOCK){
+                                    parsePermissionEvent(dataEnum, event, subCommand, this);
+                                }
+                            }
+                        };
+                        mPermissionListenerRegistry.put(dataEnum.ordinal(), permissionListener);
+                        SdlPermissionEvent initialEvent = mPermissionManager.addListener(permissionListener,
+                                new SdlPermissionFilter(dataEnum.getSubVehicleDataPermission()));
+                        //permissions could have changed between when we checked if they are available
+                        //until when we added a listener
+                        parsePermissionEvent(dataEnum, initialEvent, subCommand, permissionListener);
+                    }
+                }
             }
-            if(dataListeners.isEmpty()){
-                subscribePermissions(dataEnum);
+            SubscribeVehicleDataRecord newRecord = new SubscribeVehicleDataRecord(listener);
+            if(!dataListeners.contains(newRecord)){
+                Log.d(TAG, "Adding listener for: " + dataEnum);
+                dataListeners.add(newRecord);
             }
-            dataListeners.add(listener);
         }
     }
 
+    /***
+     * Removes the {@param listener} and {@param dataEnum} combination from receiving vehicle data
+     * events from the {@link SdlVehicleDataManager}.
+     * @param dataEnum Vehicle data item used to originally subscribe the listener
+     * @param listener The listener being removed from the {@link SdlVehicleDataManager}.
+     */
     public void unsubscribeVehicleData(@NonNull SdlDataEnums dataEnum,
                                        @NonNull SdlVehicleDataListener listener){
         synchronized (LISTENER_LOCK){
-            CopyOnWriteArrayList<SdlVehicleDataListener> dataListeners = mVehDataListenerMap.get(dataEnum.ordinal());
-            if(dataEnum == SdlDataEnums.VIN){
-                throw new RuntimeException("VIN is not supported for Vehicle data unsubscription");
+            CopyOnWriteArrayList<SubscribeVehicleDataRecord> dataListeners = mVehDataListenerMap
+                    .get(dataEnum.ordinal());
+            if(dataEnum.getUnsubscribeVehicleDataRequestKeyName() == null){
+                throw new RuntimeException("Vehicle data unsubscription is not supported for: " + dataEnum);
             }
-            if(dataListeners == null || dataListeners.isEmpty()){
+            if(dataListeners == null){
                 Log.w(TAG, "Unable to unsubscribe because there were no listeners subscribed to the data.");
                 return;
             }
-            boolean listenerRemoved = dataListeners.remove(listener);
-            if(dataListeners.isEmpty() && listenerRemoved){
-                unsubscribePermissions(dataEnum);
+            int listenerIndex = dataListeners.indexOf(new SubscribeVehicleDataRecord(listener));
+            if(listenerIndex >= 0) dataListeners.remove(listenerIndex).isValid = false;
+            Log.d(TAG, "Removing listener for: " + dataEnum);
+            if(dataListeners.isEmpty()){
+                //nothing is listening for this data anymore, therefore we should unsubscribe
+                synchronized (PERM_LOCK){
+                    SdlPermissionListener permListener = mPermissionListenerRegistry.get(dataEnum.ordinal());
+                    //if we don't have a permission listener for this vehicle data,
+                    //that means we should be subscribed
+                    if(permListener == null){
+                        SubscribeVehicleDataCommand unSubCommand = new SubscribeVehicleDataCommand(
+                                DEFAULT_TIMEOUT, PRIORITY_DEFAULT,
+                                mSdlContext, false, EnumSet.of(dataEnum));
+                        mCommandInvoker.submitCommand(unSubCommand);
+                    } else {
+                        //otherwise we are not subscribed and we should remove the listener
+                        //so that we don't subscribe unnecessarily
+                        mPermissionManager.removeListener(permListener);
+                        mPermissionListenerRegistry.remove(dataEnum.ordinal());
+                    }
+                }
+                mVehDataListenerMap.put(dataEnum.ordinal(), null);
             }
         }
     }
 
-    public boolean pullVehicleData(@NonNull SdlDataEnums dataEnum, GetVehicleDataListener listener){
+    /***
+     * Requests the {@link SdlVehicleDataManager} to poll the requested {@param dataEnum} from
+     * the vehicle. The result will be posted in the callback provided by {@param listener}.
+     * @param dataEnum The vehicle data object to request from the vehicle
+     * @param listener The callback where the requested data will be posted
+     * @return {@literal True} if the request was able to be sent. {@literal False} otherwise.
+     */
+    public boolean pollVehicleData(@NonNull SdlDataEnums dataEnum, VehicleDataCallback listener){
         if(mPermissionManager.isPermissionAvailable(dataEnum.getGetVehicleDataPermission())){
-            GetVehicleDataCommand grabCommand = new GetVehicleDataCommand(DEFAULT_TIMEOUT, PRIORITY_DEFAULT,
+            GetVehicleDataCommand grabCommand = new GetVehicleDataCommand(
+                    DEFAULT_TIMEOUT, PRIORITY_DEFAULT,
                     mSdlContext, dataEnum);
             grabCommand.setReadListener(listener);
             mCommandInvoker.submitCommand(grabCommand);
@@ -94,69 +162,64 @@ public class SdlVehicleDataManager {
 
     public void OnVehicleData(OnVehicleData data){
         synchronized (LISTENER_LOCK){
-            for(SdlDataEnums enums : updateData(data)){
-                if(mVehDataListenerMap.indexOfKey(enums.ordinal()) != -1){
-                    for(SdlVehicleDataListener listener : mVehDataListenerMap.get(enums.ordinal())){
-                        listener.onDataChanged(mCurrentData.get(enums));
+            //checking each of the data items to see what was updated in the data
+            for(SdlDataEnums enums : SdlDataEnums.values()){
+                String onVehicleDataKeyName = enums.getOnVehicleDataResponseKeyName();
+                //potential that there are vehicle data items that are not able to be subscribed
+                //to
+                if(onVehicleDataKeyName != null){
+                    Object potentialData = data.getParameters(onVehicleDataKeyName);
+                    //utilizing null as a case for the data not coming back
+                    if(potentialData != null){
+                        CopyOnWriteArrayList<SubscribeVehicleDataRecord> listeners =
+                                mVehDataListenerMap.get(enums.ordinal());
+                        if(listeners != null){
+                            for(SubscribeVehicleDataRecord listener : listeners){
+                                if(listener.isValid){
+                                    listener.vehicleDataListener.onDataChanged(potentialData);
+                                }
+                            }
+                        }
                     }
                 }
             }
         }
     }
 
-    private EnumSet<SdlDataEnums> updateData(RPCMessage data){
-        EnumSet<SdlDataEnums> changeSet = EnumSet.noneOf(SdlDataEnums.class);
-        for(SdlDataEnums enums : SdlDataEnums.values()){
-            Object potentialData = data.getParameters(enums.getKeyName());
-            if(potentialData != null){
-                mCurrentData.put(enums , potentialData);
-                changeSet.add(enums);
-            }
-        }
-        return changeSet;
-    }
-
-    private void subscribePermissions(final SdlDataEnums dataEnum){
-        synchronized (PERM_LOCK){
-            final SubscribeVehicleDataCommand subCommand = new SubscribeVehicleDataCommand(DEFAULT_TIMEOUT, PRIORITY_DEFAULT,
-                    mSdlContext, true, EnumSet.of(dataEnum));
-            if(mPermissionManager.isPermissionAvailable(dataEnum.getSubVehicleDataPermission())){
-                mCommandInvoker.submitCommand(subCommand);
-            } else {
-                SdlPermissionListener permissionListener = new SdlPermissionListener() {
-                    @Override
-                    public void onPermissionChanged(@NonNull SdlPermissionEvent event) {
-                        synchronized (PERM_LOCK){
-                            if(event.getPermissionLevel() == SdlPermissionEvent.PermissionLevel.ALL
-                                    && mPermissionListenerRegistry.get(dataEnum.ordinal()) != null){
-                                Log.v(TAG, "Permission became available, we can now sub");
-                                mCommandInvoker.submitCommand(subCommand);
-                                mPermissionListenerRegistry.remove(dataEnum.ordinal());
-                                mPermissionManager.removeListener(this);
-                            }
-                        }
-                    }
-                };
-                mPermissionListenerRegistry.put(dataEnum.ordinal(), permissionListener);
-                mPermissionManager.addListener(permissionListener,
-                        new SdlPermissionFilter(dataEnum.getSubVehicleDataPermission()));
-            }
+    private void parsePermissionEvent(SdlDataEnums dataEnum, SdlPermissionEvent permissionEvent,
+                                      VehicleDataCommand command, SdlPermissionListener listener){
+        if(permissionEvent.getPermissionLevel() == SdlPermissionEvent.PermissionLevel.ALL
+                && mPermissionListenerRegistry.get(dataEnum.ordinal()) != null){
+            Log.v(TAG, "Permissions for "+ dataEnum.toString() + "are available now. " +
+                    "Subscribing to vehicle data" );
+            mCommandInvoker.submitCommand(command);
+            mPermissionListenerRegistry.remove(dataEnum.ordinal());
+            mPermissionManager.removeListener(listener);
         }
     }
 
-    private void unsubscribePermissions(final SdlDataEnums dataEnum){
-        synchronized (PERM_LOCK){
-            SdlPermissionListener permListener = mPermissionListenerRegistry.get(dataEnum.ordinal());
-            if(permListener == null){
-                SubscribeVehicleDataCommand unSubCommand = new SubscribeVehicleDataCommand(DEFAULT_TIMEOUT, PRIORITY_DEFAULT,
-                        mSdlContext, false, EnumSet.of(dataEnum));
-                mCommandInvoker.submitCommand(unSubCommand);
-            } else {
-                mPermissionManager.removeListener(permListener);
-                mPermissionListenerRegistry.remove(dataEnum.ordinal());
-            }
+    private final class SubscribeVehicleDataRecord{
+        volatile boolean isValid = true;
+        final SdlVehicleDataListener vehicleDataListener;
+
+        SubscribeVehicleDataRecord(SdlVehicleDataListener listener){
+            vehicleDataListener = listener;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+
+            SubscribeVehicleDataRecord that = (SubscribeVehicleDataRecord) o;
+
+            return vehicleDataListener.equals(that.vehicleDataListener);
+
+        }
+
+        @Override
+        public int hashCode() {
+            return vehicleDataListener.hashCode();
         }
     }
-
-
 }

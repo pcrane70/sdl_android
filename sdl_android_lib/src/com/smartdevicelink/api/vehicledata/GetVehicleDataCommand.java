@@ -8,7 +8,7 @@ import com.smartdevicelink.proxy.rpc.listeners.OnRPCResponseListener;
 public class GetVehicleDataCommand extends VehicleDataCommand {
 
     private final SdlDataEnums mGetDataEnum;
-    private GetVehicleDataListener mGetVehReadListener;
+    private VehicleDataCallback mGetVehReadListener;
 
     GetVehicleDataCommand(int timeout, int priority,
                           SdlContext sdlContext, SdlDataEnums vehDataEnum){
@@ -16,7 +16,7 @@ public class GetVehicleDataCommand extends VehicleDataCommand {
         mGetDataEnum = vehDataEnum;
     }
 
-    void setReadListener(GetVehicleDataListener listener){
+    void setReadListener(VehicleDataCallback listener){
         mGetVehReadListener = listener;
     }
 
@@ -24,13 +24,13 @@ public class GetVehicleDataCommand extends VehicleDataCommand {
     @Override
     public void execute(final CompletionListener listener) {
         final GetVehicleData getVehDataRPC = new GetVehicleData();
-        getVehDataRPC.setParameters(mGetDataEnum.getKeyName(), true);
+        getVehDataRPC.setParameters(mGetDataEnum.getVehicleDataRequestKeyName(), true);
         getVehDataRPC.setOnRPCResponseListener(new OnRPCResponseListener() {
             @Override
             public void onResponse(int correlationId, RPCResponse response) {
                 if(mGetVehReadListener != null){
                     mGetVehReadListener.onReadComplete(response
-                            .getParameters(mGetDataEnum.getKeyName()));
+                            .getParameters(mGetDataEnum.getVehicleDataResponseKeyName()));
                 }
                 listener.onComplete();
             }

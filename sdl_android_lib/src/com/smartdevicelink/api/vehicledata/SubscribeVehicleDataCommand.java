@@ -32,11 +32,14 @@ public class SubscribeVehicleDataCommand extends VehicleDataCommand {
         final RPCRequest rpc;
         if(isSubscribing){
             rpc = new SubscribeVehicleData();
+            for(SdlDataEnums subEnum : mSubEnums){
+                rpc.setParameters(subEnum.getSubscribeVehicleDataRequestKeyName(), true);
+            }
         } else {
             rpc = new UnsubscribeVehicleData();
-        }
-        for(SdlDataEnums subEnum : mSubEnums){
-            rpc.setParameters(subEnum.getKeyName(), true);
+            for(SdlDataEnums subEnum : mSubEnums){
+                rpc.setParameters(subEnum.getUnsubscribeVehicleDataRequestKeyName(), true);
+            }
         }
         rpc.setOnRPCResponseListener(new OnRPCResponseListener() {
             @Override

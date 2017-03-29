@@ -8,8 +8,6 @@ public class VehicleDataInvoker {
     private static final String TAG = VehicleDataInvoker.class.getSimpleName();
     private static final String VEHICLE_DATA_THREAD_NAME = "sdl_vehicle_data_command_thread";
 
-
-
     private static int SUBMISSION_COUNT = 0;
     private static final Object COUNT_LOCK = new Object();
     private final PriorityBlockingQueue<VehicleDataCommand> mCommandQueue = new PriorityBlockingQueue<>();
@@ -22,10 +20,11 @@ public class VehicleDataInvoker {
         mInvokerThread.start();
     }
 
-    public void submitCommand(VehicleDataCommand command){
+    public int submitCommand(VehicleDataCommand command){
         int submissionId = getSubmissionId();
         command.setCommandId(getSubmissionId());
         mCommandQueue.add(command);
+        return submissionId;
     }
 
     public void stop(){

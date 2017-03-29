@@ -1,6 +1,7 @@
 package com.smartdevicelink.api.vehicledata;
 
 import android.os.Handler;
+import android.support.annotation.NonNull;
 
 import com.smartdevicelink.api.interfaces.SdlContext;
 
@@ -19,7 +20,6 @@ public abstract class VehicleDataCommand implements Comparable<VehicleDataComman
         mSdlHandler = new Handler(sdlContext.getSdlExecutionLooper());
 
     }
-
 
     public abstract void execute(CompletionListener listener);
 
@@ -46,7 +46,7 @@ public abstract class VehicleDataCommand implements Comparable<VehicleDataComman
     }
 
     @Override
-    public int compareTo(VehicleDataCommand another) {
+    public int compareTo(@NonNull VehicleDataCommand another) {
         int difference = mPriority - another.getPriority();
         if(difference == 0){
             difference = mCommandId - another.getCommandId();

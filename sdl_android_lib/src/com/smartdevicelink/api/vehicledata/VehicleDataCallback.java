@@ -1,6 +1,6 @@
 package com.smartdevicelink.api.vehicledata;
 
-public interface GetVehicleDataListener {
+public interface VehicleDataCallback {
 
     void onReadComplete(Object data);
 
