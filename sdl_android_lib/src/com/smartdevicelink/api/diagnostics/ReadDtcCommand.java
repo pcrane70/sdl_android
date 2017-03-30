@@ -52,12 +52,22 @@ public class ReadDtcCommand extends DiagnosticCommand {
 
     @Override
     public void onTimeout() {
-        mReadListener.onTimeout();
+        mSdlHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                mReadListener.onTimeout();
+            }
+        });
     }
 
     @Override
     public void cancel() {
-        mReadListener.onCanceled();
+        mSdlHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                mReadListener.onCanceled();
+            }
+        });
     }
 
     private GetDTCs makeRpc(int address, @Nullable Integer mask){

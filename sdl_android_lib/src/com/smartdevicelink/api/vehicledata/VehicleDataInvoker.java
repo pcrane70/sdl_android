@@ -66,10 +66,12 @@ public class VehicleDataInvoker {
                         }
                     }
 
-                    if(commandTimeout){
-                        executionCommand.onTimeout();
-                    } else {
-                        commandTimeout = true;
+                    synchronized (mInvokerThread){
+                        if(commandTimeout){
+                            executionCommand.onTimeout();
+                        } else {
+                            commandTimeout = true;
+                        }
                     }
 
                     if(!executionCommand.isFinished()){

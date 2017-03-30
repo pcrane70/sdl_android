@@ -45,13 +45,27 @@ public class GetVehicleDataCommand extends VehicleDataCommand {
 
     @Override
     public void stop() {
-        if(mGetVehReadListener != null)
-            mGetVehReadListener.onCanceled();
+        if(mGetVehReadListener != null){
+            mSdlHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    mGetVehReadListener.onCanceled();
+                }
+            });
+
+        }
     }
 
     @Override
     public void onTimeout() {
-        if(mGetVehReadListener != null)
-            mGetVehReadListener.onTimeout();
+        if(mGetVehReadListener != null){
+            mSdlHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    mGetVehReadListener.onTimeout();
+                }
+            });
+
+        }
     }
 }

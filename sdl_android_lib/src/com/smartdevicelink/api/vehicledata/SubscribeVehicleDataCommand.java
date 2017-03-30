@@ -59,13 +59,25 @@ public class SubscribeVehicleDataCommand extends VehicleDataCommand {
 
     @Override
     public void stop() {
-        if(mListener != null)
-            mListener.onCanceled(mSubEnums);
+        if(mListener != null){
+            mSdlHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    mListener.onCanceled(mSubEnums);
+                }
+            });
+        }
     }
 
     @Override
     public void onTimeout() {
-        if(mListener != null)
-            mListener.onTimeout(mSubEnums);
+        if(mListener != null){
+            mSdlHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    mListener.onTimeout(mSubEnums);
+                }
+            });
+        }
     }
 }
