@@ -18,6 +18,7 @@ import com.smartdevicelink.api.view.SdlButton;
 import com.smartdevicelink.api.view.SdlChoiceSetManager;
 import com.smartdevicelink.api.view.SdlView;
 import com.smartdevicelink.api.view.SdlViewManager;
+import com.smartdevicelink.api.vehicledata.SdlVehicleDataManager;
 import com.smartdevicelink.protocol.enums.FunctionID;
 import com.smartdevicelink.proxy.RPCRequest;
 import com.smartdevicelink.proxy.rpc.TTSChunk;
@@ -346,6 +347,11 @@ public abstract class SdlActivity extends SdlContextAbsImpl {
     @Override
     public DriverDistractionState getCurrentDDState() {
         return getSdlApplicationContext().getCurrentDDState();
+    }
+
+    @Override
+    public SdlVehicleDataManager getVehicleDataManager() {
+        return getSdlApplicationContext().getVehicleDataManager();
     }
 
     public class SuperNotCalledException extends RuntimeException{

@@ -49,17 +49,18 @@ public class DiagnosticInvoker {
                 }
 
                 if(!isStopping && command != null) {
-                    command.execute(new DiagnosticCommand.CompletionCallback() {
-                        @Override
-                        public void onComplete() {
-                            didCommandTimeout = false;
-                            synchronized (mExecutionThread) {
-                                mExecutionThread.notify();
-                            }
-                        }
-                    });
-
                     synchronized (mExecutionThread) {
+                        command.execute(new DiagnosticCommand.CompletionCallback() {
+                            @Override
+                            public void onComplete() {
+                                synchronized (mExecutionThread) {
+                                    didCommandTimeout = false;
+
+                                    mExecutionThread.notify();
+                                }
+                            }
+                        });
+
                         try {
                             mExecutionThread.wait(command.getTimeout());
                         } catch (InterruptedException e) {
@@ -67,10 +68,12 @@ public class DiagnosticInvoker {
                         }
                     }
 
-                    if(didCommandTimeout){
-                        command.onTimeout();
-                    } else {
-                        didCommandTimeout = true;
+                    synchronized (mExecutionThread){
+                        if(didCommandTimeout){
+                            command.onTimeout();
+                        } else {
+                            didCommandTimeout = true;
+                        }
                     }
 
                     /* Remove the command from the registry if it is finished, replace it in the queue if not.

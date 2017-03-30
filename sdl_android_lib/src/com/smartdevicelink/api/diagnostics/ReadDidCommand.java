@@ -76,7 +76,12 @@ public class ReadDidCommand extends DiagnosticCommand {
         SparseArray<DIDLocation> results = new SparseArray<>();
         markResultsUnavailable(results);
         mDidToRead.setResults(results);
-        mReadListener.onTimeout(mDidToRead);
+        mSdlHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                mReadListener.onTimeout(mDidToRead);
+            }
+        });
     }
 
     @Override
@@ -84,7 +89,12 @@ public class ReadDidCommand extends DiagnosticCommand {
         SparseArray<DIDLocation> results = new SparseArray<>();
         markResultsUnavailable(results);
         mDidToRead.setResults(results);
-        mReadListener.onCanceled(mDidToRead);
+        mSdlHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                mReadListener.onCanceled(mDidToRead);
+            }
+        });
     }
 
     private ReadDID didToRpc(DID did, List<Integer> locations){

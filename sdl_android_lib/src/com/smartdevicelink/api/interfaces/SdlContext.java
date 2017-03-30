@@ -14,6 +14,7 @@ import com.smartdevicelink.api.permission.SdlPermissionManager;
 import com.smartdevicelink.api.view.SdlAudioPassThruDialog;
 import com.smartdevicelink.api.view.SdlButton;
 import com.smartdevicelink.api.view.SdlChoiceSetManager;
+import com.smartdevicelink.api.vehicledata.SdlVehicleDataManager;
 import com.smartdevicelink.protocol.enums.FunctionID;
 import com.smartdevicelink.proxy.RPCRequest;
 import com.smartdevicelink.proxy.rpc.DisplayCapabilities;
@@ -82,5 +83,7 @@ public interface SdlContext {
     Language getConnectedLanguage();
 
     DriverDistractionState getCurrentDDState();
+
+    SdlVehicleDataManager getVehicleDataManager();
 
 }
