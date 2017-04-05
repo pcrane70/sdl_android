@@ -147,7 +147,8 @@ public class SdlVehicleDataManager {
      * @param listener The callback where the requested data will be posted
      * @return {@literal True} if the request was able to be sent. {@literal False} otherwise.
      */
-    public boolean pollVehicleData(@NonNull SdlDataEnums dataEnum, VehicleDataCallback listener){
+    public boolean pollVehicleData(@NonNull SdlDataEnums dataEnum,
+                                   @NonNull VehicleDataCallback listener){
         if(mPermissionManager.isPermissionAvailable(dataEnum.getGetVehicleDataPermission())){
             GetVehicleDataCommand grabCommand = new GetVehicleDataCommand(
                     DEFAULT_TIMEOUT, PRIORITY_DEFAULT,
@@ -168,7 +169,7 @@ public class SdlVehicleDataManager {
                 //potential that there are vehicle data items that are not able to be subscribed
                 //to
                 if(onVehicleDataKeyName != null){
-                    Object potentialData = data.getParameters(onVehicleDataKeyName);
+                    Object potentialData = parseOnVehicleData(data, enums);
                     //utilizing null as a case for the data not coming back
                     if(potentialData != null){
                         CopyOnWriteArrayList<SubscribeVehicleDataRecord> listeners =
@@ -220,6 +221,61 @@ public class SdlVehicleDataManager {
         @Override
         public int hashCode() {
             return vehicleDataListener.hashCode();
+        }
+    }
+
+    private Object parseOnVehicleData(OnVehicleData data, SdlDataEnums dataEnum){
+        switch (dataEnum){
+            case SPEED:
+                return data.getSpeed();
+            case RPM:
+                return data.getRpm();
+            case EXTERNAL_TEMPERATURE:
+                return data.getExternalTemperature();
+            case FUEL_LEVEL:
+                return data.getFuelLevel();
+            case PRNDL:
+                return data.getPrndl();
+            case TIRE_PRESSURE:
+                return data.getTirePressure();
+            case ENGINE_TORQUE:
+                return data.getEngineTorque();
+            case ODOMETER:
+                return data.getOdometer();
+            case GPS:
+                return data.getGps();
+            case FUEL_LEVEL_STATE:
+                return data.getFuelLevelState();
+            case INSTANT_FUEL_CONSUMPTION:
+                return data.getInstantFuelConsumption();
+            case BELT_STATUS:
+                return data.getBeltStatus();
+            case BODY_INFORMATION:
+                return data.getBodyInformation();
+            case DEVICE_STATUS:
+                return data.getDeviceStatus();
+            case DRIVER_BRAKING:
+                return data.getDriverBraking();
+            case WIPER_STATUS:
+                return data.getWiperStatus();
+            case HEAD_LAMP_STATUS:
+                return data.getHeadLampStatus();
+            case ACC_PEDAL_POSITION:
+                return data.getAccPedalPosition();
+            case STEERING_WHEEL_ANGLE:
+                return data.getSteeringWheelAngle();
+            case E_CALL_INFO:
+                return data.getECallInfo();
+            case AIRBAG_STATUS:
+                return data.getAirbagStatus();
+            case EMERGENCY_EVENT:
+                return data.getEmergencyEvent();
+            case CLUSTER_MODE_STATUS:
+                return data.getClusterModeStatus();
+            case MY_KEY:
+                return data.getMyKey();
+            default:
+                return null;
         }
     }
 }
