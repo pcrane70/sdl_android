@@ -180,6 +180,8 @@ public class SdlApplication extends SdlContextAbsImpl {
                 mApplicationStatusListener = listener;
                 mSdlActivityManager = new SdlActivityManager();
                 mLockScreenStatusListener = lockScreenActivityManager;
+                mSdlMenuManager = new SdlMenuManager();
+
                 mSdlPermissionManager = new SdlPermissionManager();
                 mLifecycleListeners.add(mSdlActivityManager);
                 mSdlFileManager = new SdlFileManager(SdlApplication.this, mApplicationConfig);
@@ -250,10 +252,10 @@ public class SdlApplication extends SdlContextAbsImpl {
                 listener.onSdlDisconnect();
             }
             mConnectionStatus = Status.DISCONNECTED;
-
-            if(notifyStatusListener)
+            if (notifyStatusListener) {
                 mLockScreenStatusListener.onLockScreenStatus(getId(), LockScreenStatus.OFF);
                 mApplicationStatusListener.onStatusChange(mApplicationConfig.getAppId(), Status.DISCONNECTED);
+            }
             onDisconnect();
             if(destroyProxy){
                 try {
