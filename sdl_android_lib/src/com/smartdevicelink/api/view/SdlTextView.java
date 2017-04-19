@@ -16,12 +16,14 @@ public class SdlTextView extends SdlView{
         if(index < mTextFields.length){
             mTextFields[index] = text;
         }
+        isChanged = true;
     }
 
     public void setText(String text){
         clear();
         String[] lines = text.split("\\n");
         System.arraycopy(lines, 0, mTextFields, 0, lines.length);
+        isChanged = true;
     }
 
     public String getText(){
@@ -52,12 +54,14 @@ public class SdlTextView extends SdlView{
     }
 
     @Override
-    public void decorate(Show show) {
+    public boolean decorate(Show show) {
+        boolean sendShow = super.decorate(show);
         show.setMainField1(mTextFields[0]);
         show.setMainField2(mTextFields[1]);
         show.setMainField3(mTextFields[2]);
         show.setMainField4(mTextFields[3]);
         show.setMediaTrack(mTextFields[4]);
+        return sendShow;
     }
 
     @Override
@@ -67,5 +71,14 @@ public class SdlTextView extends SdlView{
     @Override
     public void clear() {
         Arrays.fill(mTextFields, "");
+        isChanged = true;
+    }
+
+    @Override
+    public void setIsVisible(boolean isVisible) {
+        super.setIsVisible(isVisible);
+        if(isVisible) {
+            isChanged = true;
+        }
     }
 }

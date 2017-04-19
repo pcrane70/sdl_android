@@ -10,6 +10,7 @@ public abstract class SdlView {
     protected DisplayCapabilities mDisplayCapabilities;
     protected SdlContext mSdlContext;
     protected boolean isVisible;
+    protected boolean isChanged = true;
 
     public final void redraw(){
         mViewManager.updateView();
@@ -40,7 +41,14 @@ public abstract class SdlView {
 
     public abstract void clear();
 
-    abstract void decorate(Show show);
+    boolean decorate(Show show){
+      if(isChanged && isVisible){
+          isChanged = false;
+          return true;
+      } else {
+          return false;
+      }
+    }
 
     abstract void uploadRequiredImages();
 
@@ -50,6 +58,9 @@ public abstract class SdlView {
 
     public void setIsVisible(boolean isVisible){
         this.isVisible = isVisible;
+        if(isVisible){
+            isChanged = true;
+        }
     }
 
 }

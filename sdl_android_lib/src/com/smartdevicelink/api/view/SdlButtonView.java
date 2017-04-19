@@ -31,6 +31,7 @@ public class SdlButtonView extends SdlView {
 
     public void setButtons(List<SdlButton> buttons){
         mSdlButtons = new ArrayList<>(buttons);
+        isChanged = true;
     }
 
     public List<SdlButton> getButtons(){
@@ -45,15 +46,18 @@ public class SdlButtonView extends SdlView {
             int id = mViewManager.registerButtonCallback(button.getListener());
             button.setId(id);
         }
+        isChanged = true;
     }
 
     public void removeButton(SdlButton button){
         mViewManager.unregisterButtonCallBack(button.getId());
         mSdlButtons.remove(button);
+        isChanged = true;
     }
 
     public void setIsTiles(boolean isTiles){
         this.isTiles = isTiles;
+        isChanged = true;
     }
 
     public boolean isTiles(){
@@ -71,6 +75,7 @@ public class SdlButtonView extends SdlView {
         mSdlButtons.add(0, backButton);
         registerButtonImage(buttonImage);
         containsBackButton = true;
+        isChanged = true;
     }
 
     private void registerButtonImage(SdlImage buttonImage) {
@@ -94,6 +99,7 @@ public class SdlButtonView extends SdlView {
         if(containsBackButton){
             mSdlButtons.remove(0);
             containsBackButton = false;
+            isChanged = true;
         }
     }
 
@@ -115,7 +121,8 @@ public class SdlButtonView extends SdlView {
     }
 
     @Override
-    public void decorate(Show show) {
+    public boolean decorate(Show show) {
+        boolean sendShow = super.decorate(show);
         ArrayList<SoftButton> softButtons = new ArrayList<>();
         for(SdlButton button: mSdlButtons) {
             SoftButton softButton = new SoftButton();
@@ -145,12 +152,14 @@ public class SdlButtonView extends SdlView {
             softButtons.add(softButton);
         }
         show.setSoftButtons(softButtons);
+        return sendShow;
     }
 
     @Override
     public void clear() {
         containsBackButton = false;
         mSdlButtons.clear();
+        isChanged = true;
     }
 
     @Override
@@ -170,6 +179,7 @@ public class SdlButtonView extends SdlView {
             Log.d(TAG, "Graphic " + sdlFile.getSdlName() + " ready.");
             mImageStatusRegister.get(sdlFile.getSdlName()).isReady = true;
             if(isVisible) {
+                isChanged = true;
                 redraw();
             }
         }
@@ -187,6 +197,14 @@ public class SdlButtonView extends SdlView {
         SdlButtonImageRecord(SdlImage image, boolean isReady){
             this.sdlImage = image;
             this.isReady = isReady;
+        }
+    }
+
+    @Override
+    public void setIsVisible(boolean isVisible) {
+        super.setIsVisible(isVisible);
+        if(isVisible) {
+            isChanged = true;
         }
     }
 }

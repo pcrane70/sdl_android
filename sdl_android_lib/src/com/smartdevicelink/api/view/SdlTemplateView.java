@@ -72,7 +72,7 @@ public class SdlTemplateView extends SdlView {
     private boolean isLayoutDifferent = true;
 
     public TemplateStatus setViews(SdlView mainView, SdlView secondaryView, SdlButtonView buttonView){
-        TemplateStatus status = TemplateStatus.INVALID_TEMPLATE_NOT_SUPPORTED;;
+        TemplateStatus status = TemplateStatus.INVALID_TEMPLATE_NOT_SUPPORTED;
         if(secondaryView == null){
             if(buttonView == null){
                 status = setViews(mainView);
@@ -263,16 +263,19 @@ public class SdlTemplateView extends SdlView {
     }
 
     @Override
-    public void decorate(Show show) {
+    public boolean decorate(Show show) {
+        boolean sendShow = super.decorate(show);
+
         if(mLeftView != null) {
-            mLeftView.decorate(show);
+            sendShow = mLeftView.decorate(show) || sendShow;
         }
         if(mRightView != null) {
-            mRightView.decorate(show);
+            sendShow = mRightView.decorate(show) || sendShow;
         }
         if(mSdlButtonView != null) {
-            mSdlButtonView.decorate(show);
+            sendShow = mSdlButtonView.decorate(show) || sendShow;
         }
+        return sendShow;
     }
 
     @Override
@@ -297,4 +300,5 @@ public class SdlTemplateView extends SdlView {
     public String getTemplateName() {
         return isLayoutDifferent ? mTemplate.name(): null;
     }
+
 }

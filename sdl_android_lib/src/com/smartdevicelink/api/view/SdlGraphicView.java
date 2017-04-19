@@ -28,6 +28,7 @@ public class SdlGraphicView extends SdlView {
                 checkImagePresence();
             }
         }
+        isChanged = true;
     }
 
     @Override
@@ -55,16 +56,19 @@ public class SdlGraphicView extends SdlView {
 
     public void setSecondaryGraphic(boolean secondaryGraphic) {
         isSecondaryGraphic = secondaryGraphic;
+        isChanged = true;
     }
 
     @Override
     public void clear() {
         mSdlImage = null;
+        isChanged = true;
         redraw();
     }
 
     @Override
-    void decorate(Show show) {
+    boolean decorate(Show show) {
+        boolean sendShow = super.decorate(show);
         if(mSdlImage == null){
             Image image = new Image();
             image.setImageType(ImageType.DYNAMIC);
@@ -84,6 +88,7 @@ public class SdlGraphicView extends SdlView {
                 show.setSecondaryGraphic(image);
             }
         }
+        return sendShow;
     }
 
     @Override
@@ -100,6 +105,7 @@ public class SdlGraphicView extends SdlView {
             isWaitingForUpload = false;
             Log.d(TAG, "Graphic ready.");
             if(isVisible) {
+                isChanged = true;
                 redraw();
             }
         }
@@ -110,4 +116,11 @@ public class SdlGraphicView extends SdlView {
         }
     };
 
+    @Override
+    public void setIsVisible(boolean isVisible) {
+        super.setIsVisible(isVisible);
+        if(isVisible) {
+            isChanged = true;
+        }
+    }
 }

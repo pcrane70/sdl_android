@@ -51,8 +51,10 @@ public class SdlViewManager {
         newShow.setMainField3("");
         newShow.setMainField4("");
         newShow.setSoftButtons(new ArrayList<SoftButton>());
-        mRootView.decorate(newShow);
-        mSdlContext.sendRpc(newShow);
+        boolean sendShow = mRootView.decorate(newShow);
+        if(sendShow) {
+            mSdlContext.sendRpc(newShow);
+        }
     }
 
     int registerButtonCallback(SdlButton.OnPressListener listener){
