@@ -11,11 +11,8 @@ import com.smartdevicelink.proxy.RPCResponse;
 import com.smartdevicelink.proxy.rpc.enums.Result;
 import com.smartdevicelink.proxy.rpc.listeners.OnRPCResponseListener;
 
-/**
- * Created by mschwerz on 6/17/16.
- */
 class SdlInteractionSender {
-    boolean mIsPending;
+    private boolean mIsPending;
     private final SdlPermission mSdlPermission;
 
     public SdlInteractionSender(SdlPermission permission){
@@ -24,6 +21,10 @@ class SdlInteractionSender {
 
     protected boolean isAbleToSendInteraction(SdlPermission permission, SdlContext context){
         return context.getSdlPermissionManager().isPermissionAvailable(permission) && !mIsPending;
+    }
+
+    public boolean getIsPending(){
+        return mIsPending;
     }
 
     boolean sendInteraction(@NonNull SdlContext context, @NonNull RPCRequest request, @Nullable final SdlDataReceiver receiver, @Nullable final SdlInteractionResponseListener listener){

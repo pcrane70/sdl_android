@@ -25,9 +25,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 
-/**
- * Created by mschwerz on 5/4/16.
- */
 public class SdlChoiceDialog {
     private static final String TAG = SdlChoiceDialog.class.getSimpleName();
     private static final LayoutMode DEFAULT_LAYOUT= LayoutMode.ICON_ONLY;
@@ -39,7 +36,7 @@ public class SdlChoiceDialog {
     private final TTSChunk mHelpPrompt;
     private final ArrayList<Integer> mChoiceSets= new ArrayList<>();
     private final HashMap<Integer,SdlChoice.OnSelectedListener> mQuickListenerFind = new HashMap<>();
-    protected SdlChoiceDialogSender mSender= new SdlChoiceDialogSender(SdlPermission.PerformInteraction);
+    private SdlChoiceDialogSender mSender= new SdlChoiceDialogSender(SdlPermission.PerformInteraction);
 
     SdlChoiceDialog(final Builder builder){
         mInitialText = builder.mInitialText;

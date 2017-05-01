@@ -3,14 +3,10 @@ package com.smartdevicelink.api.view;
 import com.smartdevicelink.api.interfaces.SdlContext;
 import com.smartdevicelink.api.permission.SdlPermission;
 
-
-/**
- * Created by mschwerz on 4/21/16.
- */
 public class SdlAlertDialog extends SdlAlertBase{
     private final String TAG = getClass().getSimpleName();
 
-    protected SdlAlertDialog(Builder builder) {
+    private SdlAlertDialog(Builder builder) {
         super(builder);
     }
 
@@ -21,8 +17,8 @@ public class SdlAlertDialog extends SdlAlertBase{
         return mSender;
     }
 
-    public class SdlAlertDialogSender extends SdlInteractionSender{
-        public SdlAlertDialogSender(SdlPermission permission) {
+    private class SdlAlertDialogSender extends SdlInteractionSender{
+        private SdlAlertDialogSender(SdlPermission permission) {
             super(permission);
         }
 
@@ -48,10 +44,8 @@ public class SdlAlertDialog extends SdlAlertBase{
         }
 
         @Override
-        public SdlAlertDialog build() throws IllegalAlertCreation{
-            SdlAlertDialog alertDialog= new SdlAlertDialog(this);
-            validateCommonAlert(alertDialog);
-            return alertDialog;
+        public SdlAlertDialog build(){
+            return new SdlAlertDialog(this);
         }
     }
 

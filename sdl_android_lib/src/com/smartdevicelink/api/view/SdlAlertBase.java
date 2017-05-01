@@ -14,9 +14,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 
-/**
- * Created by mschwerz on 5/3/16.
- */
 abstract class SdlAlertBase {
     private final String TAG = getClass().getSimpleName();
 
@@ -29,7 +26,7 @@ abstract class SdlAlertBase {
     protected boolean mIsToneUsed;
     protected boolean mIsIndicatorUsed;
     protected TTSChunk mTtsChunk;
-    protected final ArrayList<SdlButton> mButtons= new ArrayList<>();
+    protected final ArrayList<SdlButton> mButtons;
     protected SdlInteractionSender mSender;
     protected SdlInteractionButtonManager mButtonManager;
 
@@ -40,7 +37,7 @@ abstract class SdlAlertBase {
         this.mIsToneUsed= builder.mIsToneUsed;
         this.mIsIndicatorUsed= builder.mIsIndicatorShown;
         this.mTtsChunk= builder.mTtsChunk;
-        this.mButtons.addAll(builder.mButtons);
+        this.mButtons = builder.mButtons;
         mButtonManager= new SdlInteractionButtonManager(mButtons);
     }
 
@@ -85,7 +82,7 @@ abstract class SdlAlertBase {
         private int mDuration = DEFAULT_DURATION;
         private boolean mIsToneUsed;
         private boolean mIsIndicatorShown;
-        private ArrayList<SdlButton> mButtons = new ArrayList<>();
+        private final ArrayList<SdlButton> mButtons = new ArrayList<>();
         private TTSChunk mTtsChunk;
 
         public Builder(){
@@ -213,40 +210,11 @@ abstract class SdlAlertBase {
          * the dialog while the app is not visible on the module and have permission to do so.
          * @return SdlCommonAlert, call  in order to send the
          * built {@link SdlAlertBase}
-         * @throws IllegalAlertCreation Exception will be called if the parameters set when building
-         * are illegal
+
          */
-        public abstract <T extends SdlAlertBase> T  build() throws IllegalAlertCreation;
+        public abstract <T extends SdlAlertBase> T  build();
 
 
-        protected void validateCommonAlert(SdlAlertBase builtAlert) throws IllegalAlertCreation{
-            if(builtAlert.mButtons !=null){
-                if(builtAlert.mButtons.size()>4){
-                    throw new IllegalAlertCreation("More buttons were added then possible for the AlertDialog");
-                }
-                for(SdlButton button:mButtons){
-                    if(button==null){
-                        throw new IllegalAlertCreation("One of the buttons provided is null, make sure the SdlButtons added are instantiated");
-                    }
-                }
-            }
-            boolean atLeastOneNotNull=false;
-            for(int i=0;i<builtAlert.mTextFields.length;i++){
-                if(builtAlert.mTextFields[i]!=null){
-                    atLeastOneNotNull=true;
-                    if(!checkStringIsValid(mTextFields[i]))
-                        throw new IllegalAlertCreation("Invalid String was provided to TextField"+Integer.toString(i+1));
-                }
-            }
-            if(!atLeastOneNotNull)
-                throw new IllegalAlertCreation("All of the TextFields are null, please make sure at least one is set");
-
-        }
-
-
-    }
-    public static class IllegalAlertCreation extends Exception{
-        IllegalAlertCreation(String detailMessage){super(detailMessage);}
     }
 
     private static boolean checkStringIsValid(String checkString){

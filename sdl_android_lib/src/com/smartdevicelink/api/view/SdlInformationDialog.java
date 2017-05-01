@@ -10,27 +10,22 @@ import com.smartdevicelink.proxy.rpc.ScrollableMessage;
 import java.util.ArrayList;
 import java.util.Collection;
 
-/**
- * Created by mschwerz on 5/3/16.
- */
 public class SdlInformationDialog {
-    protected static final int MIN_DURATION = 0;
-    protected static final int DEFAULT_DURATION = 30000;
-    protected static final int MAX_DURATION = 65535;
-    protected final String mTextFields;
-    protected final int mDuration;
-    protected final ArrayList<SdlButton> mButtons= new ArrayList<>();
-    protected SdlInteractionSender mSender= new SdlInteractionSender(SdlPermission.ScrollableMessage);
-    protected SdlInteractionButtonManager mButtonManager;
+    private static final int MIN_DURATION = 0;
+    private static final int DEFAULT_DURATION = 30000;
+    private static final int MAX_DURATION = 65535;
+    private final String mTextFields;
+    private final int mDuration;
+    private final SdlInteractionSender mSender= new SdlInteractionSender(SdlPermission.ScrollableMessage);
+    private final SdlInteractionButtonManager mButtonManager;
 
-    protected SdlInformationDialog(Builder builder) {
+    private SdlInformationDialog(Builder builder) {
         this.mTextFields= builder.mTextFields;
         this.mDuration= builder.mDuration;
-        this.mButtons.addAll(builder.mButtons);
-        mButtonManager= new SdlInteractionButtonManager(this.mButtons);
+        mButtonManager= new SdlInteractionButtonManager(builder.mButtons);
     }
 
-    protected @NonNull ScrollableMessage createScrollableMessage(SdlContext context) {
+    private  @NonNull ScrollableMessage createScrollableMessage(SdlContext context) {
         final ScrollableMessage newScrollableMessage= new ScrollableMessage();
         newScrollableMessage.setScrollableMessageBody(mTextFields);
         newScrollableMessage.setTimeout(mDuration);
@@ -40,13 +35,14 @@ public class SdlInformationDialog {
 
     public boolean send(SdlContext context, SdlInteractionResponseListener listener){
         SdlContext applicationContext= context.getSdlApplicationContext();
-        return mSender.sendInteraction(applicationContext,createScrollableMessage(applicationContext), null, mButtonManager.getCleanUpListener(applicationContext,listener));
+        return mSender.sendInteraction(applicationContext,createScrollableMessage(applicationContext),
+                null, mButtonManager.getCleanUpListener(applicationContext,listener));
     }
 
     public static class Builder{
-        protected String mTextFields;
-        protected int mDuration = DEFAULT_DURATION;
-        protected Collection<SdlButton> mButtons = new ArrayList<>();
+        private String mTextFields;
+        private int mDuration = DEFAULT_DURATION;
+        private Collection<SdlButton> mButtons = new ArrayList<>();
 
         /**
          * Sets the duration that the {@link SdlAlertBase} will show up for.

@@ -11,16 +11,12 @@ import com.smartdevicelink.proxy.rpc.enums.SystemAction;
 import java.util.ArrayList;
 import java.util.Collection;
 
-/**
- * Created by mschwerz on 6/20/16.
- */
 class SdlInteractionButtonManager {
 
     private Collection<SdlButton> mButtons;
     private boolean mIsButtonPressed= false;
 
-
-    public SdlInteractionButtonManager(Collection<SdlButton> buttons){
+    SdlInteractionButtonManager(Collection<SdlButton> buttons){
         mButtons= buttons;
     }
 
