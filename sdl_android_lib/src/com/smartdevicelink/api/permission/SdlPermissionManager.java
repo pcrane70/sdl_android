@@ -11,6 +11,7 @@ import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CopyOnWriteArraySet;
 
 public class SdlPermissionManager {
@@ -21,9 +22,7 @@ public class SdlPermissionManager {
 
     private SdlPermissionSet mUserDisallowSet;
 
-    private CopyOnWriteArraySet<ListenerWithFilter> mListeners;
-
-    private ArrayList<ListenerWithFilter> mRemovedListener = new ArrayList<>();
+    private CopyOnWriteArrayList<PermissionListenerRecord> mListeners;
 
     private boolean isPermissionEventIter = false;
 
@@ -34,7 +33,7 @@ public class SdlPermissionManager {
     public SdlPermissionManager(){
         mAllowedPermissionSet = SdlPermissionSet.obtain();
         mUserDisallowSet = SdlPermissionSet.obtain();
-        mListeners = new CopyOnWriteArraySet<>();
+        mListeners = new CopyOnWriteArrayList<>();
     }
 
     /**
@@ -75,7 +74,9 @@ public class SdlPermissionManager {
     public SdlPermissionEvent addListener(@NonNull SdlPermissionListener listener,
                                           @NonNull SdlPermissionFilter filter){
         synchronized (PERMISSION_LOCK) {
-            mListeners.add(new ListenerWithFilter(listener, filter));
+            PermissionListenerRecord record = new PermissionListenerRecord(new ListenerWithFilter(
+                    listener, filter));
+            mListeners.add(record);
             return generateSdlPermissionEvent(mAllowedPermissionSet, mUserDisallowSet,
                     filter, mCurrentHMILevel);
         }
@@ -88,23 +89,13 @@ public class SdlPermissionManager {
      */
     public boolean removeListener(@NonNull SdlPermissionListener listener){
         synchronized (PERMISSION_LOCK){
-            boolean removedListener = false;
-            ArrayList<ListenerWithFilter> removeListeners = new ArrayList<>();
-            for (ListenerWithFilter lwf : mListeners) {
-                SdlPermissionListener permissionListener;
-                if ((permissionListener = cleanNullFromListenerList(lwf, removeListeners)) == null) {
-                    continue;
-                }
-                if (permissionListener == listener) {
-                    mListeners.remove(lwf);
-                    removedListener = true;
-                    if(isPermissionEventIter){
-                        mRemovedListener.add(lwf);
-                    }
-                }
+            int removedListenerIndex = mListeners.indexOf( listener);
+            if(removedListenerIndex >=0) {
+                mListeners.remove(removedListenerIndex).isValid = false;
+                return true;
+            } else {
+                return false;
             }
-            mListeners.removeAll(removeListeners);
-            return removedListener;
         }
     }
 
@@ -222,7 +213,6 @@ public class SdlPermissionManager {
             }
             isPermissionEventIter = false;
             mListeners.removeAll(nullListeners);
-            mRemovedListener.clear();
         }
     }
 
@@ -266,13 +256,6 @@ public class SdlPermissionManager {
                 disallowPermissions.permissions.get(hmiLevel.ordinal()));
     }
 
-    private SdlPermissionListener cleanNullFromListenerList(ListenerWithFilter lwf, ArrayList<ListenerWithFilter> nullListeners){
-        SdlPermissionListener listener = lwf.listener.get();
-        if(listener==null){
-            nullListeners.add(lwf);
-        }
-        return listener;
-    }
 
     private void parsePermissionParameters(SdlPermission permission, List<String> parameters, HMILevel level, SdlPermissionSet permissionSet){
         switch (permission) {
@@ -290,6 +273,31 @@ public class SdlPermissionManager {
                 break;
             default:
                 break;
+        }
+    }
+
+    private final class PermissionListenerRecord{
+        volatile boolean isValid = true;
+        final ListenerWithFilter notificationListener;
+
+        PermissionListenerRecord(ListenerWithFilter listener){
+            notificationListener = listener;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+
+            PermissionListenerRecord that = (PermissionListenerRecord) o;
+
+            return notificationListener.equals(that.notificationListener);
+
+        }
+
+        @Override
+        public int hashCode() {
+            return notificationListener.hashCode();
         }
     }
 
