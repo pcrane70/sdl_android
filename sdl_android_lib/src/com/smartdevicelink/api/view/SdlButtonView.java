@@ -205,12 +205,4 @@ public class SdlButtonView extends SdlView {
             this.isReady = isReady;
         }
     }
-
-    @Override
-    public void setIsVisible(boolean isVisible) {
-        super.setIsVisible(isVisible);
-        if(isVisible) {
-            isChanged = true;
-        }
-    }
 }

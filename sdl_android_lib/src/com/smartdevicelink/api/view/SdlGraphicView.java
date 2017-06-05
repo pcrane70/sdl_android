@@ -116,11 +116,4 @@ public class SdlGraphicView extends SdlView {
         }
     };
 
-    @Override
-    public void setIsVisible(boolean isVisible) {
-        super.setIsVisible(isVisible);
-        if(isVisible) {
-            isChanged = true;
-        }
-    }
 }
