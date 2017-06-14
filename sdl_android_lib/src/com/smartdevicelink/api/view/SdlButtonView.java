@@ -30,7 +30,14 @@ public class SdlButtonView extends SdlView {
     }
 
     public void setButtons(List<SdlButton> buttons){
-        mSdlButtons = new ArrayList<>(buttons);
+        for(SdlButton button : mSdlButtons){
+            mViewManager.unregisterButtonCallBack(button.getId());
+        }
+        mSdlButtons.clear();
+        for(SdlButton newButton : buttons){
+            addButton(newButton);
+        }
+
     }
 
     public List<SdlButton> getButtons(){
