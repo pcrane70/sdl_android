@@ -36,6 +36,7 @@ public class SubscribeVehicleDataResponse extends RPCResponse {
 	public static final String KEY_EMERGENCY_EVENT = "emergencyEvent";
 	public static final String KEY_CLUSTER_MODE_STATUS = "clusterModeStatus";
 	public static final String KEY_MY_KEY = "myKey";
+    public static final String KEY_FUEL_RANGE = "fuelRange";
 
 	/**
 	 * Constructs a new SubscribeVehicleDataResponse object
@@ -717,5 +718,27 @@ public class SubscribeVehicleDataResponse extends RPCResponse {
             }
         }
         return null;
-    }       
+    }
+
+    public void setFuelRange(VehicleDataResult fuelRange) {
+        if (fuelRange != null) {
+            parameters.put(KEY_FUEL_RANGE, fuelRange);
+        } else {
+            parameters.remove(KEY_FUEL_RANGE);
+        }
+    }
+    @SuppressWarnings("unchecked")
+    public VehicleDataResult getFuelRange() {
+        Object obj = parameters.get(KEY_FUEL_RANGE);
+        if (obj instanceof VehicleDataResult) {
+            return (VehicleDataResult) obj;
+        } else if (obj instanceof Hashtable) {
+            try {
+                return new VehicleDataResult((Hashtable<String, Object>) obj);
+            } catch (Exception e) {
+                DebugTool.logError("Failed to parse " + getClass().getSimpleName() + "." + KEY_FUEL_RANGE, e);
+            }
+        }
+        return null;
+    }
 }
