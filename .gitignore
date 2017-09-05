@@ -45,3 +45,6 @@ proguard/
 *.gradle
 build/
 gradle*
+/local.properties
+/captures
+.externalNativeBuild
