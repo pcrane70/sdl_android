@@ -1,6 +1,8 @@
 package com.smartdevicelink.proxy.rpc;
 
+import java.util.ArrayList;
 import java.util.Hashtable;
+import java.util.List;
 
 import com.smartdevicelink.protocol.enums.FunctionID;
 import com.smartdevicelink.proxy.RPCNotification;
@@ -269,6 +271,7 @@ public class OnVehicleData extends RPCNotification {
 	public static final String KEY_EMERGENCY_EVENT = "emergencyEvent";
 	public static final String KEY_CLUSTER_MODE_STATUS = "clusterModeStatus";
 	public static final String KEY_MY_KEY = "myKey";
+    public static final String KEY_FUEL_RANGE = "fuelRange";
 
     public OnVehicleData() {
         super(FunctionID.ON_VEHICLE_DATA.toString());
@@ -690,6 +693,34 @@ public class OnVehicleData extends RPCNotification {
         		return new MyKey((Hashtable<String, Object>) obj);
             } catch (Exception e) {
             	DebugTool.logError("Failed to parse " + getClass().getSimpleName() + "." + KEY_MY_KEY, e);
+            }
+        }
+        return null;
+    }
+	
+	public void setFuelRange(List<FuelRange> fuelRange) {
+        if (fuelRange != null) {
+            parameters.put(KEY_FUEL_RANGE, fuelRange);
+        } else {
+            parameters.remove(KEY_FUEL_RANGE);
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    public List<FuelRange> getFuelRange() {
+        if (parameters.get(KEY_FUEL_RANGE) instanceof List<?>) {
+            List<?> list = (List<?>)parameters.get(KEY_FUEL_RANGE);
+            if (list != null && list.size() > 0) {
+                Object obj = list.get(0);
+                if (obj instanceof FuelRange) {
+                    return (List<FuelRange>) list;
+                } else if (obj instanceof Hashtable) {
+                    List<FuelRange> newList = new ArrayList<FuelRange>();
+                    for (Object hashObj : list) {
+                        newList.add(new FuelRange((Hashtable<String, Object>)hashObj));
+                    }
+                    return newList;
+                }
             }
         }
         return null;

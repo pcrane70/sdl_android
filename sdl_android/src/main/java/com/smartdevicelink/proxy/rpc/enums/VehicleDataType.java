@@ -33,6 +33,7 @@ public enum VehicleDataType {
      * Notifies EXTERNTEMPData may be subscribed
      */
     VEHICLEDATA_EXTERNTEMP,
+    VEHICLEDATA_FUELRANGE,
     /**
      * Notifies VINData may be subscribed
      */
