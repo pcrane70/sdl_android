@@ -34,7 +34,6 @@ import android.os.RemoteException;
 import android.util.Log;
 import android.util.SparseArray;
 
-import com.ford.eesecs.connectedvehicle.R;
 import com.smartdevicelink.marshal.JsonRPCMarshaller;
 import com.smartdevicelink.protocol.BinaryFrameHeader;
 import com.smartdevicelink.protocol.ProtocolMessage;
