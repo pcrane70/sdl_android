@@ -183,7 +183,10 @@ public class SdlFileManager implements SdlApplication.LifecycleListener{
 
             boolean isFileLoaded = false;
 
-            if(sdlImage.getResId() != null) {
+            if(sdlImage.getBitmap() != null) {
+                isFileLoaded = true;
+                sendBitmapPutfile(putFile, sdlImage.getBitmap());
+            }else if(sdlImage.getResId() != null) {
                 isFileLoaded = loadImageFromResource(sdlImage.getResId(), putFile);
             } else if(sdlImage.getPath() != null){
                 isFileLoaded = loadImageFromPath(sdlImage.getPath(), putFile);
