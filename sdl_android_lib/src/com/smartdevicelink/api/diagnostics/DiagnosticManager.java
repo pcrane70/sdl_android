@@ -170,7 +170,9 @@ public class DiagnosticManager implements SdlApplication.LifecycleListener{
 
     @Override
     public void onSdlDisconnect() {
-        mDiagnosticInvoker.stop();
-        mDiagnosticInvoker = null;
+        if(mDiagnosticInvoker != null) {
+            mDiagnosticInvoker.stop();
+            mDiagnosticInvoker = null;
+        }
     }
 }
