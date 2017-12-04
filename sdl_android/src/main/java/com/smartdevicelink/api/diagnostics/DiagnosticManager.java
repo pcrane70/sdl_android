@@ -4,12 +4,13 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.SparseArray;
 
+import com.smartdevicelink.api.SdlApplication;
 import com.smartdevicelink.api.interfaces.SdlContext;
 
 import java.util.HashMap;
 import java.util.List;
 
-public class DiagnosticManager {
+public class DiagnosticManager implements SdlApplication.LifecycleListener{
 
     public static final int DEFAULT_TIMEOUT = 5 * 1000;
 
@@ -20,11 +21,10 @@ public class DiagnosticManager {
     public static final int PRIORITY_MAX = 4;
 
     private final SdlContext mSdlContext;
-    private final DiagnosticInvoker mDiagnosticInvoker;
+    private DiagnosticInvoker mDiagnosticInvoker;
 
     public DiagnosticManager(SdlContext sdlContext){
         mSdlContext = sdlContext;
-        mDiagnosticInvoker = new DiagnosticInvoker();
     }
 
     /**
@@ -52,7 +52,7 @@ public class DiagnosticManager {
         did.setAddress(address);
         ReadDidCommand command = new ReadDidCommand(mSdlContext, timeout, priority, did, locations);
         command.setListener(listener);
-        return mDiagnosticInvoker.submitCommand(command);
+        return (mDiagnosticInvoker != null ? mDiagnosticInvoker.submitCommand(command): -1);
     }
 
     /**
@@ -93,7 +93,7 @@ public class DiagnosticManager {
             ReadDidCommand didCommand = new ReadDidCommand(mSdlContext, timeout, priority, did, locations.valueAt(i));
             batchCommand.addCommand(didCommand);
         }
-        return mDiagnosticInvoker.submitCommand(batchCommand);
+        return (mDiagnosticInvoker != null ? mDiagnosticInvoker.submitCommand(batchCommand): -1);
     }
 
     /**
@@ -118,7 +118,7 @@ public class DiagnosticManager {
      */
     public int readDTC(int address, @Nullable Integer mask, int timeout, int priority, DTCReadListener listener){
         ReadDtcCommand dtcCommand = new ReadDtcCommand(mSdlContext, timeout, priority, address, mask, listener);
-        return mDiagnosticInvoker.submitCommand(dtcCommand);
+        return (mDiagnosticInvoker != null ? mDiagnosticInvoker.submitCommand(dtcCommand): -1);
     }
 
     /**
@@ -145,6 +145,32 @@ public class DiagnosticManager {
      * @return Id of the resulting command submitted to the diagnostic queue. Will be -1 on failure to queue request.
      */
     public int readDTCBatch(HashMap<Integer, Integer> addresses, int timeout, int priority, DIDBatchListener listener){
-        return -1;
+        throw new RuntimeException(this.getClass().getCanonicalName() + "#readDTCBatch() not yet implemented.");
+    }
+
+    @Override
+    public void onSdlConnect() {
+        mDiagnosticInvoker = new DiagnosticInvoker();
+    }
+
+    @Override
+    public void onBackground() {
+        // TODO (tstrayer, 12/4/17): Implement method stub
+    }
+
+    @Override
+    public void onForeground() {
+        // TODO (tstrayer, 12/4/17): Implement method stub
+    }
+
+    @Override
+    public void onExit() {
+        // TODO (tstrayer, 12/4/17): Implement method stub
+    }
+
+    @Override
+    public void onSdlDisconnect() {
+        mDiagnosticInvoker.stop();
+        mDiagnosticInvoker = null;
     }
 }

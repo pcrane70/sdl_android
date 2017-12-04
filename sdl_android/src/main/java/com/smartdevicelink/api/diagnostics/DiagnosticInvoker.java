@@ -1,10 +1,13 @@
 package com.smartdevicelink.api.diagnostics;
 
+import android.util.Log;
 import android.util.SparseArray;
 
 import java.util.concurrent.PriorityBlockingQueue;
 
 public class DiagnosticInvoker {
+
+    private static final String TAG = DiagnosticInvoker.class.getSimpleName();
 
     private static final String DIAGNOSTIC_THREAD_NAME = "sdl_diagnostic_command_thread";
 
@@ -13,7 +16,7 @@ public class DiagnosticInvoker {
     private PriorityBlockingQueue<DiagnosticCommand> mDiagnosticQueue = new PriorityBlockingQueue<>();
     private SparseArray<DiagnosticCommand> mCommandRegistry = new SparseArray<>();
     private final Thread mExecutionThread;
-    private boolean isStopping = false;
+    private volatile boolean isStopping = false;
     private boolean didCommandTimeout = true;
 
     public DiagnosticInvoker(){
@@ -30,6 +33,8 @@ public class DiagnosticInvoker {
     }
 
     public void stop(){
+
+        Log.i(TAG, "I'm Stopping.");
         isStopping = true;
         synchronized (mExecutionThread) {
             mExecutionThread.interrupt();
@@ -45,7 +50,7 @@ public class DiagnosticInvoker {
                     command = mDiagnosticQueue.take();
                 } catch (InterruptedException e) {
                     e.printStackTrace();
-                    continue;
+                    break;
                 }
 
                 if(!isStopping && command != null) {
@@ -87,6 +92,9 @@ public class DiagnosticInvoker {
                     }
                 }
             }
+            Log.i(TAG, "I'm exiting mah runnable and clearin my stuff.");
+            mCommandRegistry.clear();
+            mDiagnosticQueue.clear();
         }
     };
 

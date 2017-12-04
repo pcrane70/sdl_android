@@ -18,10 +18,10 @@ import com.smartdevicelink.api.menu.SdlMenuTransaction;
 import com.smartdevicelink.api.menu.SelectListener;
 import com.smartdevicelink.api.permission.SdlPermissionManager;
 import com.smartdevicelink.api.speak.SdlTextToSpeak;
+import com.smartdevicelink.api.vehicledata.SdlVehicleDataManager;
 import com.smartdevicelink.api.view.SdlAudioPassThruDialog;
 import com.smartdevicelink.api.view.SdlButton;
 import com.smartdevicelink.api.view.SdlChoiceSetManager;
-import com.smartdevicelink.api.vehicledata.SdlVehicleDataManager;
 import com.smartdevicelink.exception.SdlException;
 import com.smartdevicelink.protocol.enums.FunctionID;
 import com.smartdevicelink.proxy.RPCNotification;
@@ -98,8 +98,8 @@ import com.smartdevicelink.proxy.rpc.UpdateTurnListResponse;
 import com.smartdevicelink.proxy.rpc.VehicleType;
 import com.smartdevicelink.proxy.rpc.enums.DriverDistractionState;
 import com.smartdevicelink.proxy.rpc.enums.HMILevel;
-import com.smartdevicelink.proxy.rpc.enums.LockScreenStatus;
 import com.smartdevicelink.proxy.rpc.enums.Language;
+import com.smartdevicelink.proxy.rpc.enums.LockScreenStatus;
 import com.smartdevicelink.proxy.rpc.enums.Result;
 import com.smartdevicelink.proxy.rpc.enums.SdlDisconnectedReason;
 import com.smartdevicelink.proxy.rpc.enums.TriggerSource;
@@ -108,6 +108,7 @@ import com.smartdevicelink.proxy.rpc.listeners.OnRPCResponseListener;
 
 import org.json.JSONException;
 
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -158,7 +159,7 @@ public class SdlApplication extends SdlContextAbsImpl {
     private boolean isFirstHmiNotNoneReceived = false;
 
     private SparseArray<SelectListener> mMenuListenerRegistry = new SparseArray<>();
-    private SparseArray<SdlButton.OnPressListener> mButtonListenerRegistry = new SparseArray<>();
+    private SparseArray<WeakReference<SdlButton.OnPressListener>> mButtonListenerRegistry = new SparseArray<>();
     private SdlAudioPassThruDialog.ReceiveDataListener mAudioPassThruListener;
 
     private DriverDistractionState mDriverDistractionState = DriverDistractionState.DD_ON;
@@ -188,6 +189,7 @@ public class SdlApplication extends SdlContextAbsImpl {
                 mSdlVehicleDataManager = new SdlVehicleDataManager(SdlApplication.this);
                 mLifecycleListeners.add(mSdlFileManager);
                 mDiagnosticManager = new DiagnosticManager(SdlApplication.this);
+                mLifecycleListeners.add(mDiagnosticManager);
                 createItemManagers();
                 if (mSdlProxyALM != null) {
                     mConnectionStatus = Status.CONNECTING;
@@ -328,7 +330,7 @@ public class SdlApplication extends SdlContextAbsImpl {
     @Override
     public final int registerButtonCallback(SdlButton.OnPressListener listener) {
         int buttonId = mAutoButtonId++;
-        mButtonListenerRegistry.append(buttonId, listener);
+        mButtonListenerRegistry.append(buttonId, new WeakReference<>(listener));
         return buttonId;
     }
 
@@ -851,9 +853,11 @@ public class SdlApplication extends SdlContextAbsImpl {
                         if(buttonId == BACK_BUTTON_ID){
                             mSdlActivityManager.back();
                         } else {
-                            SdlButton.OnPressListener listener = mButtonListenerRegistry.get(buttonId);
+                            SdlButton.OnPressListener listener = mButtonListenerRegistry.get(buttonId).get();
                             if (listener != null) {
                                 listener.onButtonPress();
+                            } else {
+                                mButtonListenerRegistry.remove(buttonId);
                             }
                         }
                     }
