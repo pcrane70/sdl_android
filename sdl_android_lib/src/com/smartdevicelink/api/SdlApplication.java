@@ -98,6 +98,7 @@ import com.smartdevicelink.proxy.rpc.listeners.OnRPCResponseListener;
 
 import org.json.JSONException;
 
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.HashSet;
 
@@ -144,7 +145,7 @@ public class SdlApplication extends SdlContextAbsImpl {
     private boolean isFirstHmiReceived = false;
     private boolean isFirstHmiNotNoneReceived = false;
 
-    private SparseArray<SdlButtonListener> mButtonListenerRegistry = new SparseArray<>();
+    private SparseArray<WeakReference<SdlButtonListener>> mButtonListenerRegistry = new SparseArray<>();
     private SparseArray<SdlMenuOption.SelectListener> mMenuListenerRegistry = new SparseArray<>();
 
     private DriverDistractionState mDriverDistractionState = DriverDistractionState.DD_ON;
@@ -170,6 +171,7 @@ public class SdlApplication extends SdlContextAbsImpl {
                 mSdlVehicleDataManager = new SdlVehicleDataManager(SdlApplication.this);
                 mLifecycleListeners.add(mSdlFileManager);
                 mDiagnosticManager = new DiagnosticManager(SdlApplication.this);
+                mLifecycleListeners.add(mDiagnosticManager);
                 createItemManagers();
                 if (mSdlProxyALM != null) {
                     mConnectionStatus = Status.CONNECTING;
@@ -292,7 +294,7 @@ public class SdlApplication extends SdlContextAbsImpl {
 
     public final int registerButtonCallback(SdlButtonListener listener) {
         int buttonId = mAutoButtonId++;
-        mButtonListenerRegistry.append(buttonId, listener);
+        mButtonListenerRegistry.append(buttonId, new WeakReference<>(listener));
         return buttonId;
     }
 
@@ -763,9 +765,11 @@ public class SdlApplication extends SdlContextAbsImpl {
                         if (buttonId == BACK_BUTTON_ID) {
                             mSdlActivityManager.back();
                         } else {
-                            SdlButtonListener listener = mButtonListenerRegistry.get(buttonId);
+                            SdlButtonListener listener = mButtonListenerRegistry.get(buttonId).get();
                             if (listener != null) {
                                 listener.onButtonPress();
+                            } else {
+                                mButtonListenerRegistry.remove(buttonId);
                             }
                         }
                     }
