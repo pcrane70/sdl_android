@@ -4,6 +4,7 @@ import android.support.annotation.NonNull;
 import android.util.Log;
 import android.util.SparseArray;
 
+import com.smartdevicelink.api.SdlApplication;
 import com.smartdevicelink.api.interfaces.SdlContext;
 import com.smartdevicelink.api.permission.SdlPermissionEvent;
 import com.smartdevicelink.api.permission.SdlPermissionFilter;
@@ -14,7 +15,7 @@ import com.smartdevicelink.proxy.rpc.OnVehicleData;
 import java.util.EnumSet;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-public class SdlVehicleDataManager {
+public class SdlVehicleDataManager implements SdlApplication.LifecycleListener{
 
     public static final int DEFAULT_TIMEOUT = 5 * 1000;
 
@@ -30,13 +31,12 @@ public class SdlVehicleDataManager {
     private final SparseArray<SdlPermissionListener> mPermissionListenerRegistry = new SparseArray<>();
     private final Object LISTENER_LOCK = new Object();
     private final Object PERM_LOCK = new Object();
-    private final VehicleDataInvoker mCommandInvoker;
+    private VehicleDataInvoker mCommandInvoker;
 
     private final SdlPermissionManager mPermissionManager;
     private final SdlContext mSdlContext;
 
     public SdlVehicleDataManager(SdlContext context){
-        mCommandInvoker = new VehicleDataInvoker();
         mPermissionManager = context.getSdlPermissionManager();
         mSdlContext = context;
     }
@@ -68,7 +68,9 @@ public class SdlVehicleDataManager {
                     if(mPermissionManager.isPermissionAvailable(dataEnum.getSubVehicleDataPermission())){
                         Log.v(TAG,"Permissions available currently for "+ dataEnum.toString() + "." +
                                 " Subscribing to vehicle data.");
-                        mCommandInvoker.submitCommand(subCommand);
+                        if(mCommandInvoker != null) {
+                            mCommandInvoker.submitCommand(subCommand);
+                        }
                     } else {
                         //adding a listener for when the permissions become available
                         SdlPermissionListener permissionListener = new SdlPermissionListener() {
@@ -127,7 +129,9 @@ public class SdlVehicleDataManager {
                         SubscribeVehicleDataCommand unSubCommand = new SubscribeVehicleDataCommand(
                                 DEFAULT_TIMEOUT, PRIORITY_DEFAULT,
                                 mSdlContext, false, EnumSet.of(dataEnum));
-                        mCommandInvoker.submitCommand(unSubCommand);
+                        if(mCommandInvoker != null) {
+                            mCommandInvoker.submitCommand(unSubCommand);
+                        }
                     } else {
                         //otherwise we are not subscribed and we should remove the listener
                         //so that we don't subscribe unnecessarily
@@ -154,7 +158,9 @@ public class SdlVehicleDataManager {
                     DEFAULT_TIMEOUT, PRIORITY_DEFAULT,
                     mSdlContext, dataEnum);
             grabCommand.setReadListener(listener);
-            mCommandInvoker.submitCommand(grabCommand);
+            if(mCommandInvoker != null) {
+                mCommandInvoker.submitCommand(grabCommand);
+            }
             return true;
         } else {
             return false;
@@ -193,9 +199,41 @@ public class SdlVehicleDataManager {
                 && mPermissionListenerRegistry.get(dataEnum.ordinal()) != null){
             Log.v(TAG, "Permissions for "+ dataEnum.toString() + "are available now. " +
                     "Subscribing to vehicle data" );
-            mCommandInvoker.submitCommand(command);
+            if(mCommandInvoker != null) {
+                mCommandInvoker.submitCommand(command);
+            }
             mPermissionListenerRegistry.remove(dataEnum.ordinal());
             mPermissionManager.removeListener(listener);
+        }
+    }
+
+    @Override
+    public void onSdlConnect() {
+        // TODO (mschwerz, 12/4/17): Implement method stub
+        mCommandInvoker = new VehicleDataInvoker();
+    }
+
+    @Override
+    public void onBackground() {
+        // TODO (mschwerz, 12/4/17): Implement method stub
+    }
+
+    @Override
+    public void onForeground() {
+        // TODO (mschwerz, 12/4/17): Implement method stub
+    }
+
+    @Override
+    public void onExit() {
+        // TODO (mschwerz, 12/4/17): Implement method stub
+    }
+
+    @Override
+    public void onSdlDisconnect() {
+        // TODO (mschwerz, 12/4/17): Implement method stub
+        if(mCommandInvoker != null) {
+            mCommandInvoker.stop();
+            mCommandInvoker = null;
         }
     }
 

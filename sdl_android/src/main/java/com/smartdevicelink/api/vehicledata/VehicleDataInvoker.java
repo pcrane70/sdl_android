@@ -12,7 +12,7 @@ public class VehicleDataInvoker {
     private static final Object COUNT_LOCK = new Object();
     private final PriorityBlockingQueue<VehicleDataCommand> mCommandQueue = new PriorityBlockingQueue<>();
     private final Thread mInvokerThread;
-    private boolean isStopping = false;
+    private volatile boolean isStopping = false;
     private boolean commandTimeout = true;
 
     public VehicleDataInvoker(){
@@ -44,7 +44,7 @@ public class VehicleDataInvoker {
                     executionCommand = mCommandQueue.take();
                 } catch (InterruptedException e) {
                     e.printStackTrace();
-                    continue;
+                    break;
                 }
 
                 if(!isStopping && executionCommand != null){
@@ -83,6 +83,7 @@ public class VehicleDataInvoker {
                     Log.wtf(TAG, "The execution command was found to be null");
                 }
             }
+            mCommandQueue.clear();
         }
     };
 

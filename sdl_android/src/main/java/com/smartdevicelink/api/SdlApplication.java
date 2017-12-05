@@ -187,6 +187,7 @@ public class SdlApplication extends SdlContextAbsImpl {
                 mLifecycleListeners.add(mSdlActivityManager);
                 mSdlFileManager = new SdlFileManager(SdlApplication.this, mApplicationConfig);
                 mSdlVehicleDataManager = new SdlVehicleDataManager(SdlApplication.this);
+                mLifecycleListeners.add(mSdlVehicleDataManager);
                 mLifecycleListeners.add(mSdlFileManager);
                 mDiagnosticManager = new DiagnosticManager(SdlApplication.this);
                 mLifecycleListeners.add(mDiagnosticManager);
