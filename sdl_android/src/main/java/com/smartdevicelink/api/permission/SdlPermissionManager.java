@@ -59,6 +59,18 @@ public class SdlPermissionManager {
         }
     }
 
+    /**
+     * This method returns permission event generated for the provided filter.
+     * @param filter The {@link SdlPermissionFilter} to check.
+     * @return Returns an {@link SdlPermissionEvent} containing the current state of the permissions.
+     */
+    public SdlPermissionEvent checkPermissions(@NonNull SdlPermissionFilter filter){
+        synchronized (PERMISSION_LOCK) {
+            return generateSdlPermissionEvent(mAllowedPermissionSet, mUserDisallowSet, filter,
+                    mCurrentHMILevel);
+        }
+    }
+
 
     /**
      * Method to add a listener that will be called when the conditions specified by the provided
